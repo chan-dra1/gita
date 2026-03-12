@@ -1,50 +1,189 @@
-# Welcome to your Expo app 👋
+# Bhagavad Gita App 🕉️
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A beautiful spiritual companion app featuring all 701 slokas of the Bhagavad Gita with commentary, progress tracking, and personalized onboarding.
 
-## Get started
+## Features ✨
 
-1. Install dependencies
+- **Complete Bhagavad Gita**: All 18 chapters, 701 verses
+- **4-Step Onboarding**: Personalized experience with motivation, experience level, guidance style, and daily commitment
+- **Progress Tracking**: Track verses read, day streaks, and saved slokas
+- **Real Commentary**: Detailed verse explanations with practical applications
+- **Audio Coming Soon**: Sanskrit and English recitations (premium feature)
+- **Cross-Platform**: iOS, Android, and Web
 
-   ```bash
-   npm install
-   ```
+## Tech Stack 🛠️
 
-2. Start the app
+- **Framework**: [Expo](https://expo.dev) + React Native
+- **Navigation**: Expo Router (file-based)
+- **Styling**: NativeWind (Tailwind CSS for RN)
+- **Storage**: AsyncStorage for offline data
+- **Build**: EAS (Expo Application Services)
+- **Deploy**: Vercel (web), App Store/Play Store (mobile)
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Quick Start 🚀
 
 ```bash
-npm run reset-project
+# Install dependencies
+npm install
+
+# Start development server
+npx expo start
+
+# Run on iOS simulator
+i
+
+# Run on Android emulator
+a
+
+# Run on web
+w
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Deployment 📦
 
-## Learn more
+### GitHub Repository
+Repository: `https://github.com/chan-dra1/gita.git`
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+# Push to GitHub
+git remote add origin https://github.com/chan-dra1/gita.git
+git branch -M main
+git push -u origin main
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Vercel (Web)
 
-## Join the community
+**Option 1: Vercel CLI**
+```bash
+# Install Vercel CLI
+npm i -g vercel
 
-Join our community of developers creating universal apps.
+# Login
+vercel login
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+# Deploy
+vercel --prod
+```
+
+**Option 2: Vercel Dashboard**
+1. Go to [vercel.com](https://vercel.com)
+2. Click "Add New Project"
+3. Import from GitHub: `chan-dra1/gita`
+4. Framework: Other
+5. Build Command: `npx expo export --platform web`
+6. Output Directory: `dist`
+7. Deploy!
+
+### Mobile App Stores
+
+**EAS Build (Recommended)**
+```bash
+# Install EAS CLI
+npm install -g eas-cli
+
+# Login
+eas login
+
+# Build for iOS (simulator testing)
+eas build --platform ios --profile preview
+
+# Build for Android (APK testing)
+eas build --platform android --profile preview
+
+# Build for App Store
+eas build --platform ios --profile production
+
+# Build for Play Store
+eas build --platform android --profile production
+
+# Submit to stores
+eas submit --platform ios
+eas submit --platform android
+```
+
+See [EAS_SETUP.md](./EAS_SETUP.md) for detailed instructions.
+
+## Project Structure 📁
+
+```
+app/
+├── (tabs)/              # Main tab navigation
+│   ├── index.tsx        # Home - Daily verse
+│   ├── daily.tsx        # Daily Intent
+│   ├── library.tsx      # Chapter browser with progress
+│   └── profile.tsx      # Stats & settings
+├── onboarding/          # 4-step onboarding + paywall
+│   ├── step1.tsx        # Motivation selection
+│   ├── step2.tsx        # Experience level
+│   ├── step3.tsx        # Guidance style
+│   ├── step4.tsx        # Daily commitment
+│   └── paywall.tsx      # Premium upgrade
+├── sloka/
+│   └── [chapter]/
+│       └── [verse].tsx  # Sloka detail with commentary
+└── settings.tsx         # App settings
+
+src/
+├── data/
+│   ├── bhagavad-gita.json   # All 701 verses
+│   └── commentary.json      # Verse commentaries
+├── utils/
+│   ├── stats.ts             # Progress tracking
+│   ├── commentary.ts        # Commentary loader
+│   └── sloka.ts             # Sloka utilities
+└── types/
+    └── index.ts             # TypeScript types
+```
+
+## Features In Detail 🔍
+
+### Onboarding Flow
+1. **Step 1**: What brings you to the Gita? (Motivation)
+2. **Step 2**: How familiar are you? (Beginner → Scholar)
+3. **Step 3**: What style of guidance? (Practical/Philosophical/Devotional/Holistic)
+4. **Step 4**: Daily commitment (2/5/15+ minutes) + reminders
+5. **Paywall**: Premium features ($4.99/month, $29.99/year, $99.99/lifetime)
+
+### Stats Tracking
+- **Slokas Read**: Unique verses opened
+- **Day Streak**: Consecutive days of app use
+- **Saved Slokas**: Bookmarked verses
+- **Chapter Progress**: Read/unread tracking per chapter
+
+### Commentary System
+- **Traditional Wisdom**: Insights from Shankaracharya
+- **Spiritual Meaning**: Verse interpretation
+- **In Your Life**: Practical application
+
+## Testing 🧪
+
+```bash
+# Run feature tests
+node test-features.mjs
+
+# Build for web
+npx expo export --platform web
+
+# Build for mobile (with EAS)
+eas build --platform ios --profile preview
+eas build --platform android --profile preview
+```
+
+## Premium Features (Coming Soon) 🔐
+
+- Audio recitations in Sanskrit & English
+- AI-powered sloka recommendations
+- Offline caching
+- Ad-free experience
+
+## License 📄
+
+MIT License - feel free to use and modify!
+
+## Contact 📬
+
+GitHub: [chan-dra1/gita](https://github.com/chan-dra1/gita)
+
+---
+
+**Vande Mataram** 🙏
