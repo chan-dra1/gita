@@ -1,98 +1,315 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import {
+  Image,
+  ScrollView,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { getRandomSloka } from '../../src/utils/sloka';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const DHARMA_TIMES = ['1 min', '5 mins', '10 mins'];
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const router = useRouter();
+  const dailySloka = getRandomSloka();
+  const [selectedTime, setSelectedTime] = useState('5 mins');
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF7ED' }}>
+      <StatusBar barStyle="dark-content" />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
+        {/* Header */}
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+            paddingHorizontal: 24,
+            paddingTop: 8,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => router.push('/settings' as any)}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: '#FFF',
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 8,
+              elevation: 3,
+            }}
+          >
+            <Ionicons name="settings-outline" size={22} color="#E8751A" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Krishna Image Card */}
+        <View style={{ alignItems: 'center', marginTop: 8, paddingHorizontal: 32 }}>
+          <View
+            style={{
+              width: '100%',
+              maxWidth: 320,
+              aspectRatio: 1,
+              borderRadius: 28,
+              overflow: 'hidden',
+              backgroundColor: '#F5EDE0',
+              shadowColor: '#E8751A',
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.12,
+              shadowRadius: 24,
+              elevation: 8,
+            }}
+          >
+            <Image
+              source={require('../../assets/images/krishna.png')}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="cover"
+            />
+          </View>
+        </View>
+
+        {/* Title */}
+        <View style={{ alignItems: 'center', marginTop: 28, paddingHorizontal: 32 }}>
+          <Text
+            style={{
+              fontSize: 30,
+              fontWeight: '700',
+              color: '#1A1A1A',
+              textAlign: 'center',
+              lineHeight: 38,
+            }}
+          >
+            Welcome, Seek Your{'\n'}Inner Peace
+          </Text>
+          <Text
+            style={{
+              fontSize: 15,
+              color: '#9A9A9A',
+              marginTop: 10,
+              textAlign: 'center',
+            }}
+          >
+            Set your daily spiritual intention
+          </Text>
+        </View>
+
+        {/* I prefer to... */}
+        <View style={{ marginTop: 32, paddingHorizontal: 24 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+            <Text style={{ fontSize: 16, marginRight: 8 }}>✨</Text>
+            <Text
+              style={{
+                fontSize: 17,
+                fontWeight: '600',
+                color: '#1A1A1A',
+              }}
+            >
+              I prefer to...
+            </Text>
+          </View>
+
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            {/* Read Button */}
+            <TouchableOpacity
+              onPress={() => router.push('/(tabs)/library' as any)}
+              style={{
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#E8751A',
+                paddingVertical: 16,
+                borderRadius: 16,
+                gap: 8,
+                shadowColor: '#E8751A',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 12,
+                elevation: 6,
+              }}
+            >
+              <Ionicons name="book" size={18} color="#FFF" />
+              <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '600' }}>
+                Read
+              </Text>
+            </TouchableOpacity>
+
+            {/* Listen Button */}
+            <TouchableOpacity
+              onPress={() => {
+                if (dailySloka) {
+                  router.push(`/sloka/${dailySloka.chapter}/${dailySloka.verse}` as any);
+                }
+              }}
+              style={{
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#FFF',
+                paddingVertical: 16,
+                borderRadius: 16,
+                gap: 8,
+                borderWidth: 1.5,
+                borderColor: '#F0E0CC',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.04,
+                shadowRadius: 8,
+                elevation: 2,
+              }}
+            >
+              <Ionicons name="headset" size={18} color="#E8751A" />
+              <Text style={{ color: '#333', fontSize: 16, fontWeight: '600' }}>
+                Listen
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Daily Dharma Time */}
+        <View style={{ marginTop: 32, paddingHorizontal: 24 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+            <Text style={{ fontSize: 16, marginRight: 8 }}>🕐</Text>
+            <Text
+              style={{
+                fontSize: 17,
+                fontWeight: '600',
+                color: '#1A1A1A',
+              }}
+            >
+              Daily Dharma Time
+            </Text>
+          </View>
+
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            {DHARMA_TIMES.map((time) => (
+              <TouchableOpacity
+                key={time}
+                onPress={() => setSelectedTime(time)}
+                style={{
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  borderRadius: 12,
+                  borderWidth: 1.5,
+                  borderColor: selectedTime === time ? '#E8751A' : '#F0E0CC',
+                  backgroundColor: selectedTime === time ? '#FFF3E8' : '#FFF',
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: '600',
+                    color: selectedTime === time ? '#E8751A' : '#888',
+                  }}
+                >
+                  {time}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Set My Daily Dharma Button */}
+        <View style={{ marginTop: 32, paddingHorizontal: 24 }}>
+          <TouchableOpacity
+            onPress={() => router.push('/(tabs)/daily' as any)}
+            style={{
+              backgroundColor: '#F5C518',
+              paddingVertical: 18,
+              borderRadius: 20,
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: '#F5C518',
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.35,
+              shadowRadius: 16,
+              elevation: 8,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 17,
+                fontWeight: '700',
+                color: '#1A1A1A',
+                letterSpacing: 0.3,
+              }}
+            >
+              Set My Daily Dharma ✦
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Quote */}
+        <Text
+          style={{
+            textAlign: 'center',
+            fontSize: 13,
+            fontStyle: 'italic',
+            color: '#B0A090',
+            marginTop: 24,
+            paddingHorizontal: 40,
+          }}
+        >
+          "Your path to enlightenment starts with a single step."
+        </Text>
+
+        {/* Today's Verse Preview */}
+        {dailySloka && (
+          <TouchableOpacity
+            onPress={() =>
+              router.push(`/sloka/${dailySloka.chapter}/${dailySloka.verse}` as any)
+            }
+            style={{
+              marginHorizontal: 24,
+              marginTop: 28,
+              padding: 20,
+              borderRadius: 20,
+              backgroundColor: '#FFF',
+              borderWidth: 1,
+              borderColor: '#F0E0CC',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 12,
+              elevation: 3,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+              <Text style={{ fontSize: 15, marginRight: 8 }}>📖</Text>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: '#E8751A' }}>
+                Today's Verse
+              </Text>
+            </View>
+            <Text
+              style={{
+                fontSize: 16,
+                color: '#333',
+                lineHeight: 24,
+                fontStyle: 'italic',
+              }}
+              numberOfLines={3}
+            >
+              "{dailySloka.translation_english}"
+            </Text>
+            <Text style={{ fontSize: 12, color: '#B0A090', marginTop: 10 }}>
+              Chapter {dailySloka.chapter}, Verse {dailySloka.verse}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
