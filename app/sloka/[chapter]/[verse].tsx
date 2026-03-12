@@ -11,12 +11,14 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDeepDive } from '../../../src/hooks/useDeepDive';
 import { getChapter, getSloka } from '../../../src/utils/sloka';
 import { getCommentary, getGenericCommentary, type Commentary } from '../../../src/utils/commentary';
 import { addSlokaRead, isSlokaSaved, saveSloka, unsaveSloka } from '../../../src/utils/stats';
+import { getSlokaImage } from '../../../src/utils/slokaImages';
 
 export default function SlokaScreen() {
   const { chapter: chapterStr, verse: verseStr } = useLocalSearchParams<{
@@ -28,6 +30,7 @@ export default function SlokaScreen() {
   const verse = parseInt(verseStr, 10);
   const sloka = getSloka(chapter, verse);
   const chapterData = getChapter(chapter);
+  const slokaImage = getSlokaImage(chapter, verse);
 
   // Audio state - disabled until API keys are available
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -221,6 +224,34 @@ export default function SlokaScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 40 }}
         >
+          {/* ── Illustration (If Available) ── */}
+          {slokaImage && (
+            <View style={{ alignItems: 'center', marginTop: 8, paddingHorizontal: 20 }}>
+              <View
+                style={{
+                  width: '100%',
+                  aspectRatio: 1.2,
+                  borderRadius: 24,
+                  overflow: 'hidden',
+                  backgroundColor: '#F5EDE0',
+                  borderWidth: 1,
+                  borderColor: '#F0E0CC',
+                  shadowColor: '#E8751A',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 12,
+                  elevation: 4,
+                }}
+              >
+                <Image
+                  source={slokaImage}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="cover"
+                />
+              </View>
+            </View>
+          )}
+
           {/* ── Sanskrit Card ── */}
           <View
             style={{

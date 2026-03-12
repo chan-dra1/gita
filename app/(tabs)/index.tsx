@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Image,
   ScrollView,
@@ -12,12 +12,30 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getRandomSloka } from '../../src/utils/sloka';
 
+const KRISHNA_IMAGES = [
+  require('../../assets/images/home/krishna_1.png'),
+  require('../../assets/images/home/krishna_2.png'),
+  require('../../assets/images/home/krishna_3.png'),
+  require('../../assets/images/home/krishna_4.png'),
+  require('../../assets/images/home/krishna_5.png'),
+  require('../../assets/images/home/krishna_6.png'),
+  require('../../assets/images/home/krishna_7.png'),
+  require('../../assets/images/home/krishna_8.png'),
+  require('../../assets/images/home/krishna_9.png'),
+  require('../../assets/images/home/krishna_10.png'),
+];
+
 const DHARMA_TIMES = ['1 min', '5 mins', '10 mins'];
 
 export default function HomeScreen() {
   const router = useRouter();
   const dailySloka = getRandomSloka();
   const [selectedTime, setSelectedTime] = useState('5 mins');
+
+  const randomKrishnaImage = useMemo(() => {
+    const randomIndex = Math.floor(Math.random() * KRISHNA_IMAGES.length);
+    return KRISHNA_IMAGES[randomIndex];
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF7ED' }}>
@@ -73,7 +91,7 @@ export default function HomeScreen() {
             }}
           >
             <Image
-              source={require('../../assets/images/krishna.png')}
+              source={randomKrishnaImage}
               style={{ width: '100%', height: '100%' }}
               resizeMode="cover"
             />
