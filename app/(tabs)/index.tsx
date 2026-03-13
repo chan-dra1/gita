@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Image,
   ScrollView,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getRandomSloka } from '../../src/utils/sloka';
+import { isOnboardingComplete } from '../../src/utils/stats';
 
 const KRISHNA_IMAGES = [
   require('../../assets/images/home/krishna_1.png'),
@@ -31,11 +32,28 @@ export default function HomeScreen() {
   const router = useRouter();
   const dailySloka = getRandomSloka();
   const [selectedTime, setSelectedTime] = useState('5 mins');
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    async function checkOnboarding() {
+      const complete = await isOnboardingComplete();
+      if (!complete) {
+        router.replace('/onboarding/step1' as any);
+      } else {
+        setIsChecking(false);
+      }
+    }
+    checkOnboarding();
+  }, []);
 
   const randomKrishnaImage = useMemo(() => {
     const randomIndex = Math.floor(Math.random() * KRISHNA_IMAGES.length);
     return KRISHNA_IMAGES[randomIndex];
   }, []);
+
+  if (isChecking) {
+    return <View style={{ flex: 1, backgroundColor: '#FFF7ED' }} />;
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF7ED' }}>
