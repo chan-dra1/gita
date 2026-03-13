@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { saveOnboardingStep } from '../../src/utils/stats';
@@ -60,61 +60,68 @@ export default function OnboardingStep2() {
         <View style={{ width: 40 }} />
       </View>
 
-      {/* Progress */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressTextRow}>
-          <Text style={styles.progressStep}>STEP 2 OF 4</Text>
-          <Text style={styles.progressLabel}>Experience Level</Text>
+      {/* Scrollable Content */}
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Progress */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressTextRow}>
+            <Text style={styles.progressStep}>STEP 2 OF 4</Text>
+            <Text style={styles.progressLabel}>Experience Level</Text>
+          </View>
+          <View style={styles.progressBarBg}>
+            <View style={[styles.progressBarFill, { width: '50%' }]} />
+          </View>
         </View>
-        <View style={styles.progressBarBg}>
-          <View style={[styles.progressBarFill, { width: '50%' }]} />
+
+        {/* Title */}
+        <View style={styles.titleContainer}>
+          <Text style={styles.mainTitle}>
+            How familiar are you with the <Text style={styles.highlight}>Bhagavad Gita</Text>?
+          </Text>
+          <Text style={styles.subtitle}>
+            This helps us tailor the verses and explanations to your current level of understanding.
+          </Text>
         </View>
-      </View>
 
-      {/* Title */}
-      <View style={styles.titleContainer}>
-        <Text style={styles.mainTitle}>
-          How familiar are you with the <Text style={styles.highlight}>Bhagavad Gita</Text>?
-        </Text>
-        <Text style={styles.subtitle}>
-          This helps us tailor the verses and explanations to your current level of understanding.
-        </Text>
-      </View>
+        {/* Options */}
+        <View style={styles.optionsContainer}>
+          {OPTIONS.map((option) => {
+            const isSelected = selectedId === option.id;
+            return (
+              <TouchableOpacity
+                key={option.id}
+                activeOpacity={0.8}
+                onPress={() => setSelectedId(option.id)}
+                style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+              >
+                <View style={[styles.iconContainer, isSelected && styles.iconContainerSelected]}>
+                  <Ionicons 
+                    name={option.icon as any} 
+                    size={22} 
+                    color={isSelected ? '#F48B29' : '#9CA3AF'} 
+                  />
+                </View>
+                <View style={styles.optionTextContainer}>
+                  <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
+                    {option.title}
+                  </Text>
+                  <Text style={styles.optionDescription}>
+                    {option.description}
+                  </Text>
+                </View>
 
-      {/* Options */}
-      <View style={styles.optionsContainer}>
-        {OPTIONS.map((option) => {
-          const isSelected = selectedId === option.id;
-          return (
-            <TouchableOpacity
-              key={option.id}
-              activeOpacity={0.8}
-              onPress={() => setSelectedId(option.id)}
-              style={[styles.optionCard, isSelected && styles.optionCardSelected]}
-            >
-              <View style={[styles.iconContainer, isSelected && styles.iconContainerSelected]}>
-                <Ionicons 
-                  name={option.icon as any} 
-                  size={22} 
-                  color={isSelected ? '#F48B29' : '#9CA3AF'} 
-                />
-              </View>
-              <View style={styles.optionTextContainer}>
-                <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
-                  {option.title}
-                </Text>
-                <Text style={styles.optionDescription}>
-                  {option.description}
-                </Text>
-              </View>
-
-              <View style={[styles.radioOuter, isSelected && styles.radioOuterSelected]}>
-                {isSelected ? <View style={styles.radioInner} /> : null}
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+                <View style={[styles.radioOuter, isSelected && styles.radioOuterSelected]}>
+                  {isSelected ? <View style={styles.radioInner} /> : null}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </ScrollView>
 
       {/* Footer */}
       <View style={styles.footer}>
@@ -162,8 +169,7 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   progressContainer: {
-    paddingHorizontal: 24,
-    marginTop: 24,
+    marginTop: 8,
   },
   progressTextRow: {
     flexDirection: 'row',
@@ -194,9 +200,8 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   titleContainer: {
-    paddingHorizontal: 24,
-    marginTop: 32,
-    marginBottom: 32,
+    marginTop: 24,
+    marginBottom: 24,
   },
   mainTitle: {
     fontSize: 30,
@@ -216,9 +221,16 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   optionsContainer: {
-    paddingHorizontal: 24,
-    flex: 1,
     gap: 12,
+    marginBottom: 24,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 24,
   },
   optionCard: {
     padding: 16,

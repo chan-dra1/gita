@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, Image } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, Image, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { saveOnboardingStep } from '../../src/utils/stats';
@@ -56,60 +56,67 @@ export default function OnboardingStep3() {
         <View style={{ width: 40 }} />
       </View>
 
-      {/* Progress */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressTextRow}>
-          <Text style={styles.progressStep}>STEP 3 OF 4</Text>
-          <Text style={styles.progressLabel}>Preference</Text>
+      {/* Scrollable Content */}
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Progress */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressTextRow}>
+            <Text style={styles.progressStep}>STEP 3 OF 4</Text>
+            <Text style={styles.progressLabel}>Preference</Text>
+          </View>
+          <View style={styles.progressBarBg}>
+            <View style={[styles.progressBarFill, { width: '75%' }]} />
+          </View>
         </View>
-        <View style={styles.progressBarBg}>
-          <View style={[styles.progressBarFill, { width: '75%' }]} />
+
+        {/* Title */}
+        <View style={styles.titleContainer}>
+          <Text style={styles.mainTitle}>What style of guidance do you prefer?</Text>
+          <Text style={styles.subtitle}>
+            Choose the path that resonates most with your spiritual journey.
+          </Text>
         </View>
-      </View>
 
-      {/* Title */}
-      <View style={styles.titleContainer}>
-        <Text style={styles.mainTitle}>What style of guidance do you prefer?</Text>
-        <Text style={styles.subtitle}>
-          Choose the path that resonates most with your spiritual journey.
-        </Text>
-      </View>
-
-      {/* Options */}
-      <View style={styles.optionsContainer}>
-        {OPTIONS.map((option) => {
-          const isSelected = selectedId === option.id;
-          return (
-            <TouchableOpacity
-              key={option.id}
-              activeOpacity={0.8}
-              onPress={() => setSelectedId(option.id)}
-              style={[styles.optionCard, isSelected && styles.optionCardSelected]}
-            >
-              <Image 
-                source={{ uri: option.image }} 
-                style={styles.optionImage}
-                resizeMode="cover"
-              />
-              <View style={styles.optionContent}>
-                <View style={styles.optionHeader}>
-                  <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
-                    {option.title}
+        {/* Options */}
+        <View style={styles.optionsContainer}>
+          {OPTIONS.map((option) => {
+            const isSelected = selectedId === option.id;
+            return (
+              <TouchableOpacity
+                key={option.id}
+                activeOpacity={0.8}
+                onPress={() => setSelectedId(option.id)}
+                style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+              >
+                <Image 
+                  source={{ uri: option.image }} 
+                  style={styles.optionImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.optionContent}>
+                  <View style={styles.optionHeader}>
+                    <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
+                      {option.title}
+                    </Text>
+                    {isSelected && (
+                      <View style={styles.checkmark}>
+                        <Ionicons name="checkmark-circle" size={24} color="#F48B29" />
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.optionDescription}>
+                    {option.description}
                   </Text>
-                  {isSelected && (
-                    <View style={styles.checkmark}>
-                      <Ionicons name="checkmark-circle" size={24} color="#F48B29" />
-                    </View>
-                  )}
                 </View>
-                <Text style={styles.optionDescription}>
-                  {option.description}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </ScrollView>
 
       {/* Footer */}
       <View style={styles.footer}>
@@ -149,8 +156,7 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   progressContainer: {
-    paddingHorizontal: 24,
-    marginTop: 24,
+    marginTop: 8,
   },
   progressTextRow: {
     flexDirection: 'row',
@@ -181,7 +187,6 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   titleContainer: {
-    paddingHorizontal: 24,
     marginTop: 24,
     marginBottom: 24,
   },
@@ -202,9 +207,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   optionsContainer: {
-    paddingHorizontal: 24,
-    flex: 1,
     gap: 12,
+    marginBottom: 24,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 24,
   },
   optionCard: {
     borderRadius: 16,

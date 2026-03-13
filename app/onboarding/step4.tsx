@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, Switch } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, Switch, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { saveOnboardingStep, completeOnboarding } from '../../src/utils/stats';
@@ -52,65 +52,72 @@ export default function OnboardingStep4() {
         <View style={{ width: 40 }} />
       </View>
 
-      {/* Progress */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressTextRow}>
-          <Text style={styles.progressStepLabel}>Final Step</Text>
-          <Text style={styles.progressStep}>4 OF 4</Text>
+      {/* Scrollable Content */}
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Progress */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressTextRow}>
+            <Text style={styles.progressStepLabel}>Final Step</Text>
+            <Text style={styles.progressStep}>4 OF 4</Text>
+          </View>
+          <View style={styles.progressBarBg}>
+            <View style={[styles.progressBarFill, { width: '100%' }]} />
+          </View>
         </View>
-        <View style={styles.progressBarBg}>
-          <View style={[styles.progressBarFill, { width: '100%' }]} />
+
+        {/* Title */}
+        <View style={styles.titleContainer}>
+          <Text style={styles.mainTitle}>Commit to your daily practice</Text>
         </View>
-      </View>
 
-      {/* Title */}
-      <View style={styles.titleContainer}>
-        <Text style={styles.mainTitle}>Commit to your daily practice</Text>
-      </View>
-
-      {/* Commitment Options */}
-      <View style={styles.optionsContainer}>
-        {COMMITMENT_OPTIONS.map((option) => {
-          const isSelected = selectedId === option.id;
-          return (
-            <TouchableOpacity
-              key={option.id}
-              activeOpacity={0.8}
-              onPress={() => setSelectedId(option.id)}
-              style={[styles.optionCard, isSelected && styles.optionCardSelected]}
-            >
-              <View style={styles.optionRow}>
-                <View style={styles.optionTextContainer}>
-                  <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
-                    {option.title} <Text style={styles.optionSubtitle}>{option.subtitle}</Text>
-                  </Text>
-                  <Text style={styles.optionDescription}>
-                    {option.description}
-                  </Text>
+        {/* Commitment Options */}
+        <View style={styles.optionsContainer}>
+          {COMMITMENT_OPTIONS.map((option) => {
+            const isSelected = selectedId === option.id;
+            return (
+              <TouchableOpacity
+                key={option.id}
+                activeOpacity={0.8}
+                onPress={() => setSelectedId(option.id)}
+                style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+              >
+                <View style={styles.optionRow}>
+                  <View style={styles.optionTextContainer}>
+                    <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
+                      {option.title} <Text style={styles.optionSubtitle}>{option.subtitle}</Text>
+                    </Text>
+                    <Text style={styles.optionDescription}>
+                      {option.description}
+                    </Text>
+                  </View>
+                  <View style={[styles.radioCircle, isSelected && styles.radioCircleSelected]}>
+                    {isSelected && <View style={styles.radioDot} />}
+                  </View>
                 </View>
-                <View style={[styles.radioCircle, isSelected && styles.radioCircleSelected]}>
-                  {isSelected && <View style={styles.radioDot} />}
-                </View>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      {/* Reminders Toggle */}
-      <View style={styles.remindersContainer}>
-        <View style={styles.remindersContent}>
-          <Text style={styles.remindersTitle}>Daily Reminders</Text>
-          <Text style={styles.remindersDescription}>Remind me to stay on path</Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
-        <Switch
-          value={remindersEnabled}
-          onValueChange={setRemindersEnabled}
-          trackColor={{ false: '#E5E7EB', true: '#FDE8D4' }}
-          thumbColor={remindersEnabled ? '#F48B29' : '#9CA3AF'}
-          ios_backgroundColor="#E5E7EB"
-        />
-      </View>
+
+        {/* Reminders Toggle */}
+        <View style={styles.remindersContainer}>
+          <View style={styles.remindersContent}>
+            <Text style={styles.remindersTitle}>Daily Reminders</Text>
+            <Text style={styles.remindersDescription}>Remind me to stay on path</Text>
+          </View>
+          <Switch
+            value={remindersEnabled}
+            onValueChange={setRemindersEnabled}
+            trackColor={{ false: '#E5E7EB', true: '#FDE8D4' }}
+            thumbColor={remindersEnabled ? '#F48B29' : '#9CA3AF'}
+            ios_backgroundColor="#E5E7EB"
+          />
+        </View>
+      </ScrollView>
 
       {/* Footer */}
       <View style={styles.footer}>
@@ -155,8 +162,7 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   progressContainer: {
-    paddingHorizontal: 24,
-    marginTop: 24,
+    marginTop: 8,
   },
   progressTextRow: {
     flexDirection: 'row',
@@ -188,9 +194,8 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   titleContainer: {
-    paddingHorizontal: 24,
-    marginTop: 32,
-    marginBottom: 32,
+    marginTop: 24,
+    marginBottom: 24,
   },
   mainTitle: {
     fontSize: 28,
@@ -202,8 +207,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   optionsContainer: {
-    paddingHorizontal: 24,
     gap: 12,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 24,
   },
   optionCard: {
     padding: 18,
@@ -262,7 +274,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F48B29',
   },
   remindersContainer: {
-    marginHorizontal: 24,
     marginTop: 24,
     padding: 18,
     backgroundColor: '#FEF8F3',
@@ -272,6 +283,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: '#FDE8D4',
+    marginBottom: 24,
   },
   remindersContent: {
     flex: 1,
@@ -289,8 +301,7 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: 24,
     paddingBottom: 32,
-    paddingTop: 24,
-    marginTop: 'auto',
+    paddingTop: 16,
   },
   completeButton: {
     height: 56,
