@@ -14,23 +14,23 @@ import { getSloka } from './sloka';
 // ─── Curated Fallbacks ──────────────────────────────────────────
 // If the API fails, we have sensible defaults for common moods
 
-const MOOD_FALLBACKS: Record<string, SlokaRecommendation> = {
-    anxious: { chapter: 2, verse: 14 },
-    stressed: { chapter: 6, verse: 35 },
-    lost: { chapter: 2, verse: 7 },
-    angry: { chapter: 2, verse: 62 },
-    sad: { chapter: 2, verse: 22 },
-    confused: { chapter: 4, verse: 18 },
-    fearful: { chapter: 18, verse: 66 },
-    grateful: { chapter: 9, verse: 27 },
-    peaceful: { chapter: 12, verse: 13 },
-    motivated: { chapter: 3, verse: 19 },
-    focused: { chapter: 6, verse: 5 },
-    curious: { chapter: 4, verse: 7 },
-    overwhelmed: { chapter: 2, verse: 47 },
-    hopeless: { chapter: 4, verse: 8 },
-    lonely: { chapter: 9, verse: 22 },
-    default: { chapter: 2, verse: 47 }, // The most iconic verse
+const MOOD_FALLBACKS: Record<string, SlokaRecommendation[]> = {
+    anxious: [{ chapter: 2, verse: 14 }, { chapter: 2, verse: 38 }, { chapter: 18, verse: 58 }, { chapter: 12, verse: 15 }, { chapter: 2, verse: 56 }],
+    stressed: [{ chapter: 6, verse: 35 }, { chapter: 2, verse: 47 }, { chapter: 12, verse: 13 }, { chapter: 5, verse: 20 }, { chapter: 18, verse: 73 }],
+    lost: [{ chapter: 2, verse: 7 }, { chapter: 18, verse: 66 }, { chapter: 4, verse: 11 }, { chapter: 9, verse: 22 }, { chapter: 18, verse: 61 }],
+    angry: [{ chapter: 2, verse: 62 }, { chapter: 2, verse: 63 }, { chapter: 16, verse: 21 }, { chapter: 3, verse: 37 }, { chapter: 5, verse: 26 }],
+    sad: [{ chapter: 2, verse: 13 }, { chapter: 2, verse: 22 }, { chapter: 2, verse: 27 }, { chapter: 12, verse: 17 }, { chapter: 18, verse: 54 }],
+    confused: [{ chapter: 4, verse: 18 }, { chapter: 18, verse: 73 }, { chapter: 11, verse: 33 }, { chapter: 3, verse: 30 }, { chapter: 2, verse: 41 }],
+    fearful: [{ chapter: 18, verse: 66 }, { chapter: 11, verse: 50 }, { chapter: 9, verse: 31 }, { chapter: 2, verse: 40 }, { chapter: 12, verse: 15 }],
+    grateful: [{ chapter: 9, verse: 27 }, { chapter: 11, verse: 43 }, { chapter: 10, verse: 9 }, { chapter: 12, verse: 14 }, { chapter: 9, verse: 34 }],
+    peaceful: [{ chapter: 12, verse: 13 }, { chapter: 5, verse: 29 }, { chapter: 6, verse: 27 }, { chapter: 2, verse: 71 }, { chapter: 18, verse: 53 }],
+    motivated: [{ chapter: 3, verse: 19 }, { chapter: 2, verse: 48 }, { chapter: 18, verse: 46 }, { chapter: 3, verse: 8 }],
+    focused: [{ chapter: 6, verse: 5 }, { chapter: 6, verse: 19 }, { chapter: 12, verse: 8 }, { chapter: 8, verse: 14 }, { chapter: 18, verse: 57 }],
+    curious: [{ chapter: 4, verse: 34 }, { chapter: 7, verse: 3 }, { chapter: 10, verse: 8 }, { chapter: 9, verse: 1 }, { chapter: 13, verse: 2 }],
+    overwhelmed: [{ chapter: 2, verse: 47 }, { chapter: 3, verse: 27 }, { chapter: 18, verse: 66 }, { chapter: 11, verse: 32 }, { chapter: 12, verse: 6 }],
+    hopeless: [{ chapter: 4, verse: 8 }, { chapter: 9, verse: 30 }, { chapter: 18, verse: 78 }, { chapter: 2, verse: 3 }, { chapter: 9, verse: 32 }],
+    lonely: [{ chapter: 9, verse: 29 }, { chapter: 15, verse: 15 }, { chapter: 10, verse: 20 }, { chapter: 13, verse: 16 }, { chapter: 6, verse: 30 }],
+    default: [{ chapter: 2, verse: 47 }, { chapter: 2, verse: 14 }, { chapter: 18, verse: 66 }], 
 };
 
 // ─── System Prompt ──────────────────────────────────────────────
@@ -81,7 +81,8 @@ export async function getSlokaRecommendation(
     if (!sloka) {
         // If the AI suggested a verse we don't have, use default
         console.warn(`⚠️ Sloka ${recommendation.chapter}:${recommendation.verse} not found, using default`);
-        const defaultRec = MOOD_FALLBACKS.default;
+        const defaultRecs = MOOD_FALLBACKS.default;
+        const defaultRec = defaultRecs[Math.floor(Math.random() * defaultRecs.length)];
         const defaultSloka = getSloka(defaultRec.chapter, defaultRec.verse);
         return defaultSloka
             ? { ...defaultSloka, chapter: defaultRec.chapter }
@@ -133,13 +134,14 @@ async function fetchRecommendationFromGemini(
 function getFallbackRecommendation(userMood: string): SlokaRecommendation {
     const mood = userMood.toLowerCase();
 
-    for (const [keyword, rec] of Object.entries(MOOD_FALLBACKS)) {
+    for (const [keyword, recs] of Object.entries(MOOD_FALLBACKS)) {
         if (mood.includes(keyword)) {
-            return rec;
+            return recs[Math.floor(Math.random() * recs.length)];
         }
     }
 
-    return MOOD_FALLBACKS.default;
+    const defaults = MOOD_FALLBACKS.default;
+    return defaults[Math.floor(Math.random() * defaults.length)];
 }
 
 // ─── Deep Dive AI Scholar ───────────────────────────────────────

@@ -29,6 +29,11 @@ const KRISHNA_IMAGES = [
   require('../../assets/images/home/krishna_13.webp'),
   require('../../assets/images/home/krishna_14.webp'),
   require('../../assets/images/home/krishna_15.webp'),
+  require('../../assets/images/home/krishna_16.webp'),
+  require('../../assets/images/home/krishna_17.webp'),
+  require('../../assets/images/home/krishna_18.webp'),
+  require('../../assets/images/home/krishna_19.webp'),
+  require('../../assets/images/home/krishna_20.webp'),
 ];
 
 const DHARMA_TIMES = ['1 min', '5 mins', '10 mins'];

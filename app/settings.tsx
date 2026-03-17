@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Alert,
   ScrollView,
@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNotifications } from '../src/hooks/useNotifications';
 import { getAllStats } from '../src/utils/stats';
 export default function SettingsScreen() {
@@ -17,6 +18,7 @@ export default function SettingsScreen() {
   const { settings, updateSettings } = useNotifications();
   const [dharmaMode, setDharmaMode] = useState(false);
   const [stats, setStats] = useState({ slokasRead: 0, dayStreak: 0, saved: 0 });
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   useEffect(() => {
     getAllStats().then(setStats);
@@ -26,6 +28,15 @@ export default function SettingsScreen() {
     const period = h >= 12 ? 'PM' : 'AM';
     const hour = h % 12 || 12;
     return `${hour.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')} ${period}`;
+  };
+
+  const handleTimeChange = (event: any, selectedDate?: Date) => {
+    import('react-native').then(({ Platform }) => {
+      if (Platform.OS !== 'ios') setShowTimePicker(false);
+    });
+    if (selectedDate) {
+      updateSettings({ hour: selectedDate.getHours(), minute: selectedDate.getMinutes() });
+    }
   };
 
   return (
@@ -297,7 +308,8 @@ export default function SettingsScreen() {
             </View>
 
             {/* Reminder Time */}
-            <View
+            <TouchableOpacity
+              onPress={() => setShowTimePicker(true)}
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -322,18 +334,70 @@ export default function SettingsScreen() {
                   Reminder Time
                 </Text>
               </View>
-              <Text
-                style={{
-                  fontSize: 15,
-                  fontWeight: '700',
-                  color: '#E8751A',
-                  marginRight: 8,
-                }}
-              >
-                {formatTime(settings.hour, settings.minute)}
-              </Text>
+              
+              {showTimePicker && (() => {
+                const Platform = require('react-native').Platform;
+                if (Platform.OS === 'web') {
+                  const dateInfo = new Date();
+                  dateInfo.setHours(settings.hour, settings.minute);
+                  return (
+                    <View style={{ marginRight: 8, zIndex: 10 }}>
+                      {React.createElement('input', {
+                        type: 'time',
+                        value: `${settings.hour.toString().padStart(2, '0')}:${settings.minute.toString().padStart(2, '0')}`,
+                        onChange: (e: any) => {
+                          if (e.target && e.target.value) {
+                            const [h, m] = e.target.value.split(':');
+                            updateSettings({ hour: parseInt(h, 10), minute: parseInt(m, 10) });
+                            setShowTimePicker(false);
+                          }
+                        },
+                        onBlur: () => setShowTimePicker(false),
+                        autoFocus: true,
+                        style: {
+                          padding: '4px 8px',
+                          fontSize: '15px',
+                          borderRadius: '8px',
+                          border: '1px solid #E8751A',
+                          backgroundColor: '#FFF8F0',
+                          color: '#E8751A',
+                          fontWeight: '700',
+                          outline: 'none',
+                          cursor: 'pointer',
+                          fontFamily: 'inherit'
+                        }
+                      })}
+                    </View>
+                  );
+                } else {
+                  const dateInfo = new Date();
+                  dateInfo.setHours(settings.hour, settings.minute);
+                  return (
+                    <DateTimePicker
+                      value={dateInfo}
+                      mode="time"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={handleTimeChange}
+                    />
+                  );
+                }
+              })()}
+
+              {!showTimePicker && (
+                <Text
+                  style={{
+                    fontSize: 15,
+                    fontWeight: '700',
+                    color: '#E8751A',
+                    marginRight: 8,
+                  }}
+                >
+                  {formatTime(settings.hour, settings.minute)}
+                </Text>
+              )}
+              
               <Ionicons name="time-outline" size={18} color="#999" />
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 

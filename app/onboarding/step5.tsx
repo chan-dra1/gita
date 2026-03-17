@@ -111,14 +111,42 @@ export default function OnboardingStep5() {
           <View style={styles.timePickerContainer}>
             <Text style={styles.timePickerLabel}>Choose a time</Text>
             <View style={styles.timePickerWrapper}>
-              <DateTimePicker
-                value={time}
-                mode="time"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={onTimeChange}
-                style={styles.timePicker}
-                textColor="#1A1A1A"
-              />
+              {Platform.OS === 'web' ? (
+                <View style={[styles.timePickerWrapper, { padding: 10 }]}>
+                  {React.createElement('input', {
+                    type: 'time',
+                    value: `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`,
+                    onChange: (e: any) => {
+                      if (e.target && e.target.value) {
+                        const [h, m] = e.target.value.split(':');
+                        const newTime = new Date(time);
+                        newTime.setHours(parseInt(h, 10), parseInt(m, 10));
+                        setTime(newTime);
+                      }
+                    },
+                    style: {
+                      padding: '12px 16px',
+                      fontSize: '20px',
+                      borderRadius: '12px',
+                      border: '1px solid #E5E7EB',
+                      backgroundColor: '#FFFFFF',
+                      color: '#1A1A1A',
+                      outline: 'none',
+                      cursor: 'pointer',
+                      fontFamily: 'inherit'
+                    }
+                  })}
+                </View>
+              ) : (
+                <DateTimePicker
+                  value={time}
+                  mode="time"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={onTimeChange}
+                  style={styles.timePicker}
+                  textColor="#1A1A1A"
+                />
+              )}
             </View>
           </View>
         )}
