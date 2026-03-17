@@ -48,7 +48,7 @@ export default function HomeScreen() {
     async function checkOnboarding() {
       const complete = await isOnboardingComplete();
       if (!complete) {
-        router.replace('/onboarding/step1' as any);
+        router.replace('/onboarding/intro' as any);
       } else {
         setIsChecking(false);
       }
