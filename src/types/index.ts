@@ -105,5 +105,6 @@ export interface OnboardingData {
     guidanceStyle: 'practical' | 'philosophical' | 'devotional' | 'holistic' | null;
     dailyCommitment: 'quick' | 'moderate' | 'deep' | null;
     remindersEnabled: boolean;
+    reminderTime?: string | null;
     completedAt: number | null;
 }

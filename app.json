@@ -29,6 +29,7 @@
     },
     "plugins": [
       "expo-router",
+      "./modules/dharma-blocker/app.plugin.js",
       [
         "expo-splash-screen",
         {
@@ -41,7 +42,8 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,

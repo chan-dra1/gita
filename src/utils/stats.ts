@@ -190,6 +190,7 @@ export async function getOnboardingData(): Promise<OnboardingData> {
     guidanceStyle: null,
     dailyCommitment: null,
     remindersEnabled: true,
+    reminderTime: null,
     completedAt: null,
   };
 }

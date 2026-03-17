@@ -1,0 +1,18 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="expo.modules.dharmablocker">
+
+  <!-- Permissions required for Dharma Mode -->
+  <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+    tools:ignore="ProtectedPermissions" xmlns:tools="http://schemas.android.com/tools"/>
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+  <application>
+    <!-- Foreground Service Declaration -->
+    <service
+      android:name=".DharmaForegroundService"
+      android:enabled="true"
+      android:exported="false"
+      android:foregroundServiceType="shortService" />
+  </application>
+</manifest>

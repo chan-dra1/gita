@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Alert,
   ScrollView,
@@ -11,11 +11,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNotifications } from '../src/hooks/useNotifications';
-
+import { getAllStats } from '../src/utils/stats';
 export default function SettingsScreen() {
   const router = useRouter();
   const { settings, updateSettings } = useNotifications();
   const [dharmaMode, setDharmaMode] = useState(false);
+  const [stats, setStats] = useState({ slokasRead: 0, dayStreak: 0, saved: 0 });
+
+  useEffect(() => {
+    getAllStats().then(setStats);
+  }, []);
 
   const formatTime = (h: number, m: number) => {
     const period = h >= 12 ? 'PM' : 'AM';
@@ -83,7 +88,7 @@ export default function SettingsScreen() {
               Arjun Sharma
             </Text>
             <Text style={{ fontSize: 13, color: '#B0A090', marginTop: 2 }}>
-              Dharma Practitioner since 2023
+              {stats.slokasRead} Slokas Read • {stats.dayStreak} Day Streak
             </Text>
           </View>
         </View>
@@ -117,8 +122,8 @@ export default function SettingsScreen() {
               elevation: 2,
             }}
           >
-            {/* App Language */}
             <TouchableOpacity
+              onPress={() => Alert.alert("Select Language", "Hindi language support will be available in a future update.", [{ text: "OK" }])}
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -353,27 +358,33 @@ export default function SettingsScreen() {
                 borderRadius: 24,
               }}
             >
-              <View
+              {/* Dharma Mode */}
+              <TouchableOpacity
+                onPress={() => router.push('/dharma' as any)}
+                activeOpacity={0.8}
                 style={{
+                  backgroundColor: 'rgba(255,255,255,0.08)',
+                  borderRadius: 16,
+                  padding: 20,
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  marginBottom: 10,
+                  marginBottom: 24,
                 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                  <Ionicons name="lock-closed" size={18} color="#FFF" />
-                  <Text style={{ fontSize: 17, fontWeight: '700', color: '#FFF' }}>
-                    Dharma Mode
-                  </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                  <Ionicons name="shield-checkmark" size={24} color="#F48B29" />
+                  <View style={{ marginLeft: 16, flex: 1 }}>
+                    <Text style={{ fontSize: 16, color: '#FFFFFF', fontWeight: '500', marginBottom: 2 }}>
+                      Dharma Mode
+                    </Text>
+                    <Text style={{ fontSize: 13, color: '#B8A99A' }}>
+                      Block distracted apps
+                    </Text>
+                  </View>
                 </View>
-                <Switch
-                  value={dharmaMode}
-                  onValueChange={setDharmaMode}
-                  trackColor={{ false: 'rgba(255,255,255,0.3)', true: '#F5C518' }}
-                  thumbColor="#FFF"
-                />
-              </View>
+                <Ionicons name="chevron-forward" size={20} color="#8B7355" />
+              </TouchableOpacity>
               <Text
                 style={{
                   fontSize: 14,

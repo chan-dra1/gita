@@ -1,38 +1,58 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, Switch, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { saveOnboardingStep } from '../../src/utils/stats';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import * as Notifications from 'expo-notifications';
+import { saveOnboardingStep, completeOnboarding } from '../../src/utils/stats';
 
-const COMMITMENT_OPTIONS = [
-  {
-    id: 'quick',
-    title: 'Quick',
-    subtitle: '(2 mins/day)',
-    description: 'Brief moment of mindfulness',
-  },
-  {
-    id: 'moderate',
-    title: 'Moderate',
-    subtitle: '(5 mins/day)',
-    description: 'Balanced daily routine',
-  },
-  {
-    id: 'deep',
-    title: 'Deep',
-    subtitle: '(15+ mins/day)',
-    description: 'Intensive spiritual practice',
-  },
-];
+// Configure notification behavior
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
-export default function OnboardingStep4() {
+export default function OnboardingStep5() {
   const router = useRouter();
-  const [selectedId, setSelectedId] = useState<string>('quick');
-
+  const [remindersEnabled, setRemindersEnabled] = useState(true);
+  const [time, setTime] = useState(new Date(new Date().setHours(8, 0, 0, 0))); // Default 8 AM
 
   const handleComplete = async () => {
-    await saveOnboardingStep('dailyCommitment', selectedId);
-    router.push('/onboarding/step5' as any);
+    if (remindersEnabled) {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status === 'granted') {
+        await Notifications.cancelAllScheduledNotificationsAsync();
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: "Your Daily Dharma Awaits 🕉️",
+            body: "Take a moment for inner peace. Read today's sloka.",
+          },
+          trigger: {
+            hour: time.getHours(),
+            minute: time.getMinutes(),
+            repeats: true,
+          } as any,
+        });
+      }
+    }
+    
+    await saveOnboardingStep('remindersEnabled', remindersEnabled);
+    await saveOnboardingStep('reminderTime', time.toISOString());
+    await completeOnboarding();
+    
+    // Navigate to paywall
+    router.replace('/onboarding/paywall');
+  };
+
+  const onTimeChange = (event: any, selectedDate?: Date) => {
+    if (selectedDate) {
+      setTime(selectedDate);
+    }
   };
 
   return (
@@ -57,49 +77,51 @@ export default function OnboardingStep4() {
         {/* Progress */}
         <View style={styles.progressContainer}>
           <View style={styles.progressTextRow}>
-            <Text style={styles.progressStepLabel}>Almost There</Text>
-            <Text style={styles.progressStep}>4 OF 5</Text>
+            <Text style={styles.progressStepLabel}>Final Step</Text>
+            <Text style={styles.progressStep}>5 OF 5</Text>
           </View>
           <View style={styles.progressBarBg}>
-            <View style={[styles.progressBarFill, { width: '80%' }]} />
+            <View style={[styles.progressBarFill, { width: '100%' }]} />
           </View>
         </View>
 
         {/* Title */}
         <View style={styles.titleContainer}>
-          <Text style={styles.mainTitle}>Commit to your daily practice</Text>
+          <Text style={styles.mainTitle}>Set your daily reminder</Text>
+          <Text style={styles.subtitle}>Consistency is key to a peaceful mind.</Text>
         </View>
 
-        {/* Commitment Options */}
-        <View style={styles.optionsContainer}>
-          {COMMITMENT_OPTIONS.map((option) => {
-            const isSelected = selectedId === option.id;
-            return (
-              <TouchableOpacity
-                key={option.id}
-                activeOpacity={0.8}
-                onPress={() => setSelectedId(option.id)}
-                style={[styles.optionCard, isSelected && styles.optionCardSelected]}
-              >
-                <View style={styles.optionRow}>
-                  <View style={styles.optionTextContainer}>
-                    <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
-                      {option.title} <Text style={styles.optionSubtitle}>{option.subtitle}</Text>
-                    </Text>
-                    <Text style={styles.optionDescription}>
-                      {option.description}
-                    </Text>
-                  </View>
-                  <View style={[styles.radioCircle, isSelected && styles.radioCircleSelected]}>
-                    {isSelected && <View style={styles.radioDot} />}
-                  </View>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
+        {/* Reminders Toggle */}
+        <View style={styles.remindersContainer}>
+          <View style={styles.remindersContent}>
+            <Text style={styles.remindersTitle}>Daily Reminders</Text>
+            <Text style={styles.remindersDescription}>Remind me to stay on path</Text>
+          </View>
+          <Switch
+            value={remindersEnabled}
+            onValueChange={setRemindersEnabled}
+            trackColor={{ false: '#E5E7EB', true: '#FDE8D4' }}
+            thumbColor={remindersEnabled ? '#F48B29' : '#9CA3AF'}
+            ios_backgroundColor="#E5E7EB"
+          />
         </View>
 
-
+        {/* Time Picker */}
+        {remindersEnabled && (
+          <View style={styles.timePickerContainer}>
+            <Text style={styles.timePickerLabel}>Choose a time</Text>
+            <View style={styles.timePickerWrapper}>
+              <DateTimePicker
+                value={time}
+                mode="time"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={onTimeChange}
+                style={styles.timePicker}
+                textColor="#1A1A1A"
+              />
+            </View>
+          </View>
+        )}
       </ScrollView>
 
       {/* Footer */}
@@ -109,8 +131,8 @@ export default function OnboardingStep4() {
           onPress={handleComplete}
           style={styles.completeButton}
         >
-          <Text style={styles.completeButtonText}>Continue</Text>
-          <Ionicons name="arrow-forward" size={20} color="#FFFFFF" style={styles.sparkleIcon} />
+          <Text style={styles.completeButtonText}>Complete Setup</Text>
+          <Ionicons name="sparkles" size={20} color="#FFFFFF" style={styles.sparkleIcon} />
         </TouchableOpacity>
         
         <Text style={styles.footerHint}>
@@ -189,8 +211,12 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
     textAlign: 'center',
   },
-  optionsContainer: {
-    gap: 12,
+  subtitle: {
+    fontSize: 15,
+    color: '#6B7280',
+    marginTop: 10,
+    lineHeight: 22,
+    textAlign: 'center',
   },
   scrollView: {
     flex: 1,
@@ -200,64 +226,8 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 24,
   },
-  optionCard: {
-    padding: 18,
-    borderRadius: 16,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  optionCardSelected: {
-    backgroundColor: '#FEF8F3',
-    borderColor: '#F48B29',
-    borderWidth: 2,
-  },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  optionTextContainer: {
-    flex: 1,
-    marginRight: 16,
-  },
-  optionTitle: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
-  optionTitleSelected: {
-    color: '#1A1A1A',
-  },
-  optionSubtitle: {
-    fontWeight: 'normal',
-    color: '#6B7280',
-  },
-  optionDescription: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  radioCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#D1D5DB',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioCircleSelected: {
-    borderColor: '#F48B29',
-  },
-  radioDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#F48B29',
-  },
   remindersContainer: {
-    marginTop: 24,
+    marginTop: 8,
     padding: 18,
     backgroundColor: '#FEF8F3',
     borderRadius: 16,
@@ -280,6 +250,30 @@ const styles = StyleSheet.create({
   remindersDescription: {
     fontSize: 13,
     color: '#6B7280',
+  },
+  timePickerContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  timePickerLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginBottom: 16,
+  },
+  timePickerWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  timePicker: {
+    width: 200,
+    height: 150,
   },
   footer: {
     paddingHorizontal: 24,

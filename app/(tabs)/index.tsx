@@ -14,16 +14,21 @@ import { getRandomSloka } from '../../src/utils/sloka';
 import { isOnboardingComplete } from '../../src/utils/stats';
 
 const KRISHNA_IMAGES = [
-  require('../../assets/images/home/krishna_1.png'),
-  require('../../assets/images/home/krishna_2.png'),
-  require('../../assets/images/home/krishna_3.png'),
-  require('../../assets/images/home/krishna_4.png'),
-  require('../../assets/images/home/krishna_5.png'),
-  require('../../assets/images/home/krishna_6.png'),
-  require('../../assets/images/home/krishna_7.png'),
-  require('../../assets/images/home/krishna_8.png'),
-  require('../../assets/images/home/krishna_9.png'),
-  require('../../assets/images/home/krishna_10.png'),
+  require('../../assets/images/home/krishna_1.webp'),
+  require('../../assets/images/home/krishna_2.webp'),
+  require('../../assets/images/home/krishna_3.webp'),
+  require('../../assets/images/home/krishna_4.webp'),
+  require('../../assets/images/home/krishna_5.webp'),
+  require('../../assets/images/home/krishna_6.webp'),
+  require('../../assets/images/home/krishna_7.webp'),
+  require('../../assets/images/home/krishna_8.webp'),
+  require('../../assets/images/home/krishna_9.webp'),
+  require('../../assets/images/home/krishna_10.webp'),
+  require('../../assets/images/home/krishna_11.webp'),
+  require('../../assets/images/home/krishna_12.webp'),
+  require('../../assets/images/home/krishna_13.webp'),
+  require('../../assets/images/home/krishna_14.webp'),
+  require('../../assets/images/home/krishna_15.webp'),
 ];
 
 const DHARMA_TIMES = ['1 min', '5 mins', '10 mins'];

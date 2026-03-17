@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView, Modal } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView, Modal, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import Purchases from 'react-native-purchases';
 
 const PRICING_TIERS = [
   {
@@ -40,15 +41,32 @@ export default function PaywallScreen() {
   const [selectedTier, setSelectedTier] = useState<string>('yearly');
   const [showTerms, setShowTerms] = useState(false);
 
-  const handleStartTrial = () => {
-    // In production, this would integrate with RevenueCat or similar
-    // For now, just go to the main app
-    router.replace('/(tabs)');
+  const handleStartTrial = async () => {
+    try {
+      // Placeholder for actual RevenueCat purchase mechanism
+      // e.g. const { customerInfo } = await Purchases.purchasePackage(pack);
+      // For now, simulate success:
+      router.replace('/(tabs)');
+    } catch (e: any) {
+      if (!e.userCancelled) {
+        Alert.alert('Error', e.message);
+      }
+    }
   };
 
-  const handleRestore = () => {
-    // Restore purchases logic
-    router.replace('/(tabs)');
+  const handleRestore = async () => {
+    try {
+      const customerInfo = await Purchases.restorePurchases();
+      if (typeof customerInfo.entitlements.active['pro'] !== 'undefined') {
+        Alert.alert('Success', 'Your purchase has been restored.', [
+          { text: 'OK', onPress: () => router.replace('/(tabs)') }
+        ]);
+      } else {
+        Alert.alert('Nothing to Restore', 'No active subscriptions found.');
+      }
+    } catch (e: any) {
+      Alert.alert('Restore Error', e.message);
+    }
   };
 
   const handleMaybeLater = () => {
