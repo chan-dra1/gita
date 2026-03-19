@@ -8,10 +8,13 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getRandomSloka } from '../../src/utils/sloka';
 import { isOnboardingComplete } from '../../src/utils/stats';
+
+const { width } = Dimensions.get('window');
 
 const KRISHNA_IMAGES = [
   require('../../assets/images/home/krishna_1.webp'),
@@ -36,12 +39,9 @@ const KRISHNA_IMAGES = [
   require('../../assets/images/home/krishna_20.webp'),
 ];
 
-const DHARMA_TIMES = ['1 min', '5 mins', '10 mins'];
-
 export default function HomeScreen() {
   const router = useRouter();
   const dailySloka = getRandomSloka();
-  const [selectedTime, setSelectedTime] = useState('5 mins');
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
@@ -62,25 +62,34 @@ export default function HomeScreen() {
   }, []);
 
   if (isChecking) {
-    return <View style={{ flex: 1, backgroundColor: '#FFF7ED' }} />;
+    return <View style={{ flex: 1, backgroundColor: '#FAF8F5' }} />;
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF7ED' }}>
-      <StatusBar barStyle="dark-content" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FAF8F5' }} edges={['top']}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FAF8F5" />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        {/* Header */}
+        {/* Header Strip */}
         <View
           style={{
             flexDirection: 'row',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between',
+            alignItems: 'center',
             paddingHorizontal: 24,
-            paddingTop: 8,
+            paddingVertical: 12,
           }}
         >
+          <View>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: '#E8751A', textTransform: 'uppercase', letterSpacing: 1 }}>
+              Today's Journey
+            </Text>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A1A1A', marginTop: 2 }}>
+              Inner Peace
+            </Text>
+          </View>
           <TouchableOpacity
             onPress={() => router.push('/settings' as any)}
             style={{
@@ -91,31 +100,30 @@ export default function HomeScreen() {
               alignItems: 'center',
               justifyContent: 'center',
               shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.06,
-              shadowRadius: 8,
-              elevation: 3,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.05,
+              shadowRadius: 10,
+              elevation: 4,
             }}
           >
-            <Ionicons name="settings-outline" size={22} color="#E8751A" />
+            <Ionicons name="settings-outline" size={22} color="#1A1A1A" />
           </TouchableOpacity>
         </View>
 
-        {/* Krishna Image Card */}
-        <View style={{ alignItems: 'center', marginTop: 8, paddingHorizontal: 32 }}>
+        {/* Premium Hero Image */}
+        <View style={{ alignItems: 'center', marginTop: 8, paddingHorizontal: 20 }}>
           <View
             style={{
               width: '100%',
-              maxWidth: 320,
-              aspectRatio: 1,
-              borderRadius: 28,
+              aspectRatio: 1.1,
+              borderRadius: 32,
               overflow: 'hidden',
               backgroundColor: '#F5EDE0',
               shadowColor: '#E8751A',
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 0.12,
-              shadowRadius: 24,
-              elevation: 8,
+              shadowOffset: { width: 0, height: 12 },
+              shadowOpacity: 0.15,
+              shadowRadius: 30,
+              elevation: 10,
             }}
           >
             <Image
@@ -123,76 +131,64 @@ export default function HomeScreen() {
               style={{ width: '100%', height: '100%' }}
               resizeMode="cover"
             />
+            {/* Elegant overlay text */}
+            <View style={{ 
+              position: 'absolute', 
+              bottom: 0, 
+              left: 0, 
+              right: 0, 
+              padding: 24,
+              paddingTop: 60,
+              backgroundColor: 'rgba(0,0,0,0.4)', // Faux gradient substitute
+            }}>
+              <Text style={{ color: '#FFF', fontSize: 24, fontWeight: 'bold', letterSpacing: 0.5 }}>
+                Embrace the Light
+              </Text>
+              <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 14, marginTop: 4, fontStyle: 'italic' }}>
+                "You have the right to work, but never to the fruit of work."
+              </Text>
+            </View>
           </View>
         </View>
 
-        {/* Title */}
-        <View style={{ alignItems: 'center', marginTop: 28, paddingHorizontal: 32 }}>
-          <Text
-            style={{
-              fontSize: 30,
-              fontWeight: '700',
-              color: '#1A1A1A',
-              textAlign: 'center',
-              lineHeight: 38,
-            }}
-          >
-            Welcome, Seek Your{'\n'}Inner Peace
+        {/* Action Grid */}
+        <View style={{ marginTop: 32, paddingHorizontal: 20 }}>
+          <Text style={{ fontSize: 18, fontWeight: '700', color: '#1A1A1A', marginBottom: 16, paddingHorizontal: 4 }}>
+            Quick Actions
           </Text>
-          <Text
-            style={{
-              fontSize: 15,
-              color: '#9A9A9A',
-              marginTop: 10,
-              textAlign: 'center',
-            }}
-          >
-            Set your daily spiritual intention
-          </Text>
-        </View>
-
-        {/* I prefer to... */}
-        <View style={{ marginTop: 32, paddingHorizontal: 24 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-            <Text style={{ fontSize: 16, marginRight: 8 }}>✨</Text>
-            <Text
-              style={{
-                fontSize: 17,
-                fontWeight: '600',
-                color: '#1A1A1A',
-              }}
-            >
-              I prefer to...
-            </Text>
-          </View>
-
+          
           <View style={{ flexDirection: 'row', gap: 12 }}>
-            {/* Read Button */}
+            {/* Library Action */}
             <TouchableOpacity
               onPress={() => router.push('/(tabs)/library' as any)}
               style={{
                 flex: 1,
-                flexDirection: 'row',
+                backgroundColor: '#FFF',
+                paddingVertical: 20,
+                paddingHorizontal: 16,
+                borderRadius: 24,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.04,
+                shadowRadius: 16,
+                elevation: 4,
                 alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#E8751A',
-                paddingVertical: 16,
-                borderRadius: 16,
-                gap: 8,
-                shadowColor: '#E8751A',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 12,
-                elevation: 6,
+                borderWidth: 1,
+                borderColor: 'rgba(232, 117, 26, 0.05)',
               }}
             >
-              <Ionicons name="book" size={18} color="#FFF" />
-              <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '600' }}>
-                Read
+              <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: '#FFF3E8', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                <Ionicons name="book" size={24} color="#E8751A" />
+              </View>
+              <Text style={{ color: '#1A1A1A', fontSize: 16, fontWeight: '600' }}>
+                Library
+              </Text>
+              <Text style={{ color: '#9A9A9A', fontSize: 12, marginTop: 4, textAlign: 'center' }}>
+                Explore chapters
               </Text>
             </TouchableOpacity>
 
-            {/* Listen Button */}
+            {/* Listen Action */}
             <TouchableOpacity
               onPress={() => {
                 if (dailySloka) {
@@ -201,159 +197,115 @@ export default function HomeScreen() {
               }}
               style={{
                 flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
                 backgroundColor: '#FFF',
-                paddingVertical: 16,
-                borderRadius: 16,
-                gap: 8,
-                borderWidth: 1.5,
-                borderColor: '#F0E0CC',
+                paddingVertical: 20,
+                paddingHorizontal: 16,
+                borderRadius: 24,
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
+                shadowOffset: { width: 0, height: 6 },
                 shadowOpacity: 0.04,
-                shadowRadius: 8,
-                elevation: 2,
+                shadowRadius: 16,
+                elevation: 4,
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: 'rgba(232, 117, 26, 0.05)',
               }}
             >
-              <Ionicons name="headset" size={18} color="#E8751A" />
-              <Text style={{ color: '#333', fontSize: 16, fontWeight: '600' }}>
+              <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: '#F0F5ED', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                <Ionicons name="headset" size={24} color="#4A7C59" />
+              </View>
+              <Text style={{ color: '#1A1A1A', fontSize: 16, fontWeight: '600' }}>
                 Listen
+              </Text>
+              <Text style={{ color: '#9A9A9A', fontSize: 12, marginTop: 4, textAlign: 'center' }}>
+                Audio slokas
               </Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Daily Dharma Time */}
-        <View style={{ marginTop: 32, paddingHorizontal: 24 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-            <Text style={{ fontSize: 16, marginRight: 8 }}>🕐</Text>
-            <Text
-              style={{
-                fontSize: 17,
-                fontWeight: '600',
-                color: '#1A1A1A',
-              }}
-            >
-              Daily Dharma Time
-            </Text>
-          </View>
-
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            {DHARMA_TIMES.map((time) => (
-              <TouchableOpacity
-                key={time}
-                onPress={() => setSelectedTime(time)}
-                style={{
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  borderRadius: 12,
-                  borderWidth: 1.5,
-                  borderColor: selectedTime === time ? '#E8751A' : '#F0E0CC',
-                  backgroundColor: selectedTime === time ? '#FFF3E8' : '#FFF',
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: '600',
-                    color: selectedTime === time ? '#E8751A' : '#888',
-                  }}
-                >
-                  {time}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Set My Daily Dharma Button */}
-        <View style={{ marginTop: 32, paddingHorizontal: 24 }}>
+        {/* Dharma Mode Banner (New Feature Highlight) */}
+        <View style={{ marginTop: 24, paddingHorizontal: 20 }}>
           <TouchableOpacity
-            onPress={() => router.push('/(tabs)/daily' as any)}
+            onPress={() => router.push('/dharma' as any)}
             style={{
-              backgroundColor: '#F5C518',
-              paddingVertical: 18,
-              borderRadius: 20,
+              backgroundColor: '#1A1A1A',
+              borderRadius: 24,
+              padding: 24,
+              flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'center',
-              shadowColor: '#F5C518',
-              shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.35,
-              shadowRadius: 16,
-              elevation: 8,
+              overflow: 'hidden',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.2,
+              shadowRadius: 20,
+              elevation: 10,
             }}
           >
-            <Text
-              style={{
-                fontSize: 17,
-                fontWeight: '700',
-                color: '#1A1A1A',
-                letterSpacing: 0.3,
-              }}
-            >
-              Set My Daily Dharma ✦
-            </Text>
+            {/* Subtle background decoration */}
+            <View style={{ position: 'absolute', right: -20, top: -20, width: 100, height: 100, borderRadius: 50, backgroundColor: 'rgba(255,255,255,0.05)' }} />
+            
+            <View style={{ flex: 1, paddingRight: 16 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <Ionicons name="shield-checkmark" size={18} color="#F5C518" />
+                <Text style={{ color: '#F5C518', fontSize: 13, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>
+                  Dharma Mode
+                </Text>
+              </View>
+              <Text style={{ color: '#FFF', fontSize: 18, fontWeight: 'bold', marginBottom: 4 }}>
+                Protect Your Focus
+              </Text>
+              <Text style={{ color: '#A0A0A0', fontSize: 13, lineHeight: 18 }}>
+                Block distractions and stay committed to your daily spiritual journey.
+              </Text>
+            </View>
+            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' }}>
+              <Ionicons name="chevron-forward" size={20} color="#FFF" />
+            </View>
           </TouchableOpacity>
         </View>
-
-        {/* Quote */}
-        <Text
-          style={{
-            textAlign: 'center',
-            fontSize: 13,
-            fontStyle: 'italic',
-            color: '#B0A090',
-            marginTop: 24,
-            paddingHorizontal: 40,
-          }}
-        >
-          "Your path to enlightenment starts with a single step."
-        </Text>
 
         {/* Today's Verse Preview */}
         {dailySloka && (
-          <TouchableOpacity
-            onPress={() =>
-              router.push(`/sloka/${dailySloka.chapter}/${dailySloka.verse}` as any)
-            }
-            style={{
-              marginHorizontal: 24,
-              marginTop: 28,
-              padding: 20,
-              borderRadius: 20,
-              backgroundColor: '#FFF',
-              borderWidth: 1,
-              borderColor: '#F0E0CC',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 12,
-              elevation: 3,
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-              <Text style={{ fontSize: 15, marginRight: 8 }}>📖</Text>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: '#E8751A' }}>
-                Today's Verse
-              </Text>
-            </View>
-            <Text
+          <View style={{ marginTop: 32, paddingHorizontal: 20 }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: '#1A1A1A', marginBottom: 16, paddingHorizontal: 4 }}>
+              Verse of the Day
+            </Text>
+            <TouchableOpacity
+              onPress={() =>
+                router.push(`/sloka/${dailySloka.chapter}/${dailySloka.verse}` as any)
+              }
               style={{
-                fontSize: 16,
-                color: '#333',
-                lineHeight: 24,
-                fontStyle: 'italic',
+                borderRadius: 24,
+                backgroundColor: '#FFF',
+                padding: 24,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.03,
+                shadowRadius: 16,
+                elevation: 3,
+                borderLeftWidth: 4,
+                borderLeftColor: '#E8751A',
               }}
-              numberOfLines={3}
             >
-              "{dailySloka.translation_english}"
-            </Text>
-            <Text style={{ fontSize: 12, color: '#B0A090', marginTop: 10 }}>
-              Chapter {dailySloka.chapter}, Verse {dailySloka.verse}
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: '#333',
+                  lineHeight: 26,
+                  fontStyle: 'italic',
+                }}
+              >
+                "{dailySloka.translation_english}"
+              </Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+                <Text style={{ fontSize: 13, color: '#888', fontWeight: '500' }}>
+                  Chapter {dailySloka.chapter}, Verse {dailySloka.verse}
+                </Text>
+                <Ionicons name="arrow-forward" size={16} color="#E8751A" />
+              </View>
+            </TouchableOpacity>
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>
