@@ -6,7 +6,7 @@ import Purchases from 'react-native-purchases';
 import { BlurView } from 'expo-blur';
 
 // Use a beautiful Krishna image for the background
-const KRISHNA_BACKGROUND = require('../../assets/images/krishna-illustration.webp');
+const KRISHNA_BACKGROUND = require('../../assets/images/home/krishna_19.webp');
 
 const PRICING_TIERS = [
   {

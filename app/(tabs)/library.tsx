@@ -120,7 +120,7 @@ export default function LibraryScreen() {
 
           return (
             <TouchableOpacity
-              onPress={() => router.push(`/sloka/${item.chapter}/1` as any)}
+              onPress={() => router.push(`/chapter/${item.chapter}` as any)}
               style={{
                 marginBottom: 12,
                 borderRadius: 20,
