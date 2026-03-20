@@ -64,7 +64,9 @@ export default function SettingsScreen() {
   };
 
   const MENU_ITEMS = [
-    { label: t('readingHistory', language), icon: 'time-outline' as const, desc: `${stats?.slokasRead || 0} Slokas read`, onPress: () => {} },
+    { label: 'Saved Slokas', icon: 'bookmark-outline' as const, desc: 'View your bookmarked verses', onPress: () => router.push('/saved') },
+    { label: 'Premium Membership', icon: 'star-outline' as const, desc: 'Unlock all features', onPress: () => router.push('/onboarding/paywall') },
+    { label: 'Backup & Restore Sync', icon: 'sync-outline' as const, desc: 'Transfer progress to a new device', onPress: () => router.push('/backup') },
     { label: t('viewAllSlokas', language), icon: 'library-outline' as const, desc: 'Browse the complete collection', onPress: () => router.push('/(tabs)/library') },
     { 
       label: t('language', language), 

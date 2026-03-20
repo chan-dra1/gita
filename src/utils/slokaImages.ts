@@ -52,14 +52,31 @@ const CHAPTER_1_IMAGES: Record<string, any> = {
   '1:47': require('../../assets/images/slokas/chapter_1/verse_47.webp'),
 };
 
+const FALLBACK_IMAGES = [
+  require('../../assets/images/contextual/battlefield.webp'),
+  require('../../assets/images/contextual/meditation.webp'),
+  require('../../assets/images/contextual/cosmic.webp'),
+  require('../../assets/images/contextual/duty.webp'),
+  require('../../assets/images/contextual/peace.webp'),
+];
+
 export const SLOKA_IMAGES: Record<string, any> = {
   ...CHAPTER_1_IMAGES,
 };
 
 /**
  * Get sloka illustration by chapter and verse.
- * @returns require() handle or null if no image exists.
+ * If no specific image exists, it returns a deterministic random fallback contextual image.
+ * @returns require() handle
  */
 export const getSlokaImage = (chapter: number, verse: number) => {
-  return SLOKA_IMAGES[`${chapter}:${verse}`] || null;
+  const specificImage = SLOKA_IMAGES[`${chapter}:${verse}`];
+  if (specificImage) {
+    return specificImage;
+  }
+  
+  // Deterministic fallback based on chapter and verse
+  const seed = chapter * 1000 + verse;
+  const index = seed % FALLBACK_IMAGES.length;
+  return FALLBACK_IMAGES[index];
 };
