@@ -24,4 +24,4 @@ export const Config = {
     // ─── Notification Defaults ────────────────────────────────
     DEFAULT_NOTIFICATION_HOUR: 6,
     DEFAULT_NOTIFICATION_MINUTE: 30,
-} as const;
+};
