@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { cacheAndPlayAudio, stopAudio, hasCachedAudio } from '../../../src/utils/audio';
+import { Config } from '../../../src/constants/config';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -101,18 +103,73 @@ export default function SlokaScreen() {
     }
   };
 
-  const handleAudioComingSoon = () => {
-    Alert.alert(
-      'Coming Soon',
-      'Audio recitations will be available in the next update. Stay tuned for beautiful Sanskrit and English audio!',
-      [{ text: 'OK', style: 'default' }]
-    );
+  /**
+   * Clean TTS text — only the English translation, stripped of
+   * semicolons, leading/trailing whitespace, and chapter/verse prefixes.
+   */
+  const getCleanAudioText = (translation: string): string => {
+    return translation
+      .replace(/^(chapter|verse|sloka)\s+\d+[,.]?\s*/gi, '') // Remove "Chapter X, Verse Y" prefixes
+      .replace(/;/g, ',') // Replace semicolons with natural pauses
+      .replace(/॥[^॥]*॥/g, '') // Remove Sanskrit verse markers if leaked in
+      .replace(/\s{2,}/g, ' ') // Collapse extra whitespace
+      .trim();
   };
 
-  const handlePlayPause = useCallback(() => {
-    // Audio is disabled until API keys are available
-    handleAudioComingSoon();
-  }, []);
+  const [isAudioCached, setIsAudioCached] = useState(false);
+
+  useEffect(() => {
+    // Check if audio is already cached when component mounts
+    hasCachedAudio(chapter, verse, 'english').then(setIsAudioCached);
+  }, [chapter, verse]);
+
+  const handlePlayPause = useCallback(async () => {
+    if (!sloka) return;
+
+    if (isSpeaking) {
+      // Stop playback
+      await stopAudio();
+      setIsSpeaking(false);
+      return;
+    }
+
+    const apiKey = Config.TTS_API_KEY;
+    if (!apiKey || apiKey === 'YOUR_TTS_API_KEY') {
+      Alert.alert(
+        '🎙️ Audio Setup Required',
+        'To hear the sloka, add your Google Cloud TTS key in src/constants/config.ts',
+        [{ text: 'Got it' }]
+      );
+      return;
+    }
+
+    setIsAudioLoading(true);
+    setAudioError(null);
+    const cleanText = getCleanAudioText(sloka.translation_english);
+
+    try {
+      await cacheAndPlayAudio(
+        chapter,
+        verse,
+        cleanText,
+        'english',
+        () => {
+          setIsSpeaking(false);
+          setIsAudioCached(true);
+        },
+        (err) => {
+          setAudioError(err);
+          setIsSpeaking(false);
+        }
+      );
+      setIsSpeaking(true);
+      setIsAudioCached(true);
+    } catch (e) {
+      setIsSpeaking(false);
+    } finally {
+      setIsAudioLoading(false);
+    }
+  }, [sloka, chapter, verse, isSpeaking]);
 
   if (!sloka) {
     return (
@@ -297,9 +354,7 @@ export default function SlokaScreen() {
             </View>
           </View>
 
-          {/* ══════════════════════════════════════════════════ */}
-          {/* ── Audio Player (Coming Soon) ─── */}
-          {/* ══════════════════════════════════════════════════ */}
+          {/* ── Audio Player ── */}
           <View
             style={{
               marginHorizontal: 20,
@@ -307,55 +362,57 @@ export default function SlokaScreen() {
               borderRadius: 20,
               backgroundColor: '#FFF',
               borderWidth: 1,
-              borderColor: '#F0E0CC',
+              borderColor: isSpeaking ? '#E8751A' : '#F0E0CC',
               overflow: 'hidden',
-              shadowColor: '#000',
+              shadowColor: isSpeaking ? '#E8751A' : '#000',
               shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.04,
+              shadowOpacity: isSpeaking ? 0.15 : 0.04,
               shadowRadius: 8,
               elevation: 2,
             }}
           >
-            {/* Play row */}
+            {isSpeaking && <View style={{ height: 3, backgroundColor: '#E8751A' }} />}
             <View style={{ padding: 16, flexDirection: 'row', alignItems: 'center' }}>
               <TouchableOpacity
-                onPress={handleAudioComingSoon}
+                onPress={handlePlayPause}
                 style={{
                   width: 56,
                   height: 56,
                   borderRadius: 28,
-                  backgroundColor: '#E5E7EB',
+                  backgroundColor: isAudioLoading ? '#F5F5F5' : isSpeaking ? '#E8751A' : '#FFF3E8',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Ionicons name="play" size={26} color="#9CA3AF" style={{ marginLeft: 3 }} />
+                {isAudioLoading ? (
+                  <ActivityIndicator size="small" color="#E8751A" />
+                ) : (
+                  <Ionicons
+                    name={isSpeaking ? 'stop' : 'play'}
+                    size={26}
+                    color={isSpeaking ? '#FFF' : '#E8751A'}
+                    style={{ marginLeft: isSpeaking ? 0 : 3 }}
+                  />
+                )}
               </TouchableOpacity>
 
               <View style={{ flex: 1, marginLeft: 16 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <Text style={{ fontSize: 15, fontWeight: '700', color: '#1A1A1A' }}>
-                    Audio Recitation
+                    {isSpeaking ? 'Playing...' : 'Audio Recitation'}
                   </Text>
-                  <View
-                    style={{
-                      backgroundColor: '#FEF3E8',
-                      paddingHorizontal: 8,
-                      paddingVertical: 2,
-                      borderRadius: 10,
-                    }}
-                  >
-                    <Text style={{ fontSize: 10, fontWeight: '600', color: '#E8751A' }}>
-                      SOON
-                    </Text>
-                  </View>
+                  {isAudioCached && !isSpeaking && (
+                    <View style={{ backgroundColor: '#EDF7EE', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 }}>
+                      <Text style={{ fontSize: 10, fontWeight: '600', color: '#2D7A3A' }}>CACHED ✓</Text>
+                    </View>
+                  )}
                 </View>
                 <Text style={{ fontSize: 12, color: '#B0A090', marginTop: 3 }}>
-                  Beautiful Sanskrit & English audio coming soon
+                  {isAudioLoading ? 'Generating audio...' : isSpeaking ? 'Tap to stop' : isAudioCached ? 'Instant playback — saved offline' : 'Calm female voice · English recitation'}
                 </Text>
+                {audioError && <Text style={{ fontSize: 11, color: '#E53935', marginTop: 4 }}>{audioError}</Text>}
               </View>
             </View>
-
           </View>
 
           {/* ── Translation & Transliteration ── */}

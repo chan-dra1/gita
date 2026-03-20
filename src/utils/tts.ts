@@ -19,9 +19,9 @@ async function googleTTS(
 ): Promise<string> {
     // Map our language codes to Google's
     const langMap: Record<string, { code: string; name: string }> = {
-        sanskrit: { code: 'hi-IN', name: 'hi-IN-Wavenet-A' }, // Hindi voice for Sanskrit
-        hindi: { code: 'hi-IN', name: 'hi-IN-Wavenet-A' },
-        english: { code: 'en-US', name: 'en-US-Wavenet-D' },
+        sanskrit: { code: 'hi-IN', name: 'hi-IN-Neural2-A' }, // Warm female Hindi/Sanskrit voice
+        hindi: { code: 'hi-IN', name: 'hi-IN-Neural2-A' },
+        english: { code: 'en-US', name: 'en-US-Neural2-F' }, // Calm female English voice
     };
 
     const voiceConfig = langMap[language] || langMap.english;
@@ -39,8 +39,9 @@ async function googleTTS(
                 },
                 audioConfig: {
                     audioEncoding: 'MP3',
-                    speakingRate: 0.85, // Slower for spiritual recitation
-                    pitch: -1.0, // Slightly deeper tone
+                    speakingRate: 0.82, // Calm, devotional pace
+                    pitch: 0.0,         // Natural pitch for female voice
+                    effectsProfileId: ['headphone-class-device'], // Warm, intimate audio
                 },
             }),
         }

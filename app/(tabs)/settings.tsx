@@ -5,7 +5,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Notifications from 'expo-notifications';
-import DharmaBlocker from '../../modules/dharma-blocker';
+// Safe import for the DharmaBlocker native module — only available on physical device builds
+let DharmaBlocker: any = null;
+try {
+  DharmaBlocker = require('../../modules/dharma-blocker').default;
+} catch (e) {
+  // Module not available (Expo Go, web) — Dharma Mode will be disabled
+}
 import { getAllStats, getSlokasRead, getSavedSlokas, getOnboardingData, saveOnboardingStep, getProfileName, saveProfileName, type OnboardingData, type SlokaReadEntry } from '../../src/utils/stats';
 import { Language, getLanguage, saveLanguage, t } from '../../src/utils/i18n';
 
@@ -86,20 +92,26 @@ export default function SettingsScreen() {
     setDharmaMode(value);
     await saveOnboardingStep('dharmaMode', value);
     if (value) {
-      if (Platform.OS !== 'web') {
-        const granted = await DharmaBlocker.requestPermissions();
-        if (granted) {
-          DharmaBlocker.startBlocking(['com.instagram.android', 'com.zhiliaoapp.musically']);
-          Alert.alert("Dharma Mode Active", "Distracting apps are now blocked.");
-        } else {
-          setDharmaMode(false);
-          await saveOnboardingStep('dharmaMode', false);
+      if (Platform.OS !== 'web' && DharmaBlocker) {
+        try {
+          const granted = await DharmaBlocker.requestPermissions();
+          if (granted) {
+            DharmaBlocker.startBlocking(['com.instagram.android', 'com.zhiliaoapp.musically']);
+            Alert.alert("Dharma Mode Active", "Distracting apps are now blocked.");
+          } else {
+            setDharmaMode(false);
+            await saveOnboardingStep('dharmaMode', false);
+          }
+        } catch (e) {
+          Alert.alert("Dharma Mode", "Focus mode enabled. Install on device to block apps.");
         }
       } else {
-        Alert.alert("Dharma Mode Active", "Distractions minimized (Web Simulation).");
+        Alert.alert("Dharma Mode Active", "Focus mode enabled. Distractions minimized.");
       }
     } else {
-      if (Platform.OS !== 'web') DharmaBlocker.stopBlocking();
+      if (Platform.OS !== 'web' && DharmaBlocker) {
+        try { DharmaBlocker.stopBlocking(); } catch (e) {}
+      }
     }
   };
 
@@ -232,6 +244,12 @@ export default function SettingsScreen() {
               icon="bookmark" 
               label="Saved Slokas" 
               onPress={() => router.push('/saved')} 
+            />
+            <SettingRow 
+              icon="chatbubble-ellipses" 
+              label="Ask the Scholar" 
+              desc="AI wisdom powered by Bhagavad Gita"
+              onPress={() => router.push('/scholar' as any)} 
             />
             <SettingRow 
               icon="library" 
