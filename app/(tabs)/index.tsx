@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useState, useMemo, useEffect } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { useState, useCallback, useEffect } from 'react';
 import {
   Image,
   ScrollView,
@@ -56,10 +56,14 @@ export default function HomeScreen() {
     checkOnboarding();
   }, []);
 
-  const randomKrishnaImage = useMemo(() => {
-    const randomIndex = Math.floor(Math.random() * KRISHNA_IMAGES.length);
-    return KRISHNA_IMAGES[randomIndex];
-  }, []);
+  const [randomKrishnaImage, setRandomKrishnaImage] = useState(KRISHNA_IMAGES[0]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const randomIndex = Math.floor(Math.random() * KRISHNA_IMAGES.length);
+      setRandomKrishnaImage(KRISHNA_IMAGES[randomIndex]);
+    }, [])
+  );
 
   if (isChecking) {
     return <View style={{ flex: 1, backgroundColor: '#FAF8F5' }} />;
@@ -131,23 +135,7 @@ export default function HomeScreen() {
               style={{ width: '100%', height: '100%' }}
               resizeMode="cover"
             />
-            {/* Elegant overlay text */}
-            <View style={{ 
-              position: 'absolute', 
-              bottom: 0, 
-              left: 0, 
-              right: 0, 
-              padding: 24,
-              paddingTop: 60,
-              backgroundColor: 'rgba(0,0,0,0.4)', // Faux gradient substitute
-            }}>
-              <Text style={{ color: '#FFF', fontSize: 24, fontWeight: 'bold', letterSpacing: 0.5 }}>
-                Embrace the Light
-              </Text>
-              <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 14, marginTop: 4, fontStyle: 'italic' }}>
-                "You have the right to work, but never to the fruit of work."
-              </Text>
-            </View>
+            {/* Clean image without overlay */}
           </View>
         </View>
 

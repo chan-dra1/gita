@@ -23,30 +23,43 @@ export default function OnboardingStep5() {
   const [time, setTime] = useState(new Date(new Date().setHours(8, 0, 0, 0))); // Default 8 AM
 
   const handleComplete = async () => {
-    if (remindersEnabled) {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status === 'granted') {
-        await Notifications.cancelAllScheduledNotificationsAsync();
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: "Your Daily Dharma Awaits 🕉️",
-            body: "Take a moment for inner peace. Read today's sloka.",
-          },
-          trigger: {
-            hour: time.getHours(),
-            minute: time.getMinutes(),
-            repeats: true,
-          } as any,
-        });
+    try {
+      if (remindersEnabled) {
+        // Use a timeout to ensure we don't hang if the OS permission prompt takes too long or fails
+        const permissionPromise = Notifications.requestPermissionsAsync();
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000));
+        
+        try {
+          const { status } = await Promise.race([permissionPromise, timeoutPromise]) as any;
+          if (status === 'granted') {
+            await Notifications.cancelAllScheduledNotificationsAsync();
+            await Notifications.scheduleNotificationAsync({
+              content: {
+                title: "Your Daily Dharma Awaits 🕉️",
+                body: "Take a moment for inner peace. Read today's sloka.",
+              },
+              trigger: {
+                hour: time.getHours(),
+                minute: time.getMinutes(),
+                repeats: true,
+              } as any,
+            });
+          }
+        } catch (err) {
+          console.warn('Notification setup failed or timed out:', err);
+        }
       }
+    } catch (error) {
+      console.error('Error in handleComplete:', error);
+    } finally {
+      // ALWAYS proceed with these steps to ensure the user isn't stuck
+      await saveOnboardingStep('remindersEnabled', remindersEnabled);
+      await saveOnboardingStep('reminderTime', time.toISOString());
+      await completeOnboarding();
+      
+      // Navigate to paywall
+      router.replace('/onboarding/paywall' as any);
     }
-    
-    await saveOnboardingStep('remindersEnabled', remindersEnabled);
-    await saveOnboardingStep('reminderTime', time.toISOString());
-    await completeOnboarding();
-    
-    // Navigate to paywall
-    router.replace('/onboarding/paywall');
   };
 
   const onTimeChange = (event: any, selectedDate?: Date) => {

@@ -3,9 +3,11 @@
 
   <!-- Permissions required for Dharma Mode -->
   <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
-    tools:ignore="ProtectedPermissions" xmlns:tools="http://schemas.android.com/tools"/>
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="ProtectedPermissions"/>
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
   <application>
     <!-- Foreground Service Declaration -->
@@ -13,6 +15,8 @@
       android:name=".DharmaForegroundService"
       android:enabled="true"
       android:exported="false"
-      android:foregroundServiceType="shortService" />
+      android:foregroundServiceType="specialUse">
+      <property android:name="android.app.PROPERTY_SPECIAL_USE_SERVICE_TYPE" android:value="Monitoring distracting apps for spiritual focus/productivity." />
+    </service>
   </application>
 </manifest>

@@ -9,7 +9,7 @@ public class DharmaBlockerModule: Module {
     Name("DharmaBlocker")
 
     AsyncFunction("requestPermissions") { (promise: Promise) in
-      if #available(iOS 15.0, *) {
+      if #available(iOS 16.0, *) {
           let center = AuthorizationCenter.shared
           Task {
               do {
@@ -22,13 +22,13 @@ public class DharmaBlockerModule: Module {
               }
           }
       } else {
-          promise.reject("UNSUPPORTED_IOS", "Family Controls requires iOS 15+")
+          promise.reject("UNSUPPORTED_IOS", "Family Controls requires iOS 16+")
       }
     }
 
     Function("startBlocking") { (apps: [String]) in
-      if #available(iOS 15.0, *) {
-          let store = ManagedSettingsStore()
+      if #available(iOS 16.0, *) {
+          let _ = ManagedSettingsStore()
           // Note: In a real app, you use FamilyActivitySelection to let the user pick apps.
           // You cannot programmatically pass bundle IDs like "com.burbn.instagram" without the user picking them via the UI due to Apple's strict privacy policies.
           // store.shield.applications = ... (Tokens mapped from FamilyActivitySelection)
@@ -36,7 +36,7 @@ public class DharmaBlockerModule: Module {
     }
 
     Function("stopBlocking") {
-      if #available(iOS 15.0, *) {
+      if #available(iOS 16.0, *) {
           let store = ManagedSettingsStore()
           store.clearAllSettings()
       }
