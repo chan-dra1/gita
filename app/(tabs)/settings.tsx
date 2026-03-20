@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getAllStats, getSlokasRead, getSavedSlokas, getOnboardingData, type OnboardingData, type SlokaReadEntry } from '../../src/utils/stats';
+import { Language, getLanguage, saveLanguage, t } from '../../src/utils/i18n';
 
 interface StatsData {
   slokasRead: number;
@@ -11,24 +12,27 @@ interface StatsData {
   saved: number;
 }
 
-export default function ProfileScreen() {
+export default function SettingsScreen() {
   const router = useRouter();
   const [stats, setStats] = useState<StatsData | null>(null);
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
   const [recentSlokas, setRecentSlokas] = useState<SlokaReadEntry[]>([]);
   const [savedSlokas, setSavedSlokas] = useState<SlokaReadEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [language, setLanguage] = useState<Language>('en');
 
   const loadStats = useCallback(async () => {
     try {
-      const [allStats, onboarding, slokasRead, saved] = await Promise.all([
+      const [allStats, onboarding, slokasRead, saved, lang] = await Promise.all([
         getAllStats(),
         getOnboardingData(),
         getSlokasRead(),
         getSavedSlokas(),
+        getLanguage(),
       ]);
       setStats(allStats);
       setOnboardingData(onboarding);
+      setLanguage(lang);
       // Get 3 most recent slokas
       setRecentSlokas(slokasRead.slice(-3).reverse());
       setSavedSlokas(saved.slice(-3).reverse());
@@ -44,19 +48,30 @@ export default function ProfileScreen() {
   }, [loadStats]);
 
   const STATS_DISPLAY = stats ? [
-    { label: 'Slokas Read', value: stats.slokasRead.toString(), icon: 'book' as const },
-    { label: 'Day Streak', value: stats.dayStreak.toString(), icon: 'flame' as const },
-    { label: 'Saved', value: stats.saved.toString(), icon: 'bookmark' as const },
+    { label: t('slokasRead', language), value: stats.slokasRead.toString(), icon: 'book' as const },
+    { label: t('dayStreak', language), value: stats.dayStreak.toString(), icon: 'flame' as const },
+    { label: t('saved', language), value: stats.saved.toString(), icon: 'bookmark' as const },
   ] : [
-    { label: 'Slokas Read', value: '0', icon: 'book' as const },
-    { label: 'Day Streak', value: '0', icon: 'flame' as const },
-    { label: 'Saved', value: '0', icon: 'bookmark' as const },
+    { label: t('slokasRead', language), value: '0', icon: 'book' as const },
+    { label: t('dayStreak', language), value: '0', icon: 'flame' as const },
+    { label: t('saved', language), value: '0', icon: 'bookmark' as const },
   ];
 
+  const handleLanguageToggle = async () => {
+    const newLang = language === 'en' ? 'hi' : 'en';
+    setLanguage(newLang);
+    await saveLanguage(newLang);
+  };
+
   const MENU_ITEMS = [
-    { label: 'Reading History', icon: 'time-outline' as const, desc: `${stats?.slokasRead || 0} Slokas read`, onPress: () => {} },
-    { label: 'View All Slokas', icon: 'library-outline' as const, desc: 'Browse the complete collection', onPress: () => router.push('/(tabs)/library') },
-    { label: 'Settings', icon: 'settings-outline' as const, desc: 'Notifications, language & more', onPress: () => router.push('/settings') },
+    { label: t('readingHistory', language), icon: 'time-outline' as const, desc: `${stats?.slokasRead || 0} Slokas read`, onPress: () => {} },
+    { label: t('viewAllSlokas', language), icon: 'library-outline' as const, desc: 'Browse the complete collection', onPress: () => router.push('/(tabs)/library') },
+    { 
+      label: t('language', language), 
+      icon: 'language-outline' as const, 
+      desc: `Current: ${t('currentLanguage', language)}`, 
+      onPress: handleLanguageToggle 
+    },
   ];
 
   const getExperienceLevelLabel = (level: string | null) => {
@@ -192,7 +207,7 @@ export default function ProfileScreen() {
         {(recentSlokas.length > 0 || savedSlokas.length > 0) && (
           <View style={{ paddingHorizontal: 24, marginBottom: 20 }}>
             <Text style={{ fontSize: 16, fontWeight: '600', color: '#1A1A1A', marginBottom: 12 }}>
-              Recent Activity
+              {t('recentActivity', language)}
             </Text>
             {recentSlokas.slice(0, 2).map((sloka, index) => (
               <TouchableOpacity
@@ -293,7 +308,7 @@ export default function ProfileScreen() {
         {/* Footer */}
         <View style={{ alignItems: 'center', marginTop: 32 }}>
           <Text style={{ fontSize: 13, color: '#C0B0A0' }}>
-            Vande Mataram · App Version 1.0.0
+            App Version 1.0.0
           </Text>
         </View>
       </ScrollView>

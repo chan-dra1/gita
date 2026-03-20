@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView, Modal, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView, Modal, Alert, ImageBackground } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Purchases from 'react-native-purchases';
+import { BlurView } from 'expo-blur';
+
+// Use a beautiful Krishna image for the background
+const KRISHNA_BACKGROUND = require('../../assets/images/krishna-illustration.webp');
 
 const PRICING_TIERS = [
   {
@@ -74,25 +78,29 @@ export default function PaywallScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#3D2817" />
-      
-      {/* Close Button */}
-      <TouchableOpacity onPress={handleMaybeLater} style={styles.closeButton}>
-        <Ionicons name="close" size={28} color="#8B7355" />
-      </TouchableOpacity>
+    <ImageBackground source={KRISHNA_BACKGROUND} style={styles.backgroundImage} blurRadius={Platform.OS === 'android' ? 3 : 0}>
+      <BlurView intensity={80} tint="dark" style={StyleSheet.absoluteFill} />
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        
+        {/* Close Button */}
+        <TouchableOpacity onPress={handleMaybeLater} style={styles.closeButton}>
+          <BlurView intensity={40} tint="dark" style={styles.closeBlur}>
+            <Ionicons name="close" size={24} color="#FFF" />
+          </BlurView>
+        </TouchableOpacity>
 
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Icon */}
-        <View style={styles.iconContainer}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="book" size={32} color="#F48B29" />
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Icon */}
+          <View style={styles.iconContainer}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="book" size={36} color="#F48B29" />
+            </View>
           </View>
-        </View>
 
         {/* Title */}
         <Text style={styles.title}>Unlock Your Complete</Text>
@@ -106,12 +114,12 @@ export default function PaywallScreen() {
         {/* Features */}
         <View style={styles.featuresContainer}>
           {FEATURES.map((feature, index) => (
-            <View key={index} style={styles.featureRow}>
+            <BlurView intensity={30} tint="dark" key={index} style={styles.featureRow}>
               <View style={styles.featureIconContainer}>
                 <Ionicons name={feature.icon as any} size={18} color="#F48B29" />
               </View>
               <Text style={styles.featureText}>{feature.text}</Text>
-            </View>
+            </BlurView>
           ))}
         </View>
 
@@ -122,38 +130,44 @@ export default function PaywallScreen() {
               key={tier.id}
               activeOpacity={0.8}
               onPress={() => setSelectedTier(tier.id)}
-              style={[
-                styles.tierCard,
-                selectedTier === tier.id && styles.tierCardSelected,
-                tier.popular && styles.tierCardPopular,
-              ]}
+              style={styles.tierCardWrapper}
             >
-              {tier.badge && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{tier.badge}</Text>
-                </View>
-              )}
-              <View style={styles.tierContent}>
-                <View style={styles.tierLeft}>
-                  <Text style={[styles.tierName, selectedTier === tier.id && styles.tierNameSelected]}>
-                    {tier.name}
-                  </Text>
-                  <View style={styles.priceRow}>
-                    <Text style={[styles.tierPrice, selectedTier === tier.id && styles.tierPriceSelected]}>
-                      {tier.price}
-                    </Text>
-                    <Text style={[styles.tierPeriod, selectedTier === tier.id && styles.tierPeriodSelected]}>
-                      {tier.period}
-                    </Text>
+              <BlurView 
+                intensity={selectedTier === tier.id ? 50 : 20} 
+                tint={selectedTier === tier.id ? "light" : "dark"} 
+                style={[
+                  styles.tierCard,
+                  selectedTier === tier.id && styles.tierCardSelected,
+                  tier.popular && styles.tierCardPopular,
+                ]}
+              >
+                {tier.badge && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{tier.badge}</Text>
                   </View>
-                  {tier.trial && (
-                    <Text style={styles.trialText}>{tier.trial}</Text>
-                  )}
+                )}
+                <View style={styles.tierContent}>
+                  <View style={styles.tierLeft}>
+                    <Text style={[styles.tierName, selectedTier === tier.id && styles.tierNameSelected]}>
+                      {tier.name}
+                    </Text>
+                    <View style={styles.priceRow}>
+                      <Text style={[styles.tierPrice, selectedTier === tier.id && styles.tierPriceSelected]}>
+                        {tier.price}
+                      </Text>
+                      <Text style={[styles.tierPeriod, selectedTier === tier.id && styles.tierPeriodSelected]}>
+                        {tier.period}
+                      </Text>
+                    </View>
+                    {tier.trial && (
+                      <Text style={[styles.trialText, selectedTier === tier.id && styles.trialTextSelected]}>{tier.trial}</Text>
+                    )}
+                  </View>
+                  <View style={[styles.radioCircle, selectedTier === tier.id && styles.radioCircleSelected]}>
+                    {selectedTier === tier.id && <View style={styles.radioDot} />}
+                  </View>
                 </View>
-                <View style={[styles.radioCircle, selectedTier === tier.id && styles.radioCircleSelected]}>
-                  {selectedTier === tier.id && <View style={styles.radioDot} />}
-                </View>
-              </View>
+              </BlurView>
             </TouchableOpacity>
           ))}
         </View>
@@ -195,141 +209,179 @@ export default function PaywallScreen() {
         onRequestClose={() => setShowTerms(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Terms & Privacy</Text>
-            <ScrollView style={styles.modalScroll}>
-              <Text style={styles.modalText}>
-                By continuing, you agree to our Terms of Service and Privacy Policy.{'\n\n'}
-                Your subscription will automatically renew unless canceled at least 24 hours before the end of the current period.{'\n\n'}
-                You can manage your subscriptions in your account settings after purchase.
-              </Text>
-            </ScrollView>
-            <TouchableOpacity
-              style={styles.modalCloseButton}
-              onPress={() => setShowTerms(false)}
-            >
-              <Text style={styles.modalCloseText}>Got it</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </SafeAreaView>
+              <BlurView intensity={90} tint="dark" style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Terms & Privacy</Text>
+                <ScrollView style={styles.modalScroll}>
+                  <Text style={styles.modalText}>
+                    By continuing, you agree to our Terms of Service and Privacy Policy.{'\n\n'}
+                    Your subscription will automatically renew unless canceled at least 24 hours before the end of the current period.{'\n\n'}
+                    You can manage your subscriptions in your account settings after purchase.
+                  </Text>
+                </ScrollView>
+                <TouchableOpacity
+                  style={styles.modalCloseButton}
+                  onPress={() => setShowTerms(false)}
+                >
+                  <Text style={styles.modalCloseText}>Got it</Text>
+                </TouchableOpacity>
+              </BlurView>
+            </View>
+          </Modal>
+        </SafeAreaView>
+      </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   safeArea: {
     flex: 1,
-    backgroundColor: '#3D2817',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingTop: 20,
+    paddingTop: 40,
     paddingBottom: 40,
   },
   closeButton: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 20,
-    right: 20,
+    top: Platform.OS === 'ios' ? 60 : 40,
+    right: 24,
     zIndex: 100,
-    padding: 8,
+  },
+  closeBlur: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
   iconContainer: {
     alignItems: 'center',
     marginBottom: 24,
   },
   iconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
-    backgroundColor: 'rgba(244, 139, 41, 0.2)',
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '800',
     color: '#FFFFFF',
     textAlign: 'center',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   titleHighlight: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '800',
     color: '#F48B29',
     textAlign: 'center',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    marginBottom: 12,
+    marginBottom: 16,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   subtitle: {
-    fontSize: 15,
-    color: '#B8A99A',
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 28,
-    paddingHorizontal: 12,
+    lineHeight: 24,
+    marginBottom: 32,
+    paddingHorizontal: 16,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   featuresContainer: {
-    gap: 14,
-    marginBottom: 28,
+    gap: 12,
+    marginBottom: 32,
   },
   featureRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    padding: 14,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+    overflow: 'hidden',
   },
   featureIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: 'rgba(244, 139, 41, 0.2)',
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 14,
   },
   featureText: {
-    fontSize: 14,
+    fontSize: 15,
+    fontWeight: '500',
     color: '#FFFFFF',
     flex: 1,
   },
   pricingContainer: {
-    gap: 12,
-    marginBottom: 24,
+    gap: 16,
+    marginBottom: 32,
+  },
+  tierCardWrapper: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
   },
   tierCard: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    padding: 16,
+    borderColor: 'rgba(255,255,255,0.2)',
+    padding: 20,
     position: 'relative',
   },
   tierCardSelected: {
-    borderColor: '#F48B29',
+    borderColor: 'rgba(244, 139, 41, 0.8)',
     borderWidth: 2,
-    backgroundColor: 'rgba(244, 139, 41, 0.1)',
   },
   tierCardPopular: {
-    paddingTop: 28,
+    paddingTop: 32,
   },
   badge: {
     position: 'absolute',
-    top: -10,
-    right: 16,
+    top: 0,
+    right: 20,
     backgroundColor: '#F48B29',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
   },
   badgeText: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#3D2817',
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#FFF',
+    letterSpacing: 0.5,
   },
   tierContent: {
     flexDirection: 'row',
@@ -340,75 +392,89 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tierName: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#B8A99A',
-    letterSpacing: 1,
-    marginBottom: 4,
+    fontSize: 14,
+    fontWeight: '700',
+    color: 'rgba(255, 255, 255, 0.7)',
+    letterSpacing: 1.5,
+    marginBottom: 6,
   },
   tierNameSelected: {
-    color: '#F48B29',
+    color: '#1A1A1A',
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
   },
   tierPrice: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '800',
     color: '#FFFFFF',
   },
   tierPriceSelected: {
-    color: '#FFFFFF',
+    color: '#1A1A1A',
   },
   tierPeriod: {
-    fontSize: 14,
-    color: '#8B7355',
-    marginLeft: 2,
+    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.7)',
+    marginLeft: 4,
+    fontWeight: '500',
   },
   tierPeriodSelected: {
-    color: '#B8A99A',
+    color: 'rgba(26, 26, 26, 0.7)',
   },
   trialText: {
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: '600',
     color: '#F48B29',
-    marginTop: 4,
+    marginTop: 6,
+  },
+  trialTextSelected: {
+    color: '#D87010',
   },
   radioCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     borderWidth: 2,
-    borderColor: '#8B7355',
+    borderColor: 'rgba(255, 255, 255, 0.5)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 12,
+    marginLeft: 16,
+    backgroundColor: 'rgba(0,0,0,0.1)',
   },
   radioCircleSelected: {
     borderColor: '#F48B29',
+    backgroundColor: '#FFF',
+    borderWidth: 0,
   },
   radioDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     backgroundColor: '#F48B29',
   },
   ctaButton: {
-    height: 56,
-    borderRadius: 16,
+    height: 60,
+    borderRadius: 20,
     backgroundColor: '#F48B29',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    shadowColor: '#F48B29',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 5,
   },
   ctaButtonText: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: '#3D2817',
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   footerText: {
-    fontSize: 12,
-    color: '#8B7355',
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.6)',
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -416,55 +482,60 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 12,
   },
   footerLink: {
-    fontSize: 13,
-    color: '#B8A99A',
-    textDecorationLine: 'underline',
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '500',
   },
   footerDivider: {
-    fontSize: 13,
-    color: '#8B7355',
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.3)',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#3D2817',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    maxHeight: '60%',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    padding: 32,
+    maxHeight: '65%',
+    overflow: 'hidden',
+    borderTopWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '800',
     color: '#FFFFFF',
-    marginBottom: 16,
+    marginBottom: 20,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    textAlign: 'center',
   },
   modalScroll: {
-    maxHeight: 200,
+    maxHeight: 250,
   },
   modalText: {
-    fontSize: 14,
-    color: '#B8A99A',
-    lineHeight: 22,
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.8)',
+    lineHeight: 24,
   },
   modalCloseButton: {
-    marginTop: 20,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#F48B29',
+    marginTop: 24,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   modalCloseText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#3D2817',
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });

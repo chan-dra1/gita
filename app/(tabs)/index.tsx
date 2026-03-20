@@ -9,13 +9,16 @@ import {
   TouchableOpacity,
   View,
   Dimensions,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getRandomSloka } from '../../src/utils/sloka';
-import { isOnboardingComplete } from '../../src/utils/stats';
+import { getOnboardingData, isOnboardingComplete, type OnboardingData } from '../../src/utils/stats';
+import { Language, getLanguage, t } from '../../src/utils/i18n';
 
 const { width } = Dimensions.get('window');
 
+// Pre-define highly aesthetic Krishna images for random display.
 const KRISHNA_IMAGES = [
   require('../../assets/images/home/krishna_1.webp'),
   require('../../assets/images/home/krishna_2.webp'),
@@ -41,8 +44,28 @@ const KRISHNA_IMAGES = [
 
 export default function HomeScreen() {
   const router = useRouter();
-  const dailySloka = getRandomSloka();
+  const [dailySloka, setDailySloka] = useState<any | null>(null);
   const [isChecking, setIsChecking] = useState(true);
+  const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
+  const [randomKrishnaImage, setRandomKrishnaImage] = useState<any>(KRISHNA_IMAGES[0]);
+  const [language, setLanguage] = useState<Language>('en');
+
+  const loadData = async () => {
+    try {
+      const [todaySloka, data, lang] = await Promise.all([
+        getRandomSloka(),
+        getOnboardingData(),
+        getLanguage(),
+      ]);
+      setDailySloka(todaySloka);
+      setOnboardingData(data);
+      setLanguage(lang);
+    } catch (error) {
+      console.error('Failed to load data:', error);
+    } finally {
+      setIsChecking(false);
+    }
+  };
 
   useEffect(() => {
     async function checkOnboarding() {
@@ -50,18 +73,28 @@ export default function HomeScreen() {
       if (!complete) {
         router.replace('/onboarding/intro' as any);
       } else {
-        setIsChecking(false);
+        loadData();
       }
     }
     checkOnboarding();
   }, []);
 
-  const [randomKrishnaImage, setRandomKrishnaImage] = useState(KRISHNA_IMAGES[0]);
-
   useFocusEffect(
     useCallback(() => {
-      const randomIndex = Math.floor(Math.random() * KRISHNA_IMAGES.length);
-      setRandomKrishnaImage(KRISHNA_IMAGES[randomIndex]);
+      // Set initial random image
+      const setRandomImage = () => {
+        const randomIndex = Math.floor(Math.random() * KRISHNA_IMAGES.length);
+        setRandomKrishnaImage(KRISHNA_IMAGES[randomIndex]);
+      };
+      
+      setRandomImage();
+      
+      // Set interval to rotate every 10 seconds
+      const intervalId = setInterval(setRandomImage, 10000);
+      
+      loadData(); // Refresh data when screen is focused
+      
+      return () => clearInterval(intervalId);
     }, [])
   );
 
@@ -88,10 +121,10 @@ export default function HomeScreen() {
         >
           <View>
             <Text style={{ fontSize: 13, fontWeight: '600', color: '#E8751A', textTransform: 'uppercase', letterSpacing: 1 }}>
-              Today's Journey
+              {t('todaysJourney', language)}
             </Text>
             <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A1A1A', marginTop: 2 }}>
-              Inner Peace
+              {t('innerPeace', language)}
             </Text>
           </View>
           <TouchableOpacity
@@ -142,7 +175,7 @@ export default function HomeScreen() {
         {/* Action Grid */}
         <View style={{ marginTop: 32, paddingHorizontal: 20 }}>
           <Text style={{ fontSize: 18, fontWeight: '700', color: '#1A1A1A', marginBottom: 16, paddingHorizontal: 4 }}>
-            Quick Actions
+            {t('quickActions', language)}
           </Text>
           
           <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -169,10 +202,10 @@ export default function HomeScreen() {
                 <Ionicons name="book" size={24} color="#E8751A" />
               </View>
               <Text style={{ color: '#1A1A1A', fontSize: 16, fontWeight: '600' }}>
-                Library
+                {t('library', language)}
               </Text>
               <Text style={{ color: '#9A9A9A', fontSize: 12, marginTop: 4, textAlign: 'center' }}>
-                Explore chapters
+                {t('exploreChapters', language)}
               </Text>
             </TouchableOpacity>
 
@@ -203,10 +236,10 @@ export default function HomeScreen() {
                 <Ionicons name="headset" size={24} color="#4A7C59" />
               </View>
               <Text style={{ color: '#1A1A1A', fontSize: 16, fontWeight: '600' }}>
-                Listen
+                {t('listen', language)}
               </Text>
               <Text style={{ color: '#9A9A9A', fontSize: 12, marginTop: 4, textAlign: 'center' }}>
-                Audio slokas
+                {t('audioSlokas', language)}
               </Text>
             </TouchableOpacity>
           </View>
@@ -237,14 +270,14 @@ export default function HomeScreen() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <Ionicons name="shield-checkmark" size={18} color="#F5C518" />
                 <Text style={{ color: '#F5C518', fontSize: 13, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>
-                  Dharma Mode
+                  {t('dharmaMode', language)}
                 </Text>
               </View>
               <Text style={{ color: '#FFF', fontSize: 18, fontWeight: 'bold', marginBottom: 4 }}>
-                Protect Your Focus
+                {t('protectYourFocus', language)}
               </Text>
               <Text style={{ color: '#A0A0A0', fontSize: 13, lineHeight: 18 }}>
-                Block distractions and stay committed to your daily spiritual journey.
+                {t('dharmaModeDescription', language)}
               </Text>
             </View>
             <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' }}>
@@ -256,9 +289,12 @@ export default function HomeScreen() {
         {/* Today's Verse Preview */}
         {dailySloka && (
           <View style={{ marginTop: 32, paddingHorizontal: 20 }}>
-            <Text style={{ fontSize: 18, fontWeight: '700', color: '#1A1A1A', marginBottom: 16, paddingHorizontal: 4 }}>
-              Verse of the Day
-            </Text>
+            <View style={styles.slokaCardHeader}>
+              <View style={styles.slokaBadge}>
+                <Ionicons name="sparkles" size={14} color="#FFF" />
+                <Text style={styles.slokaBadgeText}>{t('verseOfTheDay', language)}</Text>
+              </View>
+            </View>
             <TouchableOpacity
               onPress={() =>
                 router.push(`/sloka/${dailySloka.chapter}/${dailySloka.verse}` as any)
@@ -288,7 +324,7 @@ export default function HomeScreen() {
               </Text>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
                 <Text style={{ fontSize: 13, color: '#888', fontWeight: '500' }}>
-                  Chapter {dailySloka.chapter}, Verse {dailySloka.verse}
+                  {t('chapterVerse', language, { chapter: dailySloka.chapter, verse: dailySloka.verse })}
                 </Text>
                 <Ionicons name="arrow-forward" size={16} color="#E8751A" />
               </View>
@@ -299,3 +335,27 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  slokaCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  slokaBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8751A',
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  slokaBadgeText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+});

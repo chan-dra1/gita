@@ -21,13 +21,23 @@ export default function OnboardingStep5() {
   const router = useRouter();
   const [remindersEnabled, setRemindersEnabled] = useState(true);
   const [time, setTime] = useState(new Date(new Date().setHours(8, 0, 0, 0))); // Default 8 AM
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleComplete = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    
     try {
+      // 1. ALWAYS save state first to ensure user isn't stuck if permissions hang
+      await saveOnboardingStep('remindersEnabled', remindersEnabled);
+      await saveOnboardingStep('reminderTime', time.toISOString());
+      await completeOnboarding();
+
+      // 2. Attempt notification setup if enabled
       if (remindersEnabled) {
-        // Use a timeout to ensure we don't hang if the OS permission prompt takes too long or fails
+        // Use a shorter timeout (2s) so we don't hang on OS permission prompts
         const permissionPromise = Notifications.requestPermissionsAsync();
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000));
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000));
         
         try {
           const { status } = await Promise.race([permissionPromise, timeoutPromise]) as any;
@@ -52,12 +62,8 @@ export default function OnboardingStep5() {
     } catch (error) {
       console.error('Error in handleComplete:', error);
     } finally {
-      // ALWAYS proceed with these steps to ensure the user isn't stuck
-      await saveOnboardingStep('remindersEnabled', remindersEnabled);
-      await saveOnboardingStep('reminderTime', time.toISOString());
-      await completeOnboarding();
-      
-      // Navigate to paywall
+      setIsLoading(false);
+      // Navigate to paywall regardless of notification success
       router.replace('/onboarding/paywall' as any);
     }
   };
@@ -165,15 +171,23 @@ export default function OnboardingStep5() {
         )}
       </ScrollView>
 
-      {/* Footer */}
       <View style={styles.footer}>
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={handleComplete}
           style={styles.completeButton}
+          disabled={isLoading}
         >
-          <Text style={styles.completeButtonText}>Complete Setup</Text>
-          <Ionicons name="sparkles" size={20} color="#FFFFFF" style={styles.sparkleIcon} />
+          {isLoading ? (
+            <React.Fragment>
+              <Text style={styles.completeButtonText}>Saving...</Text>
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              <Text style={styles.completeButtonText}>Complete Setup</Text>
+              <Ionicons name="sparkles" size={20} color="#FFFFFF" style={styles.sparkleIcon} />
+            </React.Fragment>
+          )}
         </TouchableOpacity>
         
         <Text style={styles.footerHint}>

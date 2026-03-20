@@ -1,0 +1,45 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:1:1-18:12
+INJECTED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:1:1-18:12
+	package
+		ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:2:3-39
+		INJECTED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:1:11-69
+uses-permission#android.permission.PACKAGE_USAGE_STATS
+ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:5:3-6:89
+	xmlns:tools
+		ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:6:41-87
+	tools:ignore
+		ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:6:5-40
+	android:name
+		ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:5:20-73
+uses-permission#android.permission.SYSTEM_ALERT_WINDOW
+ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:7:3-76
+	android:name
+		ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:7:20-73
+uses-permission#android.permission.FOREGROUND_SERVICE
+ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:8:3-75
+	android:name
+		ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:8:20-72
+application
+ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:10:3-17:17
+service#expo.modules.dharmablocker.DharmaForegroundService
+ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:12:5-16:54
+	android:enabled
+		ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:14:7-29
+	android:exported
+		ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:15:7-31
+	android:foregroundServiceType
+		ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:16:7-51
+	android:name
+		ADDED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:13:7-46
+uses-sdk
+INJECTED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml
+INJECTED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml
