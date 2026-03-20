@@ -19,7 +19,7 @@ interface UseAudioReturn extends AudioState {
         chapter: number,
         verse: number,
         language: AudioLanguage
-    ) => boolean;
+    ) => Promise<boolean>;
 }
 
 export function useAudio(): UseAudioReturn {
@@ -88,7 +88,7 @@ export function useAudio(): UseAudioReturn {
                         }));
                         stopProgressTracking();
                     },
-                    (error) => {
+                    (error: string) => {
                         setState((prev) => ({ ...prev, error, isPlaying: false }));
                         stopProgressTracking();
                     }
@@ -128,8 +128,8 @@ export function useAudio(): UseAudioReturn {
     }, [stopProgressTracking]);
 
     const checkCached = useCallback(
-        (chapter: number, verse: number, language: AudioLanguage): boolean => {
-            return hasCachedAudio(chapter, verse, language);
+        async (chapter: number, verse: number, language: AudioLanguage): Promise<boolean> => {
+            return await hasCachedAudio(chapter, verse, language);
         },
         []
     );

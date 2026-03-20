@@ -81,20 +81,10 @@ export default function HomeScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      // Set initial random image
-      const setRandomImage = () => {
-        const randomIndex = Math.floor(Math.random() * KRISHNA_IMAGES.length);
-        setRandomKrishnaImage(KRISHNA_IMAGES[randomIndex]);
-      };
-      
-      setRandomImage();
-      
-      // Set interval to rotate every 10 seconds
-      const intervalId = setInterval(setRandomImage, 10000);
-      
+      // Pick a new random image every time the screen becomes active
+      const randomIndex = Math.floor(Math.random() * KRISHNA_IMAGES.length);
+      setRandomKrishnaImage(KRISHNA_IMAGES[randomIndex]);
       loadData(); // Refresh data when screen is focused
-      
-      return () => clearInterval(intervalId);
     }, [])
   );
 

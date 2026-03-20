@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
   STREAK_DATA: '@gita_streak_data',
   ONBOARDING_DATA: '@gita_onboarding_data',
   LAST_OPENED: '@gita_last_opened',
+  PROFILE_NAME: '@gita_profile_name',
 } as const;
 
 // Re-export types
@@ -212,6 +213,25 @@ export async function completeOnboarding(): Promise<void> {
 export async function isOnboardingComplete(): Promise<boolean> {
   const data = await getOnboardingData();
   return data.completedAt !== null;
+}
+
+// Profile Name Functions
+export async function getProfileName(): Promise<string> {
+  try {
+    const name = await AsyncStorage.getItem(STORAGE_KEYS.PROFILE_NAME);
+    return name || 'Scholar';
+  } catch {
+    return 'Scholar';
+  }
+}
+
+export async function saveProfileName(name: string): Promise<void> {
+  try {
+    if (!name.trim()) return;
+    await AsyncStorage.setItem(STORAGE_KEYS.PROFILE_NAME, name.trim());
+  } catch {
+    // Silent fail
+  }
 }
 
 // Get All Stats for Profile

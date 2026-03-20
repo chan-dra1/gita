@@ -106,5 +106,6 @@ export interface OnboardingData {
     dailyCommitment: 'quick' | 'moderate' | 'deep' | null;
     remindersEnabled: boolean;
     reminderTime?: string | null;
+    dharmaMode?: boolean;
     completedAt: number | null;
 }

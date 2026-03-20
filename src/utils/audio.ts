@@ -8,7 +8,7 @@ import { Config } from '../constants/config';
 import type { AudioLanguage } from '../types';
 import { generateTTSAudio } from './tts';
 
-const AUDIO_CACHE_DIR = `${FileSystem.documentDirectory}${Config.AUDIO_CACHE_DIR}`;
+const AUDIO_CACHE_DIR = `${(FileSystem as any).documentDirectory}${Config.AUDIO_CACHE_DIR}`;
 
 /**
  * Ensure the cache directory exists.
@@ -38,7 +38,7 @@ export async function hasCachedAudio(
   chapter: number,
   verse: number,
   language: AudioLanguage
-): boolean {
+): Promise<boolean> {
   const path = getCachedAudioPath(chapter, verse, language);
   const fileInfo = await FileSystem.getInfoAsync(path);
   return fileInfo.exists;
@@ -56,7 +56,7 @@ async function saveAudioToCache(
   await ensureDirExists();
   const path = getCachedAudioPath(chapter, verse, language);
   await FileSystem.writeAsStringAsync(path, base64Audio, {
-    encoding: FileSystem.EncodingType.Base64,
+    encoding: (FileSystem as any).EncodingType.Base64,
   });
   return path;
 }

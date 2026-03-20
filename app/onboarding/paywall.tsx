@@ -1,37 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView, Modal, Alert, ImageBackground } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView, Modal, Alert, ImageBackground, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import Purchases from 'react-native-purchases';
+import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import { BlurView } from 'expo-blur';
 
 // Use a beautiful Krishna image for the background
 const KRISHNA_BACKGROUND = require('../../assets/images/home/krishna_19.webp');
 
-const PRICING_TIERS = [
-  {
-    id: 'monthly',
-    name: 'MONTHLY',
-    price: '$4.99',
-    period: '/month',
-    popular: false,
-  },
-  {
-    id: 'yearly',
-    name: 'YEARLY',
-    price: '$29.99',
-    period: '/year',
-    popular: true,
-    badge: 'BEST VALUE',
-    trial: 'Includes 7-Day Free Trial',
-  },
-  {
-    id: 'lifetime',
-    name: 'LIFETIME',
-    price: '$99.99',
-    period: '/forever',
-    popular: false,
-  },
+const FALLBACK_TIERS = [
+  { id: 'monthly', name: 'MONTHLY', price: '$4.99', period: '/month', popular: false },
+  { id: 'yearly', name: 'YEARLY', price: '$29.99', period: '/year', popular: true, badge: 'BEST VALUE', trial: 'Includes 7-Day Free Trial' },
+  { id: 'lifetime', name: 'LIFETIME', price: '$99.99', period: '/forever', popular: false },
 ];
 
 const FEATURES = [
@@ -44,17 +24,52 @@ export default function PaywallScreen() {
   const router = useRouter();
   const [selectedTier, setSelectedTier] = useState<string>('yearly');
   const [showTerms, setShowTerms] = useState(false);
+  const [packages, setPackages] = useState<PurchasesPackage[]>([]);
+  const [isFetching, setIsFetching] = useState(true);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+
+  useEffect(() => {
+    const fetchOfferings = async () => {
+      try {
+        const offerings = await Purchases.getOfferings();
+        if (offerings.current !== null && offerings.current.availablePackages.length !== 0) {
+          setPackages(offerings.current.availablePackages);
+          // Set default to annual if exists
+          const annualParams = offerings.current.availablePackages.find(p => p.packageType === 'ANNUAL');
+          if (annualParams) setSelectedTier(annualParams.identifier);
+          else setSelectedTier(offerings.current.availablePackages[0].identifier);
+        }
+      } catch (e) {
+        console.warn('Failed to fetch offerings, using fallbacks', e);
+      } finally {
+        setIsFetching(false);
+      }
+    };
+    fetchOfferings();
+  }, []);
 
   const handleStartTrial = async () => {
+    if (packages.length === 0) {
+      // Fallback bypass mode if RevenueCat isn't hooked up correctly yet
+      Alert.alert("Simulated Purchase", "RevenueCat is not active yet. Bypassing.", [{text: "OK", onPress: () => router.replace('/(tabs)')}]);
+      return;
+    }
+
+    const selectedPackage = packages.find(p => p.identifier === selectedTier);
+    if (!selectedPackage) return;
+
     try {
-      // Placeholder for actual RevenueCat purchase mechanism
-      // e.g. const { customerInfo } = await Purchases.purchasePackage(pack);
-      // For now, simulate success:
-      router.replace('/(tabs)');
+      setIsPurchasing(true);
+      const { customerInfo } = await Purchases.purchasePackage(selectedPackage);
+      if (typeof customerInfo.entitlements.active['pro'] !== 'undefined') {
+        router.replace('/(tabs)');
+      }
     } catch (e: any) {
       if (!e.userCancelled) {
-        Alert.alert('Error', e.message);
+        Alert.alert('Purchase Error', e.message);
       }
+    } finally {
+      setIsPurchasing(false);
     }
   };
 
@@ -125,51 +140,69 @@ export default function PaywallScreen() {
 
         {/* Pricing Tiers */}
         <View style={styles.pricingContainer}>
-          {PRICING_TIERS.map((tier) => (
-            <TouchableOpacity
-              key={tier.id}
-              activeOpacity={0.8}
-              onPress={() => setSelectedTier(tier.id)}
-              style={styles.tierCardWrapper}
-            >
-              <BlurView 
-                intensity={selectedTier === tier.id ? 50 : 20} 
-                tint={selectedTier === tier.id ? "light" : "dark"} 
-                style={[
-                  styles.tierCard,
-                  selectedTier === tier.id && styles.tierCardSelected,
-                  tier.popular && styles.tierCardPopular,
-                ]}
-              >
-                {tier.badge && (
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{tier.badge}</Text>
-                  </View>
-                )}
-                <View style={styles.tierContent}>
-                  <View style={styles.tierLeft}>
-                    <Text style={[styles.tierName, selectedTier === tier.id && styles.tierNameSelected]}>
-                      {tier.name}
-                    </Text>
-                    <View style={styles.priceRow}>
-                      <Text style={[styles.tierPrice, selectedTier === tier.id && styles.tierPriceSelected]}>
-                        {tier.price}
-                      </Text>
-                      <Text style={[styles.tierPeriod, selectedTier === tier.id && styles.tierPeriodSelected]}>
-                        {tier.period}
-                      </Text>
-                    </View>
-                    {tier.trial && (
-                      <Text style={[styles.trialText, selectedTier === tier.id && styles.trialTextSelected]}>{tier.trial}</Text>
+          {isFetching ? (
+            <ActivityIndicator size="large" color="#F48B29" style={{ marginVertical: 32 }} />
+          ) : (
+            (() => {
+              const displayTiers = packages.length > 0
+                ? packages.map(p => ({
+                    id: p.identifier,
+                    name: p.packageType === 'ANNUAL' ? 'YEARLY' : p.packageType === 'MONTHLY' ? 'MONTHLY' : p.packageType === 'LIFETIME' ? 'LIFETIME' : p.identifier.toUpperCase(),
+                    price: p.product.priceString,
+                    period: p.packageType === 'ANNUAL' ? '/year' : p.packageType === 'MONTHLY' ? '/month' : '',
+                    popular: p.packageType === 'ANNUAL',
+                    badge: p.packageType === 'ANNUAL' ? 'BEST VALUE' : undefined,
+                    trial: p.packageType === 'ANNUAL' ? 'Includes 7-Day Free Trial' : undefined,
+                  }))
+                : FALLBACK_TIERS;
+
+              return displayTiers.map((tier) => (
+                <TouchableOpacity
+                  key={tier.id}
+                  activeOpacity={0.8}
+                  onPress={() => setSelectedTier(tier.id)}
+                  style={styles.tierCardWrapper}
+                >
+                  <BlurView 
+                    intensity={selectedTier === tier.id ? 50 : 20} 
+                    tint={selectedTier === tier.id ? "light" : "dark"} 
+                    style={[
+                      styles.tierCard,
+                      selectedTier === tier.id && styles.tierCardSelected,
+                      tier.popular && styles.tierCardPopular,
+                    ]}
+                  >
+                    {tier.badge && (
+                      <View style={styles.badge}>
+                        <Text style={styles.badgeText}>{tier.badge}</Text>
+                      </View>
                     )}
-                  </View>
-                  <View style={[styles.radioCircle, selectedTier === tier.id && styles.radioCircleSelected]}>
-                    {selectedTier === tier.id && <View style={styles.radioDot} />}
-                  </View>
-                </View>
-              </BlurView>
-            </TouchableOpacity>
-          ))}
+                    <View style={styles.tierContent}>
+                      <View style={styles.tierLeft}>
+                        <Text style={[styles.tierName, selectedTier === tier.id && styles.tierNameSelected]}>
+                          {tier.name}
+                        </Text>
+                        <View style={styles.priceRow}>
+                          <Text style={[styles.tierPrice, selectedTier === tier.id && styles.tierPriceSelected]}>
+                            {tier.price}
+                          </Text>
+                          <Text style={[styles.tierPeriod, selectedTier === tier.id && styles.tierPeriodSelected]}>
+                            {tier.period}
+                          </Text>
+                        </View>
+                        {tier.trial && (
+                          <Text style={[styles.trialText, selectedTier === tier.id && styles.trialTextSelected]}>{tier.trial}</Text>
+                        )}
+                      </View>
+                      <View style={[styles.radioCircle, selectedTier === tier.id && styles.radioCircleSelected]}>
+                        {selectedTier === tier.id && <View style={styles.radioDot} />}
+                      </View>
+                    </View>
+                  </BlurView>
+                </TouchableOpacity>
+              ));
+            })()
+          )}
         </View>
 
         {/* CTA Button */}
@@ -177,8 +210,13 @@ export default function PaywallScreen() {
           activeOpacity={0.9}
           onPress={handleStartTrial}
           style={styles.ctaButton}
+          disabled={isPurchasing}
         >
-          <Text style={styles.ctaButtonText}>Start 7-Day Free Trial</Text>
+          {isPurchasing ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.ctaButtonText}>{selectedTier.includes('annual') || selectedTier.includes('yearly') ? 'Start 7-Day Free Trial' : 'Purchase'}</Text>
+          )}
         </TouchableOpacity>
 
         {/* Footer */}
