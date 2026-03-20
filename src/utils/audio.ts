@@ -173,3 +173,83 @@ export async function clearAudioCache(): Promise<void> {
     console.warn('Could not clear audio cache');
   }
 }
+
+// ─── Background Pre-download ─────────────────────────────────────
+
+/**
+ * A map of chapter → abort flag so we can cancel a running pre-download
+ * when the user leaves the chapter screen before it completes.
+ */
+const preDownloadAbortFlags: Map<number, boolean> = new Map();
+
+/**
+ * Silently pre-downloads and caches audio for every verse in a chapter.
+ * - Skips verses that are already cached (no API cost).
+ * - Downloads one verse at a time to respect API rate limits.
+ * - Automatically cancelled if the user leaves the chapter screen.
+ *
+ * @param chapter      - The chapter number
+ * @param verseTexts   - Array of { verse: number, text: string } for each verse
+ * @param language     - Audio language to generate
+ * @param onProgress   - Optional callback with (downloaded, total) progress
+ */
+export async function preDownloadChapterAudio(
+  chapter: number,
+  verseTexts: Array<{ verse: number; text: string }>,
+  language: AudioLanguage = 'english',
+  apiKey: string,
+  onProgress?: (downloaded: number, total: number) => void
+): Promise<void> {
+  // Cancel any existing pre-download for this chapter
+  preDownloadAbortFlags.set(chapter, false);
+
+  const total = verseTexts.length;
+  let downloaded = 0;
+
+  await ensureDirExists();
+
+  for (const { verse, text } of verseTexts) {
+    // Check if user navigated away — abort cleanly
+    if (preDownloadAbortFlags.get(chapter) === true) {
+      console.log(`[Audio] Pre-download cancelled for chapter ${chapter}`);
+      break;
+    }
+
+    const path = getCachedAudioPath(chapter, verse, language);
+    const fileInfo = await FileSystem.getInfoAsync(path);
+
+    if (fileInfo.exists) {
+      // Already cached — skip, no API call
+      downloaded++;
+      onProgress?.(downloaded, total);
+      continue;
+    }
+
+    if (!apiKey || apiKey === 'YOUR_TTS_API_KEY') {
+      // No API key — skip silently instead of showing errors
+      break;
+    }
+
+    try {
+      const base64Audio = await generateTTSAudio(text, language, Config.TTS_PROVIDER, apiKey);
+      await saveAudioToCache(chapter, verse, language, base64Audio);
+      downloaded++;
+      onProgress?.(downloaded, total);
+
+      // Small delay between API calls to avoid rate limiting (250ms)
+      await new Promise((res) => setTimeout(res, 250));
+    } catch (e) {
+      // Silently continue if one verse fails — don't break the whole chapter
+      console.warn(`[Audio] Failed to pre-cache ch${chapter}v${verse}:`, e);
+    }
+  }
+
+  preDownloadAbortFlags.delete(chapter);
+}
+
+/**
+ * Cancel a running pre-download for a chapter (call on screen unmount).
+ */
+export function cancelPreDownload(chapter: number): void {
+  preDownloadAbortFlags.set(chapter, true);
+}

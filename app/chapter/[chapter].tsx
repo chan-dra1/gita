@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Dimensions, StyleSheet, StatusBar } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeIn, Easing } from 'react-native-reanimated';
-import { getChapter } from '../../src/utils/sloka';
+import { getChapter, getSloka } from '../../src/utils/sloka';
 import { getSlokasRead } from '../../src/utils/stats';
+import { preDownloadChapterAudio, cancelPreDownload } from '../../src/utils/audio';
+import { Config } from '../../src/constants/config';
 import type { Chapter } from '../../src/types';
 import { t, getLanguage, Language } from '../../src/utils/i18n';
 
@@ -22,6 +24,8 @@ export default function ChapterDetailScreen() {
   const [chapterData, setChapterData] = useState<Chapter | null>(null);
   const [readVerses, setReadVerses] = useState<Set<number>>(new Set());
   const [lang, setLang] = useState<Language>('en');
+  const [audioProgress, setAudioProgress] = useState<{ done: number; total: number } | null>(null);
+  const preDownloadStarted = useRef(false);
 
   // Load chapter data and read progress
   const loadData = useCallback(async () => {
@@ -52,6 +56,42 @@ export default function ChapterDetailScreen() {
     loadData();
   }, [loadData]);
 
+  // Background audio pre-download when chapter opens
+  useEffect(() => {
+    if (!chapterData || preDownloadStarted.current) return;
+    preDownloadStarted.current = true;
+
+    const apiKey = Config.TTS_API_KEY;
+    if (!apiKey || apiKey === 'YOUR_TTS_API_KEY') return; // Skip if no key
+
+    // Build verse text array — clean translation only
+    const verseTexts = chapterData.verses.map((v) => {
+      const sloka = getSloka(chapterId, v.verse);
+      const clean = (sloka?.translation_english || '')
+        .replace(/;/g, ',')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+      return { verse: v.verse, text: clean };
+    }).filter(v => v.text.length > 0);
+
+    setAudioProgress({ done: 0, total: verseTexts.length });
+
+    preDownloadChapterAudio(
+      chapterId,
+      verseTexts,
+      'english',
+      apiKey,
+      (done, total) => setAudioProgress({ done, total })
+    ).then(() => {
+      // Completed
+      setAudioProgress(prev => prev ? { ...prev, done: prev.total } : null);
+    }).catch(() => {/* silent */});
+
+    return () => {
+      cancelPreDownload(chapterId);
+    };
+  }, [chapterData, chapterId]);
+
   if (!chapterData) {
     return (
       <View style={{ flex: 1, backgroundColor: '#FFF7ED', justifyContent: 'center', alignItems: 'center' }}>
@@ -74,6 +114,22 @@ export default function ChapterDetailScreen() {
         >
           <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
         </TouchableOpacity>
+
+        {/* Audio pre-download progress badge */}
+        {audioProgress && audioProgress.done < audioProgress.total && (
+          <View style={styles.audioBadge}>
+            <Ionicons name="musical-note" size={12} color="#E8751A" />
+            <Text style={styles.audioBadgeText}>
+              Audio {audioProgress.done}/{audioProgress.total}
+            </Text>
+          </View>
+        )}
+        {audioProgress && audioProgress.done === audioProgress.total && audioProgress.total > 0 && (
+          <View style={[styles.audioBadge, styles.audioBadgeDone]}>
+            <Ionicons name="checkmark-circle" size={12} color="#2D7A3A" />
+            <Text style={[styles.audioBadgeText, { color: '#2D7A3A' }]}>Audio Ready</Text>
+          </View>
+        )}
       </View>
 
       <ScrollView 
@@ -281,5 +337,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-  }
+  },
+  audioBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3E8',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    gap: 4,
+  },
+  audioBadgeDone: {
+    backgroundColor: '#EDF7EE',
+  },
+  audioBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#E8751A',
+  },
 });

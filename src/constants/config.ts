@@ -8,7 +8,7 @@ import { TTSProviderName } from '../types';
  */
 export const Config = {
     // ─── Gemini AI ─────────────────────────────────────────────
-    GEMINI_API_KEY: 'YOUR_GEMINI_API_KEY',
+    GEMINI_API_KEY: 'AIzaSyC1fmHGmhXFIeK1wMP_eP-P8xGFjKq7bOA',
     GEMINI_MODEL: 'gemini-2.0-flash', // fast + cheap
 
     // ─── TTS Provider ─────────────────────────────────────────
