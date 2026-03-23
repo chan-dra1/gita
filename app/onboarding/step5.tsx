@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Plat
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import Animated, { FadeInDown, FadeIn, Layout, Easing } from 'react-native-reanimated';
 import * as Notifications from 'expo-notifications';
 import { saveOnboardingStep, completeOnboarding } from '../../src/utils/stats';
 
@@ -76,12 +77,12 @@ export default function OnboardingStep5() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8F6F0" />
+      <StatusBar barStyle="light-content" backgroundColor="#0A1128" />
       
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+          <Ionicons name="arrow-back" size={24} color="#D1D5DB" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Personalization</Text>
         <View style={{ width: 40 }} />
@@ -94,24 +95,24 @@ export default function OnboardingStep5() {
         showsVerticalScrollIndicator={false}
       >
         {/* Progress */}
-        <View style={styles.progressContainer}>
+        <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.progressContainer}>
           <View style={styles.progressTextRow}>
             <Text style={styles.progressStepLabel}>Final Step</Text>
             <Text style={styles.progressStep}>5 OF 5</Text>
           </View>
           <View style={styles.progressBarBg}>
-            <View style={[styles.progressBarFill, { width: '100%' }]} />
+            <Animated.View layout={Layout.springify().damping(15)} style={styles.progressBarFill} />
           </View>
-        </View>
+        </Animated.View>
 
         {/* Title */}
-        <View style={styles.titleContainer}>
+        <Animated.View entering={FadeInDown.duration(600).delay(200)} style={styles.titleContainer}>
           <Text style={styles.mainTitle}>Set your daily reminder</Text>
           <Text style={styles.subtitle}>Consistency is key to a peaceful mind.</Text>
-        </View>
+        </Animated.View>
 
         {/* Reminders Toggle */}
-        <View style={styles.remindersContainer}>
+        <Animated.View entering={FadeInDown.duration(500).delay(300)} style={styles.remindersContainer}>
           <View style={styles.remindersContent}>
             <Text style={styles.remindersTitle}>Daily Reminders</Text>
             <Text style={styles.remindersDescription}>Remind me to stay on path</Text>
@@ -119,15 +120,15 @@ export default function OnboardingStep5() {
           <Switch
             value={remindersEnabled}
             onValueChange={setRemindersEnabled}
-            trackColor={{ false: '#E5E7EB', true: '#FDE8D4' }}
+            trackColor={{ false: '#374151', true: '#1A2747' }}
             thumbColor={remindersEnabled ? '#F48B29' : '#9CA3AF'}
-            ios_backgroundColor="#E5E7EB"
+            ios_backgroundColor="#374151"
           />
-        </View>
+        </Animated.View>
 
         {/* Time Picker */}
         {remindersEnabled && (
-          <View style={styles.timePickerContainer}>
+          <Animated.View entering={FadeIn.duration(400).delay(400)} style={styles.timePickerContainer}>
             <Text style={styles.timePickerLabel}>Choose a time</Text>
             <View style={styles.timePickerWrapper}>
               {Platform.OS === 'web' ? (
@@ -147,9 +148,9 @@ export default function OnboardingStep5() {
                       padding: '12px 16px',
                       fontSize: '20px',
                       borderRadius: '12px',
-                      border: '1px solid #E5E7EB',
-                      backgroundColor: '#FFFFFF',
-                      color: '#1A1A1A',
+                      border: '1px solid #1E293B',
+                      backgroundColor: '#16203A',
+                      color: '#E5E7EB',
                       outline: 'none',
                       cursor: 'pointer',
                       fontFamily: 'inherit'
@@ -163,15 +164,15 @@ export default function OnboardingStep5() {
                   display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                   onChange={onTimeChange}
                   style={styles.timePicker}
-                  textColor="#1A1A1A"
+                  textColor="#E5E7EB"
                 />
               )}
             </View>
-          </View>
+          </Animated.View>
         )}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <Animated.View entering={FadeInDown.duration(600).delay(500)} style={styles.footer}>
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={handleComplete}
@@ -185,7 +186,7 @@ export default function OnboardingStep5() {
           ) : (
             <React.Fragment>
               <Text style={styles.completeButtonText}>Complete Setup</Text>
-              <Ionicons name="sparkles" size={20} color="#FFFFFF" style={styles.sparkleIcon} />
+              <Ionicons name="sparkles" size={20} color="#0A1128" style={styles.sparkleIcon} />
             </React.Fragment>
           )}
         </TouchableOpacity>
@@ -193,7 +194,7 @@ export default function OnboardingStep5() {
         <Text style={styles.footerHint}>
           You can change these settings anytime in your profile.
         </Text>
-      </View>
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -201,7 +202,7 @@ export default function OnboardingStep5() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8F6F0',
+    backgroundColor: '#0A1128',
   },
   header: {
     flexDirection: 'row',
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#E5E7EB',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   progressContainer: {
@@ -233,7 +234,7 @@ const styles = StyleSheet.create({
   progressStepLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: '#D1D5DB',
   },
   progressStep: {
     fontSize: 14,
@@ -243,7 +244,7 @@ const styles = StyleSheet.create({
   },
   progressBarBg: {
     height: 6,
-    backgroundColor: '#FDE8D4',
+    backgroundColor: '#1E293B',
     borderRadius: 999,
     flexDirection: 'row',
     overflow: 'hidden',
@@ -251,6 +252,7 @@ const styles = StyleSheet.create({
   progressBarFill: {
     height: '100%',
     backgroundColor: '#F48B29',
+    width: '100%',
     borderRadius: 999,
   },
   titleContainer: {
@@ -260,7 +262,7 @@ const styles = StyleSheet.create({
   mainTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#FFFFFF',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
     lineHeight: 36,
     letterSpacing: -0.5,
@@ -268,7 +270,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 15,
-    color: '#6B7280',
+    color: '#9CA3AF',
     marginTop: 10,
     lineHeight: 22,
     textAlign: 'center',
@@ -284,13 +286,13 @@ const styles = StyleSheet.create({
   remindersContainer: {
     marginTop: 8,
     padding: 18,
-    backgroundColor: '#FEF8F3',
+    backgroundColor: '#16203A',
     borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: '#FDE8D4',
+    borderColor: '#1E293B',
     marginBottom: 24,
   },
   remindersContent: {
@@ -299,26 +301,26 @@ const styles = StyleSheet.create({
   remindersTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: '#E5E7EB',
     marginBottom: 4,
   },
   remindersDescription: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#9CA3AF',
   },
   timePickerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#16203A',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#1E293B',
   },
   timePickerLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: '#E5E7EB',
     marginBottom: 16,
   },
   timePickerWrapper: {
@@ -342,11 +344,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F48B29',
+    shadowColor: '#F48B29',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 8,
   },
   completeButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#0A1128',
   },
   sparkleIcon: {
     marginLeft: 8,
@@ -354,7 +361,7 @@ const styles = StyleSheet.create({
   footerHint: {
     fontSize: 12,
     textAlign: 'center',
-    color: '#9CA3AF',
+    color: '#6B7280',
     marginTop: 16,
   },
 });

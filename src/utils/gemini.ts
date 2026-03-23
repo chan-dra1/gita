@@ -255,19 +255,9 @@ ${sloka.translation_english}`;
  * Uses the local sloka data to give a basic explanation.
  */
 function getOfflineDeepDiveResponse(sloka: SlokaContext, question: string): string {
-    const q = question.toLowerCase();
-
-    if (q.includes('meaning') || q.includes('explain') || q.includes('simple')) {
-        return `🙏 **Chapter ${sloka.chapter}, Verse ${sloka.verse}** — ${sloka.chapterName}\n\nThis verse teaches us:\n\n"${sloka.translation_english}"\n\nThe essence of this teaching is about surrendering attachment to outcomes while dedicating yourself fully to righteous action. In daily life, this means doing your best work without being consumed by anxiety about results.\n\n_Note: For deeper AI-powered insights, please configure your Gemini API key in the app settings._`;
+    if (Config.GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY') {
+        return `🙏 **The AI Scholar is resting.**\n\nTo dive deeper into the meaning of this verse and receive personalized spiritual guidance, please configure your Gemini API key in the app settings.`;
     }
-
-    if (q.includes('apply') || q.includes('daily') || q.includes('life') || q.includes('practical')) {
-        return `🙏 **Applying Chapter ${sloka.chapter}, Verse ${sloka.verse} Today**\n\n"${sloka.translation_english}"\n\nTo apply this verse in modern life:\n\n• **At work**: Focus on the quality of your effort, not just the promotion or reward.\n• **In relationships**: Give love without keeping score.\n• **In challenges**: Face difficulties with equanimity, knowing that struggle itself is meaningful.\n\nThe Gita reminds us that our duty (dharma) is the path itself, not just the destination.\n\n_Note: For deeper AI-powered insights, please configure your Gemini API key._`;
-    }
-
-    if (q.includes('context') || q.includes('krishna') || q.includes('arjuna') || q.includes('when')) {
-        return `🙏 **Context of Chapter ${sloka.chapter}, Verse ${sloka.verse}**\n\n"${sloka.translation_english}"\n\nThis verse comes from **${sloka.chapterName}** of the Bhagavad Gita. The Gita is a conversation between Lord Krishna and the warrior Arjuna on the battlefield of Kurukshetra. Arjuna, overwhelmed by doubt and sorrow, seeks guidance — and Krishna reveals the deepest truths of existence, duty, and devotion.\n\n_Note: For deeper AI-powered insights, please configure your Gemini API key._`;
-    }
-
-    return `🙏 **Chapter ${sloka.chapter}, Verse ${sloka.verse}** — ${sloka.chapterName}\n\n"${sloka.translation_english}"\n\nThis is a beautiful verse from the Bhagavad Gita. Feel free to ask me about its deeper meaning, practical application, or historical context.\n\n_Note: For AI-powered deep dive, please configure your Gemini API key in settings._`;
+    
+    return `🙏 **Connection Error.**\n\nThe AI Scholar is having trouble connecting to the divine network right now. Please check your internet connection or try again later.`;
 }

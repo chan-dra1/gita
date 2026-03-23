@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { FadeInDown, FadeInRight, FadeIn, Layout, Easing } from 'react-native-reanimated';
 import { saveOnboardingStep } from '../../src/utils/stats';
 
 const COMMITMENT_OPTIONS = [
@@ -29,7 +30,6 @@ export default function OnboardingStep4() {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState<string>('quick');
 
-
   const handleComplete = async () => {
     await saveOnboardingStep('dailyCommitment', selectedId);
     router.push('/onboarding/step5' as any);
@@ -37,12 +37,12 @@ export default function OnboardingStep4() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8F6F0" />
+      <StatusBar barStyle="light-content" backgroundColor="#0A1128" />
       
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+          <Ionicons name="arrow-back" size={24} color="#D1D5DB" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Personalization</Text>
         <View style={{ width: 40 }} />
@@ -55,68 +55,71 @@ export default function OnboardingStep4() {
         showsVerticalScrollIndicator={false}
       >
         {/* Progress */}
-        <View style={styles.progressContainer}>
+        <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.progressContainer}>
           <View style={styles.progressTextRow}>
             <Text style={styles.progressStepLabel}>Almost There</Text>
             <Text style={styles.progressStep}>4 OF 5</Text>
           </View>
           <View style={styles.progressBarBg}>
-            <View style={[styles.progressBarFill, { width: '80%' }]} />
+            <Animated.View layout={Layout.springify().damping(15)} style={styles.progressBarFill} />
           </View>
-        </View>
+        </Animated.View>
 
         {/* Title */}
-        <View style={styles.titleContainer}>
+        <Animated.View entering={FadeInDown.duration(600).delay(200)} style={styles.titleContainer}>
           <Text style={styles.mainTitle}>Commit to your daily practice</Text>
-        </View>
+        </Animated.View>
 
         {/* Commitment Options */}
         <View style={styles.optionsContainer}>
-          {COMMITMENT_OPTIONS.map((option) => {
+          {COMMITMENT_OPTIONS.map((option, index) => {
             const isSelected = selectedId === option.id;
             return (
-              <TouchableOpacity
+              <Animated.View
                 key={option.id}
-                activeOpacity={0.8}
-                onPress={() => setSelectedId(option.id)}
-                style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+                entering={FadeInRight.duration(500).delay(300 + index * 100).easing(Easing.out(Easing.cubic))}
               >
-                <View style={styles.optionRow}>
-                  <View style={styles.optionTextContainer}>
-                    <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
-                      {option.title} <Text style={styles.optionSubtitle}>{option.subtitle}</Text>
-                    </Text>
-                    <Text style={styles.optionDescription}>
-                      {option.description}
-                    </Text>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => setSelectedId(option.id)}
+                  style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+                >
+                  <View style={styles.optionRow}>
+                    <View style={styles.optionTextContainer}>
+                      <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
+                        {option.title} <Text style={styles.optionSubtitle}>{option.subtitle}</Text>
+                      </Text>
+                      <Text style={[styles.optionDescription, isSelected && styles.optionDescriptionSelected]}>
+                        {option.description}
+                      </Text>
+                    </View>
+                    <View style={[styles.radioCircle, isSelected && styles.radioCircleSelected]}>
+                      {isSelected && <Animated.View entering={FadeIn.duration(200)} style={styles.radioDot} />}
+                    </View>
                   </View>
-                  <View style={[styles.radioCircle, isSelected && styles.radioCircleSelected]}>
-                    {isSelected && <View style={styles.radioDot} />}
-                  </View>
-                </View>
-              </TouchableOpacity>
+                </TouchableOpacity>
+              </Animated.View>
             );
           })}
         </View>
 
-
       </ScrollView>
 
       {/* Footer */}
-      <View style={styles.footer}>
+      <Animated.View entering={FadeInDown.duration(600).delay(700)} style={styles.footer}>
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={handleComplete}
           style={styles.completeButton}
         >
           <Text style={styles.completeButtonText}>Continue</Text>
-          <Ionicons name="arrow-forward" size={20} color="#FFFFFF" style={styles.sparkleIcon} />
+          <Ionicons name="arrow-forward" size={20} color="#0A1128" style={styles.sparkleIcon} />
         </TouchableOpacity>
         
         <Text style={styles.footerHint}>
           You can change these settings anytime in your profile.
         </Text>
-      </View>
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -124,7 +127,7 @@ export default function OnboardingStep4() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8F6F0',
+    backgroundColor: '#0A1128',
   },
   header: {
     flexDirection: 'row',
@@ -141,7 +144,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#E5E7EB',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   progressContainer: {
@@ -156,7 +159,7 @@ const styles = StyleSheet.create({
   progressStepLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: '#D1D5DB',
   },
   progressStep: {
     fontSize: 14,
@@ -166,7 +169,7 @@ const styles = StyleSheet.create({
   },
   progressBarBg: {
     height: 6,
-    backgroundColor: '#FDE8D4',
+    backgroundColor: '#1E293B',
     borderRadius: 999,
     flexDirection: 'row',
     overflow: 'hidden',
@@ -174,6 +177,7 @@ const styles = StyleSheet.create({
   progressBarFill: {
     height: '100%',
     backgroundColor: '#F48B29',
+    width: '80%',
     borderRadius: 999,
   },
   titleContainer: {
@@ -183,14 +187,14 @@ const styles = StyleSheet.create({
   mainTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#FFFFFF',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
     lineHeight: 36,
     letterSpacing: -0.5,
     textAlign: 'center',
   },
   optionsContainer: {
-    gap: 12,
+    gap: 16,
   },
   scrollView: {
     flex: 1,
@@ -203,14 +207,18 @@ const styles = StyleSheet.create({
   optionCard: {
     padding: 18,
     borderRadius: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#16203A',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#1E293B',
   },
   optionCardSelected: {
-    backgroundColor: '#FEF8F3',
+    backgroundColor: '#1A2747',
     borderColor: '#F48B29',
-    borderWidth: 2,
+    shadowColor: '#F48B29',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 4,
   },
   optionRow: {
     flexDirection: 'row',
@@ -224,26 +232,29 @@ const styles = StyleSheet.create({
   optionTitle: {
     fontSize: 17,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: '#E5E7EB',
     marginBottom: 4,
   },
   optionTitleSelected: {
-    color: '#1A1A1A',
+    color: '#F48B29',
   },
   optionSubtitle: {
     fontWeight: 'normal',
-    color: '#6B7280',
+    color: '#9CA3AF',
   },
   optionDescription: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#9CA3AF',
+  },
+  optionDescriptionSelected: {
+    color: '#D1D5DB',
   },
   radioCircle: {
     width: 24,
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#D1D5DB',
+    borderColor: '#374151',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -255,31 +266,6 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
     backgroundColor: '#F48B29',
-  },
-  remindersContainer: {
-    marginTop: 24,
-    padding: 18,
-    backgroundColor: '#FEF8F3',
-    borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: '#FDE8D4',
-    marginBottom: 24,
-  },
-  remindersContent: {
-    flex: 1,
-  },
-  remindersTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1A1A1A',
-    marginBottom: 4,
-  },
-  remindersDescription: {
-    fontSize: 13,
-    color: '#6B7280',
   },
   footer: {
     paddingHorizontal: 24,
@@ -293,11 +279,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F48B29',
+    shadowColor: '#F48B29',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 8,
   },
   completeButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#0A1128',
   },
   sparkleIcon: {
     marginLeft: 8,
@@ -305,7 +296,7 @@ const styles = StyleSheet.create({
   footerHint: {
     fontSize: 12,
     textAlign: 'center',
-    color: '#9CA3AF',
+    color: '#6B7280',
     marginTop: 16,
   },
 });

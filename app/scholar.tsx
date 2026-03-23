@@ -12,7 +12,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { getDeepDiveResponse } from '../src/utils/gemini';
+import { getProfileName } from '../src/utils/stats';
 import { Config } from '../src/constants/config';
+import { playDynamicAudio, stopAudio } from '../src/utils/audio';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -43,7 +45,15 @@ export default function ScholarScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [profileName, setProfileName] = useState('Seeker');
+  const [playingMessageId, setPlayingMessageId] = useState<number | null>(null);
   const scrollRef = useRef<ScrollView>(null);
+
+  React.useEffect(() => {
+    getProfileName().then((name) => {
+      setProfileName(name || 'Seeker');
+    });
+  }, []);
 
   const sendMessage = useCallback(async (question: string) => {
     const trimmed = question.trim();
@@ -85,6 +95,28 @@ export default function ScholarScreen() {
     }
   }, [messages, isLoading]);
 
+  const handlePlayAudio = async (text: string, msgId: number) => {
+    if (playingMessageId === msgId) {
+      await stopAudio();
+      setPlayingMessageId(null);
+      return;
+    }
+    
+    await stopAudio();
+    setPlayingMessageId(msgId);
+    
+    try {
+      await playDynamicAudio(
+        text,
+        'english',
+        () => setPlayingMessageId(null),
+        () => setPlayingMessageId(null)
+      );
+    } catch (e) {
+      setPlayingMessageId(null);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       {/* Header */}
@@ -121,7 +153,7 @@ export default function ScholarScreen() {
           {messages.length === 0 && (
             <View style={styles.welcomeContainer}>
               <Text style={styles.omSymbol}>ॐ</Text>
-              <Text style={styles.welcomeTitle}>Namaste, Seeker</Text>
+              <Text style={styles.welcomeTitle}>Namaste, {profileName}</Text>
               <Text style={styles.welcomeText}>
                 Ask me anything about the Bhagavad Gita, Dharma, life challenges, or spirituality. 
                 I am here to offer wisdom with humility.
@@ -153,8 +185,17 @@ export default function ScholarScreen() {
               ]}
             >
               {msg.role === 'assistant' && (
-                <View style={styles.scholarBadge}>
-                  <Text style={styles.scholarBadgeText}>🧘 Scholar</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <View style={styles.scholarBadge}>
+                    <Text style={styles.scholarBadgeText}>🧘 Scholar</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => handlePlayAudio(msg.content, msg.timestamp)}>
+                    <Ionicons 
+                      name={playingMessageId === msg.timestamp ? "stop-circle" : "volume-medium"} 
+                      size={20} 
+                      color="#E8751A" 
+                    />
+                  </TouchableOpacity>
                 </View>
               )}
               <Text style={[

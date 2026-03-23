@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { FadeInDown, FadeInRight, FadeIn, Layout, Easing } from 'react-native-reanimated';
 import { saveOnboardingStep } from '../../src/utils/stats';
 
 const OPTIONS = [
@@ -40,12 +41,12 @@ export default function OnboardingStep1() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8F6F0" />
+      <StatusBar barStyle="light-content" backgroundColor="#0A1128" />
       
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+          <Ionicons name="arrow-back" size={24} color="#D1D5DB" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Personalization</Text>
         <View style={{ width: 40 }} />
@@ -58,53 +59,57 @@ export default function OnboardingStep1() {
         showsVerticalScrollIndicator={false}
       >
         {/* Progress */}
-        <View style={styles.progressContainer}>
+        <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.progressContainer}>
           <View style={styles.progressTextRow}>
             <Text style={styles.progressStep}>STEP 1 OF 4</Text>
             <Text style={styles.progressLabel}>Getting Started</Text>
           </View>
           <View style={styles.progressBarBg}>
-            <View style={styles.progressBarFill} />
+            <Animated.View layout={Layout.springify().damping(15)} style={styles.progressBarFill} />
           </View>
-        </View>
+        </Animated.View>
 
         {/* Title */}
-        <View style={styles.titleContainer}>
+        <Animated.View entering={FadeInDown.duration(600).delay(200)} style={styles.titleContainer}>
           <Text style={styles.mainTitle}>What brings you to the Gita today?</Text>
           <Text style={styles.subtitle}>Select the path that resonates most with your soul's current journey.</Text>
-        </View>
+        </Animated.View>
 
         {/* Options */}
         <View style={styles.optionsContainer}>
-          {OPTIONS.map((option) => {
+          {OPTIONS.map((option, index) => {
             const isSelected = selectedId === option.id;
             return (
-              <TouchableOpacity
+              <Animated.View
                 key={option.id}
-                activeOpacity={0.8}
-                onPress={() => setSelectedId(option.id)}
-                style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+                entering={FadeInRight.duration(500).delay(300 + index * 100).easing(Easing.out(Easing.cubic))}
               >
-                <View style={styles.optionTextContainer}>
-                  <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
-                    {option.title}
-                  </Text>
-                  <Text style={styles.optionDescription}>
-                    {option.description}
-                  </Text>
-                </View>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => setSelectedId(option.id)}
+                  style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+                >
+                  <View style={styles.optionTextContainer}>
+                    <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
+                      {option.title}
+                    </Text>
+                    <Text style={[styles.optionDescription, isSelected && styles.optionDescriptionSelected]}>
+                      {option.description}
+                    </Text>
+                  </View>
 
-                <View style={[styles.radioOuter, isSelected && styles.radioOuterSelected]}>
-                  {isSelected ? <View style={styles.radioInner} /> : null}
-                </View>
-              </TouchableOpacity>
+                  <View style={[styles.radioOuter, isSelected && styles.radioOuterSelected]}>
+                    {isSelected ? <Animated.View entering={FadeIn.duration(200)} style={styles.radioInner} /> : null}
+                  </View>
+                </TouchableOpacity>
+              </Animated.View>
             );
           })}
         </View>
       </ScrollView>
 
       {/* Footer */}
-      <View style={styles.footer}>
+      <Animated.View entering={FadeInDown.duration(600).delay(700)} style={styles.footer}>
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={handleContinue}
@@ -114,13 +119,13 @@ export default function OnboardingStep1() {
           <Text style={[styles.continueText, selectedId ? styles.continueTextActive : styles.continueTextInactive]}>
             Continue
           </Text>
-          <Ionicons name="arrow-forward" size={20} color={selectedId ? '#FFFFFF' : 'rgba(244, 139, 41, 0.5)'} />
+          <Ionicons name="arrow-forward" size={20} color={selectedId ? '#0A1128' : 'rgba(244, 139, 41, 0.4)'} />
         </TouchableOpacity>
         
         <Text style={styles.footerHint}>
           You can update your preferences later in settings
         </Text>
-      </View>
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -128,7 +133,7 @@ export default function OnboardingStep1() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8F6F0',
+    backgroundColor: '#0A1128',
   },
   header: {
     flexDirection: 'row',
@@ -145,7 +150,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#E5E7EB',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   progressContainer: {
@@ -165,11 +170,11 @@ const styles = StyleSheet.create({
   },
   progressLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#9CA3AF',
   },
   progressBarBg: {
     height: 6,
-    backgroundColor: '#FDE8D4',
+    backgroundColor: '#1E293B',
     borderRadius: 999,
     flexDirection: 'row',
     overflow: 'hidden',
@@ -187,14 +192,14 @@ const styles = StyleSheet.create({
   mainTitle: {
     fontSize: 30,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#FFFFFF',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
     lineHeight: 38,
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#D1D5DB',
     marginTop: 12,
     lineHeight: 24,
   },
@@ -215,13 +220,18 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FDFCFB',
+    backgroundColor: '#16203A',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#1E293B',
   },
   optionCardSelected: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1A2747',
     borderColor: '#F48B29',
+    shadowColor: '#F48B29',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 4,
   },
   optionTextContainer: {
     flex: 1,
@@ -230,22 +240,25 @@ const styles = StyleSheet.create({
   optionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: '#E5E7EB',
     marginBottom: 4,
   },
   optionTitleSelected: {
-    color: '#1A1A1A',
+    color: '#F48B29',
   },
   optionDescription: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#9CA3AF',
+  },
+  optionDescriptionSelected: {
+    color: '#D1D5DB',
   },
   radioOuter: {
     width: 24,
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#D1D5DB',
+    borderColor: '#374151',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -272,9 +285,14 @@ const styles = StyleSheet.create({
   },
   continueButtonActive: {
     backgroundColor: '#F48B29',
+    shadowColor: '#F48B29',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 8,
   },
   continueButtonInactive: {
-    backgroundColor: '#FDE8D4',
+    backgroundColor: '#1E293B',
   },
   continueText: {
     fontSize: 18,
@@ -282,16 +300,16 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   continueTextActive: {
-    color: '#FFFFFF',
+    color: '#0A1128',
   },
   continueTextInactive: {
     color: '#F48B29',
-    opacity: 0.5,
+    opacity: 0.4,
   },
   footerHint: {
     fontSize: 12,
     textAlign: 'center',
-    color: '#9CA3AF',
+    color: '#6B7280',
     marginTop: 16,
   },
 });

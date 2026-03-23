@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, Image, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { FadeInDown, FadeInRight, FadeIn, Layout, Easing } from 'react-native-reanimated';
 import { saveOnboardingStep } from '../../src/utils/stats';
 
 const OPTIONS = [
@@ -45,12 +46,12 @@ export default function OnboardingStep3() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8F6F0" />
+      <StatusBar barStyle="light-content" backgroundColor="#0A1128" />
       
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+          <Ionicons name="arrow-back" size={24} color="#D1D5DB" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Personalization</Text>
         <View style={{ width: 40 }} />
@@ -63,71 +64,78 @@ export default function OnboardingStep3() {
         showsVerticalScrollIndicator={false}
       >
         {/* Progress */}
-        <View style={styles.progressContainer}>
+        <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.progressContainer}>
           <View style={styles.progressTextRow}>
             <Text style={styles.progressStep}>STEP 3 OF 4</Text>
             <Text style={styles.progressLabel}>Preference</Text>
           </View>
           <View style={styles.progressBarBg}>
-            <View style={[styles.progressBarFill, { width: '75%' }]} />
+            <Animated.View layout={Layout.springify().damping(15)} style={styles.progressBarFill} />
           </View>
-        </View>
+        </Animated.View>
 
         {/* Title */}
-        <View style={styles.titleContainer}>
+        <Animated.View entering={FadeInDown.duration(600).delay(200)} style={styles.titleContainer}>
           <Text style={styles.mainTitle}>What style of guidance do you prefer?</Text>
           <Text style={styles.subtitle}>
             Choose the path that resonates most with your spiritual journey.
           </Text>
-        </View>
+        </Animated.View>
 
         {/* Options */}
         <View style={styles.optionsContainer}>
-          {OPTIONS.map((option) => {
+          {OPTIONS.map((option, index) => {
             const isSelected = selectedId === option.id;
             return (
-              <TouchableOpacity
+              <Animated.View
                 key={option.id}
-                activeOpacity={0.8}
-                onPress={() => setSelectedId(option.id)}
-                style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+                entering={FadeInRight.duration(500).delay(300 + index * 100).easing(Easing.out(Easing.cubic))}
               >
-                <Image 
-                  source={{ uri: option.image }} 
-                  style={styles.optionImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.optionContent}>
-                  <View style={styles.optionHeader}>
-                    <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
-                      {option.title}
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => setSelectedId(option.id)}
+                  style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+                >
+                  <Image 
+                    source={{ uri: option.image }} 
+                    style={styles.optionImage}
+                    resizeMode="cover"
+                  />
+                  <View style={styles.optionContent}>
+                    <View style={styles.optionHeader}>
+                      <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
+                        {option.title}
+                      </Text>
+                      {isSelected ? (
+                        <Animated.View entering={FadeIn.duration(200)} style={styles.checkmark}>
+                          <Ionicons name="checkmark-circle" size={24} color="#F48B29" />
+                        </Animated.View>
+                      ) : (
+                        <View style={styles.checkmarkPlaceholder} />
+                      )}
+                    </View>
+                    <Text style={[styles.optionDescription, isSelected && styles.optionDescriptionSelected]}>
+                      {option.description}
                     </Text>
-                    {isSelected && (
-                      <View style={styles.checkmark}>
-                        <Ionicons name="checkmark-circle" size={24} color="#F48B29" />
-                      </View>
-                    )}
                   </View>
-                  <Text style={styles.optionDescription}>
-                    {option.description}
-                  </Text>
-                </View>
-              </TouchableOpacity>
+                </TouchableOpacity>
+              </Animated.View>
             );
           })}
         </View>
       </ScrollView>
 
       {/* Footer */}
-      <View style={styles.footer}>
+      <Animated.View entering={FadeInDown.duration(600).delay(700)} style={styles.footer}>
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={handleContinue}
           style={styles.continueButton}
         >
           <Text style={styles.continueText}>Continue</Text>
+          <Ionicons name="arrow-forward" size={20} color="#0A1128" />
         </TouchableOpacity>
-      </View>
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -135,7 +143,7 @@ export default function OnboardingStep3() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8F6F0',
+    backgroundColor: '#0A1128',
   },
   header: {
     flexDirection: 'row',
@@ -152,7 +160,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#E5E7EB',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   progressContainer: {
@@ -172,11 +180,11 @@ const styles = StyleSheet.create({
   },
   progressLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#9CA3AF',
   },
   progressBarBg: {
     height: 6,
-    backgroundColor: '#FDE8D4',
+    backgroundColor: '#1E293B',
     borderRadius: 999,
     flexDirection: 'row',
     overflow: 'hidden',
@@ -184,6 +192,7 @@ const styles = StyleSheet.create({
   progressBarFill: {
     height: '100%',
     backgroundColor: '#F48B29',
+    width: '75%',
     borderRadius: 999,
   },
   titleContainer: {
@@ -193,7 +202,7 @@ const styles = StyleSheet.create({
   mainTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#FFFFFF',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
     lineHeight: 36,
     letterSpacing: -0.5,
@@ -201,13 +210,13 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 15,
-    color: '#6B7280',
+    color: '#D1D5DB',
     marginTop: 10,
     lineHeight: 22,
     textAlign: 'center',
   },
   optionsContainer: {
-    gap: 12,
+    gap: 16,
     marginBottom: 24,
   },
   scrollView: {
@@ -220,20 +229,23 @@ const styles = StyleSheet.create({
   },
   optionCard: {
     borderRadius: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#16203A',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#1E293B',
     overflow: 'hidden',
   },
   optionCardSelected: {
     borderColor: '#F48B29',
-    borderWidth: 2,
+    backgroundColor: '#1A2747',
+    shadowColor: '#F48B29',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 4,
   },
   optionImage: {
     width: '100%',
     height: 100,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
   },
   optionContent: {
     padding: 16,
@@ -247,16 +259,24 @@ const styles = StyleSheet.create({
   optionTitle: {
     fontSize: 17,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: '#E5E7EB',
   },
   optionTitleSelected: {
-    color: '#1A1A1A',
+    color: '#F48B29',
   },
   optionDescription: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#9CA3AF',
+  },
+  optionDescriptionSelected: {
+    color: '#D1D5DB',
   },
   checkmark: {
+    marginLeft: 8,
+  },
+  checkmarkPlaceholder: {
+    width: 24,
+    height: 24,
     marginLeft: 8,
   },
   footer: {
@@ -271,10 +291,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F48B29',
+    shadowColor: '#F48B29',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 8,
+    gap: 8,
   },
   continueText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#0A1128',
   },
 });

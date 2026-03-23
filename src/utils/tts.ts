@@ -21,7 +21,7 @@ async function googleTTS(
     const langMap: Record<string, { code: string; name: string }> = {
         sanskrit: { code: 'hi-IN', name: 'hi-IN-Neural2-A' }, // Warm female Hindi/Sanskrit voice
         hindi: { code: 'hi-IN', name: 'hi-IN-Neural2-A' },
-        english: { code: 'en-US', name: 'en-US-Neural2-F' }, // Calm female English voice
+        english: { code: 'en-US', name: 'en-US-Journey-F' }, // Extremely high-quality, calm, human-like female voice
     };
 
     const voiceConfig = langMap[language] || langMap.english;

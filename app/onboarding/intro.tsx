@@ -1,77 +1,43 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, Animated, Easing, TouchableOpacity, Image } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { FadeInDown, FadeIn, Easing, ZoomIn } from 'react-native-reanimated';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export default function IntroScreen() {
   const router = useRouter();
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.95)).current;
-  const buttonFadeAnim = useRef(new Animated.Value(0)).current;
-  const buttonSlideAnim = useRef(new Animated.Value(20)).current;
-
-  useEffect(() => {
-    Animated.sequence([
-      Animated.delay(300), // Slight delay before intro starts
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 1200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 1800,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.delay(200),
-      Animated.parallel([
-        Animated.timing(buttonFadeAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(buttonSlideAnim, {
-          toValue: 0,
-          duration: 800,
-          easing: Easing.out(Easing.back(1.5)),
-          useNativeDriver: true,
-        })
-      ])
-    ]).start();
-  }, [fadeAnim, scaleAnim, buttonFadeAnim, buttonSlideAnim]);
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.centerContent}>
-        <Animated.View 
-          style={[
-            styles.heroContent, 
-            { 
-              opacity: fadeAnim,
-              transform: [{ scale: scaleAnim }]
-            }
-          ]}
-        >
-          <Text style={styles.omSymbol}>ॐ</Text>
-          <Text style={styles.title}>Bhagavad Gita</Text>
-          <Text style={styles.subtitle}>Awaken Your Inner Wisdom</Text>
-        </Animated.View>
+        <View style={styles.heroContent}>
+          <Animated.Text 
+            entering={ZoomIn.duration(1200).easing(Easing.out(Easing.back(1.5))).delay(300)}
+            style={styles.omSymbol}
+          >
+            ॐ
+          </Animated.Text>
+          <Animated.Text 
+            entering={FadeInDown.duration(1000).delay(800)}
+            style={styles.title}
+          >
+            Bhagavad Gita
+          </Animated.Text>
+          <Animated.Text 
+            entering={FadeInDown.duration(1000).delay(1100)}
+            style={styles.subtitle}
+          >
+            Awaken Your Inner Wisdom
+          </Animated.Text>
+        </View>
       </View>
 
       <Animated.View
-        style={[
-          styles.footer,
-          {
-            opacity: buttonFadeAnim,
-            transform: [{ translateY: buttonSlideAnim }]
-          }
-        ]}
+        entering={FadeInDown.duration(800).delay(1500).easing(Easing.out(Easing.back(1.2)))}
+        style={styles.footer}
       >
         <TouchableOpacity 
           style={styles.button}
@@ -79,7 +45,7 @@ export default function IntroScreen() {
           activeOpacity={0.8}
         >
           <Text style={styles.buttonText}>Begin Journey</Text>
-          <Ionicons name="arrow-forward" size={20} color="#FFF" />
+          <Ionicons name="arrow-forward" size={20} color="#0A1128" />
         </TouchableOpacity>
       </Animated.View>
     </SafeAreaView>
@@ -89,7 +55,7 @@ export default function IntroScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF7ED', 
+    backgroundColor: '#0A1128', // Deep Cosmic Navy
     justifyContent: 'space-between',
   },
   centerContent: {
@@ -102,26 +68,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   omSymbol: {
-    fontSize: 120,
-    color: '#E8751A',
-    marginBottom: 20,
+    fontSize: 140,
+    color: '#F48B29', // Vibrant Saffron
+    marginBottom: 24,
     fontWeight: '300',
     includeFontPadding: false,
-    textShadowColor: 'rgba(232, 117, 26, 0.2)',
-    textShadowOffset: { width: 0, height: 4 },
-    textShadowRadius: 16,
+    textShadowColor: 'rgba(244, 139, 41, 0.4)', // Glowing effect
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 30,
   },
   title: {
-    fontSize: 42,
+    fontSize: 44,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#FFFFFF',
     marginBottom: 16,
     letterSpacing: 0.5,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
-    color: '#8B7355',
+    color: '#D1D5DB', // Soft Silver
     fontStyle: 'italic',
     letterSpacing: 0.5,
     textAlign: 'center',
@@ -132,23 +98,23 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
   },
   button: {
-    backgroundColor: '#E8751A',
+    backgroundColor: '#F48B29',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 18,
     borderRadius: 16,
     gap: 12,
-    shadowColor: '#E8751A',
+    shadowColor: '#F48B29',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.4,
     shadowRadius: 16,
     elevation: 8,
   },
   buttonText: {
-    color: '#FFF',
+    color: '#0A1128',
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     letterSpacing: 0.5,
   }
 });

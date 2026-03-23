@@ -44,6 +44,7 @@ export default function SlokaScreen() {
   const [showDeepDive, setShowDeepDive] = useState(false);
   const [showCommentary, setShowCommentary] = useState(false);
   const [questionText, setQuestionText] = useState('');
+  const [playingScholarMsgId, setPlayingScholarMsgId] = useState<number | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   // Stats/Save state
@@ -116,11 +117,35 @@ export default function SlokaScreen() {
       .trim();
   };
 
+  const { playDynamicAudio } = require('../../../src/utils/audio');
+  
+  const handlePlayScholarMsg = async (text: string, msgId: number) => {
+    if (playingScholarMsgId === msgId) {
+      await stopAudio();
+      setPlayingScholarMsgId(null);
+      return;
+    }
+    
+    await stopAudio();
+    setPlayingScholarMsgId(msgId);
+    
+    try {
+      await playDynamicAudio(
+        text,
+        'english',
+        () => setPlayingScholarMsgId(null),
+        () => setPlayingScholarMsgId(null)
+      );
+    } catch (e) {
+      setPlayingScholarMsgId(null);
+    }
+  };
+
   const [isAudioCached, setIsAudioCached] = useState(false);
 
   useEffect(() => {
     // Check if audio is already cached when component mounts
-    hasCachedAudio(chapter, verse, 'english').then(setIsAudioCached);
+    hasCachedAudio(chapter, verse, 'sanskrit').then(setIsAudioCached);
   }, [chapter, verse]);
 
   const handlePlayPause = useCallback(async () => {
@@ -145,14 +170,14 @@ export default function SlokaScreen() {
 
     setIsAudioLoading(true);
     setAudioError(null);
-    const cleanText = getCleanAudioText(sloka.translation_english);
+    const cleanText = getCleanAudioText(sloka.sanskrit);
 
     try {
       await cacheAndPlayAudio(
         chapter,
         verse,
         cleanText,
-        'english',
+        'sanskrit',
         () => {
           setIsSpeaking(false);
           setIsAudioCached(true);
@@ -408,7 +433,7 @@ export default function SlokaScreen() {
                   )}
                 </View>
                 <Text style={{ fontSize: 12, color: '#B0A090', marginTop: 3 }}>
-                  {isAudioLoading ? 'Generating audio...' : isSpeaking ? 'Tap to stop' : isAudioCached ? 'Instant playback — saved offline' : 'Calm female voice · English recitation'}
+                  {isAudioLoading ? 'Generating audio...' : isSpeaking ? 'Tap to stop' : isAudioCached ? 'Instant playback — saved offline' : 'Calm female voice · Sanskrit recitation'}
                 </Text>
                 {audioError && <Text style={{ fontSize: 11, color: '#E53935', marginTop: 4 }}>{audioError}</Text>}
               </View>
@@ -658,14 +683,25 @@ export default function SlokaScreen() {
                       style={{
                         flexDirection: 'row',
                         alignItems: 'center',
+                        justifyContent: 'space-between',
                         marginBottom: 4,
-                        gap: 4,
+                        width: '85%',
+                        maxWidth: '85%',
                       }}
                     >
-                      <Text style={{ fontSize: 12 }}>🙏</Text>
-                      <Text style={{ fontSize: 11, fontWeight: '700', color: '#E8751A' }}>
-                        Gita Scholar
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Text style={{ fontSize: 12 }}>🙏</Text>
+                        <Text style={{ fontSize: 11, fontWeight: '700', color: '#E8751A' }}>
+                          Gita Scholar
+                        </Text>
+                      </View>
+                      <TouchableOpacity onPress={() => handlePlayScholarMsg(msg.content, i)}>
+                        <Ionicons 
+                          name={playingScholarMsgId === i ? "stop-circle" : "volume-medium"} 
+                          size={16} 
+                          color="#E8751A" 
+                        />
+                      </TouchableOpacity>
                     </View>
                   )}
                   <View

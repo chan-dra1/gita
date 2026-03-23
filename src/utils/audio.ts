@@ -145,6 +145,39 @@ export async function cacheAndPlayAudio(
   }
 }
 
+/**
+ * Generate and play audio for dynamic content (like Scholar responses)
+ * Saves to temporary cache directory so it doesn't inflate app storage permanently.
+ */
+export async function playDynamicAudio(
+  text: string,
+  language: AudioLanguage,
+  onFinish?: () => void,
+  onError?: (error: string) => void
+): Promise<Audio.Sound> {
+  try {
+    const base64Audio = await generateTTSAudio(
+      text,
+      language,
+      Config.TTS_PROVIDER,
+      Config.TTS_API_KEY,
+      Config.TTS_PROVIDER === 'elevenlabs' ? Config.ELEVENLABS_VOICE_ID : undefined
+    );
+    
+    // Use temporary cache directory for dynamic responses
+    const tempPath = `${(FileSystem as any).cacheDirectory}temp_scholar_audio_${Date.now()}.mp3`;
+    await FileSystem.writeAsStringAsync(tempPath, base64Audio, {
+      encoding: (FileSystem as any).EncodingType.Base64,
+    });
+    
+    return playAudioFromUri(tempPath, onFinish, onError);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'TTS generation failed';
+    onError?.(message);
+    throw error;
+  }
+}
+
 export async function getCacheSize(): Promise<number> {
   try {
     const dirInfo = await FileSystem.getInfoAsync(AUDIO_CACHE_DIR);

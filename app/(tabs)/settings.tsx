@@ -308,19 +308,19 @@ export default function SettingsScreen() {
             {remindersEnabled && (
               <View style={[styles.row, styles.rowLast, { paddingVertical: 12, justifyContent: 'center' }]}>
                 {Platform.OS === 'web' ? (
-                  <input
-                    type="time"
-                    value={`${reminderTime.getHours().toString().padStart(2, '0')}:${reminderTime.getMinutes().toString().padStart(2, '0')}`}
-                    onChange={(e) => {
+                  React.createElement('input', {
+                    type: "time",
+                    value: `${reminderTime.getHours().toString().padStart(2, '0')}:${reminderTime.getMinutes().toString().padStart(2, '0')}`,
+                    onChange: (e: any) => {
                       if (e.target && e.target.value) {
                         const [h, m] = e.target.value.split(':');
                         const newTime = new Date(reminderTime);
                         newTime.setHours(parseInt(h, 10), parseInt(m, 10));
                         onTimeChange(null, newTime);
                       }
-                    }}
-                    style={{ padding: '8px 16px', fontSize: '18px', borderRadius: '12px', border: '1px solid #E5E7EB' }}
-                  />
+                    },
+                    style: { padding: '8px 16px', fontSize: '18px', borderRadius: '12px', border: '1px solid #E5E7EB' }
+                  })
                 ) : (
                   <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'space-between', paddingLeft: 44 }}>
                     <Text style={{ fontSize: 16, color: '#1A1A1A' }}>Set Time</Text>
