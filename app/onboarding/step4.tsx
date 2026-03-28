@@ -7,28 +7,28 @@ import { saveOnboardingStep } from '../../src/utils/stats';
 
 const COMMITMENT_OPTIONS = [
   {
-    id: 'quick',
-    title: 'Quick',
-    subtitle: '(2 mins/day)',
-    description: 'Brief moment of mindfulness',
+    id: '2',
+    title: 'Beginner',
+    subtitle: '(2 Slokas/day)',
+    description: 'A gentle daily introduction',
   },
   {
-    id: 'moderate',
-    title: 'Moderate',
-    subtitle: '(5 mins/day)',
-    description: 'Balanced daily routine',
+    id: '5',
+    title: 'Seeker',
+    subtitle: '(5 Slokas/day)',
+    description: 'Steady spiritual progress',
   },
   {
-    id: 'deep',
-    title: 'Deep',
-    subtitle: '(15+ mins/day)',
-    description: 'Intensive spiritual practice',
+    id: '10',
+    title: 'Scholar',
+    subtitle: '(10 Slokas/day)',
+    description: 'Deep immersion in wisdom',
   },
 ];
 
 export default function OnboardingStep4() {
   const router = useRouter();
-  const [selectedId, setSelectedId] = useState<string>('quick');
+  const [selectedId, setSelectedId] = useState<string>('2');
 
   const handleComplete = async () => {
     await saveOnboardingStep('dailyCommitment', selectedId);

@@ -5,7 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Animated, { FadeInDown, FadeIn, Layout, Easing } from 'react-native-reanimated';
 import * as Notifications from 'expo-notifications';
-import { saveOnboardingStep, completeOnboarding } from '../../src/utils/stats';
+import { saveOnboardingStep, completeOnboarding, getOnboardingData } from '../../src/utils/stats';
+import { scheduleSmartNotifications } from '../../src/utils/notifications';
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -36,28 +37,18 @@ export default function OnboardingStep5() {
 
       // 2. Attempt notification setup if enabled
       if (remindersEnabled) {
-        // Use a shorter timeout (2s) so we don't hang on OS permission prompts
-        const permissionPromise = Notifications.requestPermissionsAsync();
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000));
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000));
         
         try {
-          const { status } = await Promise.race([permissionPromise, timeoutPromise]) as any;
-          if (status === 'granted') {
-            await Notifications.cancelAllScheduledNotificationsAsync();
-            await Notifications.scheduleNotificationAsync({
-              content: {
-                title: "Your Daily Dharma Awaits 🕉️",
-                body: "Take a moment for inner peace. Read today's sloka.",
-              },
-              trigger: {
-                hour: time.getHours(),
-                minute: time.getMinutes(),
-                repeats: true,
-              } as any,
-            });
-          }
+          const onboarding = await getOnboardingData();
+          const slokasStr = onboarding?.dailyCommitment || '2';
+          
+          await Promise.race([
+            scheduleSmartNotifications(time, slokasStr),
+            timeoutPromise
+          ]);
         } catch (err) {
-          console.warn('Notification setup failed or timed out:', err);
+          console.warn('Smart Notification setup failed or timed out:', err);
         }
       }
     } catch (error) {

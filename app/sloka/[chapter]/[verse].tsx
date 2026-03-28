@@ -543,18 +543,6 @@ export default function SlokaScreen() {
             </View>
             {showCommentary && commentary && (
               <View style={{ paddingHorizontal: 16, paddingBottom: 20 }}>
-                {/* Traditional Commentary */}
-                {commentary.sankara && (
-                  <View style={{ marginBottom: 16 }}>
-                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#E8751A', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>
-                      Traditional Wisdom
-                    </Text>
-                    <Text style={{ fontSize: 14, color: '#444', lineHeight: 22, fontStyle: 'italic' }}>
-                      {commentary.sankara}
-                    </Text>
-                  </View>
-                )}
-
                 {/* Meaning */}
                 {commentary.meaning && (
                   <View style={{ marginBottom: 16 }}>
