@@ -73,8 +73,6 @@ export default function OnboardingStep5() {
   return (
     <OnboardingBackground
       image={require('../../assets/images/onboarding_3.png')}
-      quote="One who has control over the mind is already at peace, for such a person has conquered the self."
-      author="BG 6.7"
       overlayOpacity={0.7}
     >
       <SafeAreaView style={styles.safeArea}>

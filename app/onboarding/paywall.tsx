@@ -29,6 +29,11 @@ export default function PaywallScreen() {
   const [isPurchasing, setIsPurchasing] = useState(false);
 
   useEffect(() => {
+    if (Platform.OS === 'web') {
+      setIsFetching(false);
+      return;
+    }
+
     const fetchOfferings = async () => {
       try {
         const offerings = await Purchases.getOfferings();

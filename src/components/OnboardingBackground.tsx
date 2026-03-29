@@ -69,12 +69,7 @@ export const OnboardingBackground: React.FC<OnboardingBackgroundProps> = ({
       
       <View style={[styles.overlay, { backgroundColor: `rgba(10, 17, 40, ${overlayOpacity})` }]} />
       
-      {quote && (
-        <Animated.View style={[styles.quoteContainer, { opacity: fadeAnim }]}>
-          <Text style={styles.quoteText}>"{quote}"</Text>
-          {author && <Text style={styles.authorText}>— {author}</Text>}
-        </Animated.View>
-      )}
+      {/* Quote rendering removed as per user request for visual cleanup */}
       
       {children}
     </View>

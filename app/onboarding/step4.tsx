@@ -42,8 +42,6 @@ export default function OnboardingStep4() {
   return (
     <OnboardingBackground
       image={require('../../assets/images/onboarding_2.png')}
-      quote="Curate your daily habit as a sacrifice to the supreme."
-      author="BG 9.27"
       overlayOpacity={0.7}
     >
       <SafeAreaView style={styles.safeArea}>

@@ -51,8 +51,6 @@ export default function OnboardingStep3() {
   return (
     <OnboardingBackground
       image={require('../../assets/images/onboarding_3.png')}
-      quote="Whenever and wherever there is a decline in religious practice, O descendant of Bharata, and a predominant rise of irreligion—at that time I descend Myself."
-      author="BG 4.7"
       overlayOpacity={0.7}
     >
       <SafeAreaView style={styles.safeArea}>

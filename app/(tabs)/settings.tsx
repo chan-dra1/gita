@@ -5,13 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Notifications from 'expo-notifications';
-// Safe import for the DharmaBlocker native module — only available on physical device builds
-let DharmaBlocker: any = null;
-try {
-  DharmaBlocker = require('../../modules/dharma-blocker').default;
-} catch (e) {
-  // Module not available (Expo Go, web) — Dharma Mode will be disabled
-}
+import DharmaBlocker from '../../modules/dharma-blocker';
 import { 
   getAllStats, 
   getSlokasRead, 
@@ -116,7 +110,7 @@ export default function SettingsScreen() {
     setDharmaMode(value);
     await saveOnboardingStep('dharmaMode', value);
     if (value) {
-      if (Platform.OS !== 'web' && DharmaBlocker) {
+      if (Platform.OS === 'android') {
         try {
           const granted = await DharmaBlocker.requestPermissions();
           if (granted) {
@@ -127,13 +121,14 @@ export default function SettingsScreen() {
             await saveOnboardingStep('dharmaMode', false);
           }
         } catch (e) {
+          console.warn("DharmaBlocker error:", e);
           Alert.alert("Dharma Mode", "Focus mode enabled. Install on device to block apps.");
         }
       } else {
         Alert.alert("Dharma Mode Active", "Focus mode enabled. Distractions minimized.");
       }
     } else {
-      if (Platform.OS !== 'web' && DharmaBlocker) {
+      if (Platform.OS === 'android') {
         try { DharmaBlocker.stopBlocking(); } catch (e) {}
       }
     }
