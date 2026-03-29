@@ -107,5 +107,6 @@ export interface OnboardingData {
     remindersEnabled: boolean;
     reminderTime?: string | null;
     dharmaMode?: boolean;
+    blockedApps?: string[];
     completedAt: number | null;
 }

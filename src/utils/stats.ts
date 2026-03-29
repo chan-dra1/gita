@@ -215,6 +215,16 @@ export async function isOnboardingComplete(): Promise<boolean> {
   return data.completedAt !== null;
 }
 
+// Dharma Mode / Blocked Apps Functions
+export async function getBlockedApps(): Promise<string[]> {
+  const data = await getOnboardingData();
+  return data.blockedApps || [];
+}
+
+export async function saveBlockedApps(apps: string[]): Promise<void> {
+  await saveOnboardingStep('blockedApps', apps);
+}
+
 // Profile Name Functions
 export async function getProfileName(): Promise<string> {
   try {

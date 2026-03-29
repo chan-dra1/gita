@@ -12,9 +12,22 @@ try {
 } catch (e) {
   // Module not available (Expo Go, web) — Dharma Mode will be disabled
 }
-import { getAllStats, getSlokasRead, getSavedSlokas, getOnboardingData, saveOnboardingStep, getProfileName, saveProfileName, type OnboardingData, type SlokaReadEntry } from '../../src/utils/stats';
+import { 
+  getAllStats, 
+  getSlokasRead, 
+  getSavedSlokas, 
+  getOnboardingData, 
+  saveOnboardingStep, 
+  getProfileName, 
+  saveProfileName, 
+  getBlockedApps,
+  saveBlockedApps,
+  type OnboardingData, 
+  type SlokaReadEntry 
+} from '../../src/utils/stats';
 import { Language, getLanguage, saveLanguage, t } from '../../src/utils/i18n';
 import { scheduleSmartNotifications } from '../../src/utils/notifications';
+import { AppSelectorModal } from '../../src/components/AppSelectorModal';
 
 interface StatsData {
   slokasRead: number;
@@ -41,6 +54,8 @@ export default function SettingsScreen() {
   const [remindersEnabled, setRemindersEnabled] = useState(false);
   const [reminderTime, setReminderTime] = useState(new Date(new Date().setHours(8, 0, 0, 0)));
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showAppSelector, setShowAppSelector] = useState(false);
+  const [blockedApps, setBlockedApps] = useState<string[]>([]);
 
   const loadStats = useCallback(async () => {
     try {
@@ -62,6 +77,9 @@ export default function SettingsScreen() {
       if (onboarding?.dharmaMode !== undefined) setDharmaMode(onboarding.dharmaMode);
       if (onboarding?.remindersEnabled !== undefined) setRemindersEnabled(onboarding.remindersEnabled);
       if (onboarding?.reminderTime) setReminderTime(new Date(onboarding.reminderTime));
+      
+      const blocked = await getBlockedApps();
+      setBlockedApps(blocked);
 
       setRecentSlokas(slokasRead.slice(-3).reverse());
     } catch (error) {
@@ -90,6 +108,11 @@ export default function SettingsScreen() {
   };
 
   const handleDharmaModeToggle = async (value: boolean) => {
+    if (value && blockedApps.length === 0) {
+      setShowAppSelector(true);
+      return;
+    }
+
     setDharmaMode(value);
     await saveOnboardingStep('dharmaMode', value);
     if (value) {
@@ -97,8 +120,8 @@ export default function SettingsScreen() {
         try {
           const granted = await DharmaBlocker.requestPermissions();
           if (granted) {
-            DharmaBlocker.startBlocking(['com.instagram.android', 'com.zhiliaoapp.musically']);
-            Alert.alert("Dharma Mode Active", "Distracting apps are now blocked.");
+            DharmaBlocker.startBlocking(blockedApps);
+            Alert.alert("Dharma Mode Active", `${blockedApps.length} apps are now restricted.`);
           } else {
             setDharmaMode(false);
             await saveOnboardingStep('dharmaMode', false);
@@ -112,6 +135,27 @@ export default function SettingsScreen() {
     } else {
       if (Platform.OS !== 'web' && DharmaBlocker) {
         try { DharmaBlocker.stopBlocking(); } catch (e) {}
+      }
+    }
+  };
+
+  const handleAppSelection = async (apps: string[]) => {
+    setBlockedApps(apps);
+    await saveBlockedApps(apps);
+    
+    // If we just selected apps and dharma mode was off but triggered, turn it on
+    if (!dharmaMode && apps.length > 0) {
+      handleDharmaModeToggle(true);
+    } else if (dharmaMode && apps.length > 0) {
+      // Update running service if already on
+      if (Platform.OS !== 'web' && DharmaBlocker) {
+        try { DharmaBlocker.startBlocking(apps); } catch(e) {}
+      }
+    } else if (apps.length === 0) {
+      setDharmaMode(false);
+      await saveOnboardingStep('dharmaMode', false);
+      if (Platform.OS !== 'web' && DharmaBlocker) {
+        try { DharmaBlocker.stopBlocking(); } catch(e) {}
       }
     }
   };
@@ -324,6 +368,14 @@ export default function SettingsScreen() {
               }
             />
             <SettingRow 
+              icon="options" 
+              label="Select Blocked Apps" 
+              desc={blockedApps.length > 0 ? `${blockedApps.length} apps selected` : "No apps selected"}
+              iconColor="#F97316"
+              onPress={() => setShowAppSelector(true)}
+              isLast={!remindersEnabled}
+            />
+            <SettingRow 
               icon="notifications" 
               label={t('dailyReminder', language)} 
               desc={remindersEnabled ? `Active at ${reminderTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : "Off"}
@@ -427,6 +479,14 @@ export default function SettingsScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* App Selector Modal */}
+      <AppSelectorModal
+        visible={showAppSelector}
+        onClose={() => setShowAppSelector(false)}
+        selectedApps={blockedApps}
+        onSelectApps={handleAppSelection}
+      />
 
     </SafeAreaView>
   );
