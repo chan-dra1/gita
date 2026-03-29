@@ -4,6 +4,10 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInRight, FadeIn, Layout, Easing } from 'react-native-reanimated';
 import { saveOnboardingStep } from '../../src/utils/stats';
+import { OnboardingBackground } from '../../src/components/OnboardingBackground';
+import { Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 const COMMITMENT_OPTIONS = [
   {
@@ -36,98 +40,105 @@ export default function OnboardingStep4() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0A1128" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#D1D5DB" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Personalization</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
-      {/* Scrollable Content */}
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Progress */}
-        <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.progressContainer}>
-          <View style={styles.progressTextRow}>
-            <Text style={styles.progressStepLabel}>Almost There</Text>
-            <Text style={styles.progressStep}>4 OF 5</Text>
-          </View>
-          <View style={styles.progressBarBg}>
-            <Animated.View layout={Layout.springify().damping(15)} style={styles.progressBarFill} />
-          </View>
-        </Animated.View>
-
-        {/* Title */}
-        <Animated.View entering={FadeInDown.duration(600).delay(200)} style={styles.titleContainer}>
-          <Text style={styles.mainTitle}>Commit to your daily practice</Text>
-        </Animated.View>
-
-        {/* Commitment Options */}
-        <View style={styles.optionsContainer}>
-          {COMMITMENT_OPTIONS.map((option, index) => {
-            const isSelected = selectedId === option.id;
-            return (
-              <Animated.View
-                key={option.id}
-                entering={FadeInRight.duration(500).delay(300 + index * 100).easing(Easing.out(Easing.cubic))}
-              >
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() => setSelectedId(option.id)}
-                  style={[styles.optionCard, isSelected && styles.optionCardSelected]}
-                >
-                  <View style={styles.optionRow}>
-                    <View style={styles.optionTextContainer}>
-                      <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
-                        {option.title} <Text style={styles.optionSubtitle}>{option.subtitle}</Text>
-                      </Text>
-                      <Text style={[styles.optionDescription, isSelected && styles.optionDescriptionSelected]}>
-                        {option.description}
-                      </Text>
-                    </View>
-                    <View style={[styles.radioCircle, isSelected && styles.radioCircleSelected]}>
-                      {isSelected && <Animated.View entering={FadeIn.duration(200)} style={styles.radioDot} />}
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              </Animated.View>
-            );
-          })}
+    <OnboardingBackground
+      image={require('../../assets/images/onboarding_2.png')}
+      quote="Curate your daily habit as a sacrifice to the supreme."
+      author="BG 9.27"
+      overlayOpacity={0.7}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#D1D5DB" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Personalization</Text>
+          <View style={{ width: 40 }} />
         </View>
 
-      </ScrollView>
-
-      {/* Footer */}
-      <Animated.View entering={FadeInDown.duration(600).delay(700)} style={styles.footer}>
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={handleComplete}
-          style={styles.completeButton}
+        {/* Scrollable Content */}
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.completeButtonText}>Continue</Text>
-          <Ionicons name="arrow-forward" size={20} color="#0A1128" style={styles.sparkleIcon} />
-        </TouchableOpacity>
-        
-        <Text style={styles.footerHint}>
-          You can change these settings anytime in your profile.
-        </Text>
-      </Animated.View>
-    </SafeAreaView>
+          {/* Progress */}
+          <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.progressContainer}>
+            <View style={styles.progressTextRow}>
+              <Text style={styles.progressStepLabel}>Almost There</Text>
+              <Text style={styles.progressStep}>4 OF 5</Text>
+            </View>
+            <View style={styles.progressBarBg}>
+              <Animated.View layout={Layout.springify().damping(15)} style={styles.progressBarFill} />
+            </View>
+          </Animated.View>
+
+          {/* Title */}
+          <Animated.View entering={FadeInDown.duration(600).delay(200)} style={styles.titleContainer}>
+            <Text style={styles.mainTitle}>Commit to your daily practice</Text>
+          </Animated.View>
+
+          {/* Commitment Options */}
+          <View style={styles.optionsContainer}>
+            {COMMITMENT_OPTIONS.map((option, index) => {
+              const isSelected = selectedId === option.id;
+              return (
+                <Animated.View
+                  key={option.id}
+                  entering={FadeInRight.duration(500).delay(300 + index * 100).easing(Easing.out(Easing.cubic))}
+                >
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => setSelectedId(option.id)}
+                    style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+                  >
+                    <View style={styles.optionRow}>
+                      <View style={styles.optionTextContainer}>
+                        <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
+                          {option.title} <Text style={styles.optionSubtitle}>{option.subtitle}</Text>
+                        </Text>
+                        <Text style={[styles.optionDescription, isSelected && styles.optionDescriptionSelected]}>
+                          {option.description}
+                        </Text>
+                      </View>
+                      <View style={[styles.radioCircle, isSelected && styles.radioCircleSelected]}>
+                        {isSelected && <Animated.View entering={FadeIn.duration(200)} style={styles.radioDot} />}
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })}
+          </View>
+
+        </ScrollView>
+
+        {/* Footer */}
+        <Animated.View entering={FadeInDown.duration(600).delay(700)} style={styles.footer}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={handleComplete}
+            style={styles.completeButton}
+          >
+            <Text style={styles.completeButtonText}>Continue</Text>
+            <Ionicons name="arrow-forward" size={20} color="#0A1128" style={styles.sparkleIcon} />
+          </TouchableOpacity>
+          
+          <Text style={styles.footerHint}>
+            You can change these settings anytime in your profile.
+          </Text>
+        </Animated.View>
+      </SafeAreaView>
+    </OnboardingBackground>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0A1128',
+    backgroundColor: 'transparent',
   },
   header: {
     flexDirection: 'row',
@@ -207,16 +218,16 @@ const styles = StyleSheet.create({
   optionCard: {
     padding: 18,
     borderRadius: 16,
-    backgroundColor: '#16203A',
+    backgroundColor: 'rgba(22, 32, 58, 0.7)',
     borderWidth: 1,
-    borderColor: '#1E293B',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   optionCardSelected: {
-    backgroundColor: '#1A2747',
+    backgroundColor: 'rgba(26, 39, 71, 0.8)',
     borderColor: '#F48B29',
     shadowColor: '#F48B29',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 4,
   },

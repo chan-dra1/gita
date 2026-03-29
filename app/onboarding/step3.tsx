@@ -4,6 +4,10 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInRight, FadeIn, Layout, Easing } from 'react-native-reanimated';
 import { saveOnboardingStep } from '../../src/utils/stats';
+import { OnboardingBackground } from '../../src/components/OnboardingBackground';
+import { Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 const OPTIONS = [
   {
@@ -45,105 +49,107 @@ export default function OnboardingStep3() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0A1128" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#D1D5DB" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Personalization</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
-      {/* Scrollable Content */}
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Progress */}
-        <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.progressContainer}>
-          <View style={styles.progressTextRow}>
-            <Text style={styles.progressStep}>STEP 3 OF 4</Text>
-            <Text style={styles.progressLabel}>Preference</Text>
-          </View>
-          <View style={styles.progressBarBg}>
-            <Animated.View layout={Layout.springify().damping(15)} style={styles.progressBarFill} />
-          </View>
-        </Animated.View>
-
-        {/* Title */}
-        <Animated.View entering={FadeInDown.duration(600).delay(200)} style={styles.titleContainer}>
-          <Text style={styles.mainTitle}>What style of guidance do you prefer?</Text>
-          <Text style={styles.subtitle}>
-            Choose the path that resonates most with your spiritual journey.
-          </Text>
-        </Animated.View>
-
-        {/* Options */}
-        <View style={styles.optionsContainer}>
-          {OPTIONS.map((option, index) => {
-            const isSelected = selectedId === option.id;
-            return (
-              <Animated.View
-                key={option.id}
-                entering={FadeInRight.duration(500).delay(300 + index * 100).easing(Easing.out(Easing.cubic))}
-              >
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() => setSelectedId(option.id)}
-                  style={[styles.optionCard, isSelected && styles.optionCardSelected]}
-                >
-                  <Image 
-                    source={{ uri: option.image }} 
-                    style={styles.optionImage}
-                    resizeMode="cover"
-                  />
-                  <View style={styles.optionContent}>
-                    <View style={styles.optionHeader}>
-                      <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
-                        {option.title}
-                      </Text>
-                      {isSelected ? (
-                        <Animated.View entering={FadeIn.duration(200)} style={styles.checkmark}>
-                          <Ionicons name="checkmark-circle" size={24} color="#F48B29" />
-                        </Animated.View>
-                      ) : (
-                        <View style={styles.checkmarkPlaceholder} />
-                      )}
-                    </View>
-                    <Text style={[styles.optionDescription, isSelected && styles.optionDescriptionSelected]}>
-                      {option.description}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </Animated.View>
-            );
-          })}
+    <OnboardingBackground
+      image={require('../../assets/images/onboarding_3.png')}
+      quote="Whenever and wherever there is a decline in religious practice, O descendant of Bharata, and a predominant rise of irreligion—at that time I descend Myself."
+      author="BG 4.7"
+      overlayOpacity={0.7}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#D1D5DB" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Personalization</Text>
+          <View style={{ width: 40 }} />
         </View>
-      </ScrollView>
 
-      {/* Footer */}
-      <Animated.View entering={FadeInDown.duration(600).delay(700)} style={styles.footer}>
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={handleContinue}
-          style={styles.continueButton}
+        {/* Scrollable Content */}
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.continueText}>Continue</Text>
-          <Ionicons name="arrow-forward" size={20} color="#0A1128" />
-        </TouchableOpacity>
-      </Animated.View>
-    </SafeAreaView>
+          {/* Progress */}
+          <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.progressContainer}>
+            <View style={styles.progressTextRow}>
+              <Text style={styles.progressStep}>STEP 3 OF 4</Text>
+              <Text style={styles.progressLabel}>Preference</Text>
+            </View>
+            <View style={styles.progressBarBg}>
+              <Animated.View layout={Layout.springify().damping(15)} style={styles.progressBarFill} />
+            </View>
+          </Animated.View>
+
+          {/* Title */}
+          <Animated.View entering={FadeInDown.duration(600).delay(200)} style={styles.titleContainer}>
+            <Text style={styles.mainTitle}>What style of guidance do you prefer?</Text>
+            <Text style={styles.subtitle}>
+              Choose the path that resonates most with your spiritual journey.
+            </Text>
+          </Animated.View>
+
+          {/* Options */}
+          <View style={styles.optionsContainer}>
+            {OPTIONS.map((option, index) => {
+              const isSelected = selectedId === option.id;
+              return (
+                <Animated.View
+                  key={option.id}
+                  entering={FadeInRight.duration(500).delay(300 + index * 100).easing(Easing.out(Easing.cubic))}
+                >
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => setSelectedId(option.id)}
+                    style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+                  >
+                    <View style={styles.optionContent}>
+                      <View style={styles.optionHeader}>
+                        <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
+                          {option.title}
+                        </Text>
+                        {isSelected ? (
+                          <Animated.View entering={FadeIn.duration(200)} style={styles.checkmark}>
+                            <Ionicons name="checkmark-circle" size={24} color="#F48B29" />
+                          </Animated.View>
+                        ) : (
+                          <View style={styles.checkmarkPlaceholder} />
+                        )}
+                      </View>
+                      <Text style={[styles.optionDescription, isSelected && styles.optionDescriptionSelected]}>
+                        {option.description}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })}
+          </View>
+        </ScrollView>
+
+        {/* Footer */}
+        <Animated.View entering={FadeInDown.duration(600).delay(700)} style={styles.footer}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={handleContinue}
+            style={styles.continueButton}
+          >
+            <Text style={styles.continueText}>Continue</Text>
+            <Ionicons name="arrow-forward" size={20} color="#0A1128" />
+          </TouchableOpacity>
+        </Animated.View>
+      </SafeAreaView>
+    </OnboardingBackground>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0A1128',
+    backgroundColor: 'transparent',
   },
   header: {
     flexDirection: 'row',
@@ -229,17 +235,17 @@ const styles = StyleSheet.create({
   },
   optionCard: {
     borderRadius: 16,
-    backgroundColor: '#16203A',
+    backgroundColor: 'rgba(22, 32, 58, 0.7)',
     borderWidth: 1,
-    borderColor: '#1E293B',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     overflow: 'hidden',
   },
   optionCardSelected: {
     borderColor: '#F48B29',
-    backgroundColor: '#1A2747',
+    backgroundColor: 'rgba(26, 39, 71, 0.8)',
     shadowColor: '#F48B29',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 4,
   },

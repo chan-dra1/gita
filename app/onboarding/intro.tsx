@@ -5,57 +5,64 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeIn, Easing, ZoomIn } from 'react-native-reanimated';
 
+import { OnboardingBackground } from '../../src/components/OnboardingBackground';
+
 const { width } = Dimensions.get('window');
 
 export default function IntroScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.centerContent}>
-        <View style={styles.heroContent}>
-          <Animated.Text 
-            entering={ZoomIn.duration(1200).easing(Easing.out(Easing.back(1.5))).delay(300)}
-            style={styles.omSymbol}
-          >
-            ॐ
-          </Animated.Text>
-          <Animated.Text 
-            entering={FadeInDown.duration(1000).delay(800)}
-            style={styles.title}
-          >
-            Bhagavad Gita
-          </Animated.Text>
-          <Animated.Text 
-            entering={FadeInDown.duration(1000).delay(1100)}
-            style={styles.subtitle}
-          >
-            Awaken Your Inner Wisdom
-          </Animated.Text>
+    <OnboardingBackground 
+      image={require('../../assets/images/onboarding_1.png')}
+      overlayOpacity={0.6}
+    >
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContent}>
+          <View style={styles.heroContent}>
+            <Animated.Text 
+              entering={ZoomIn.duration(1200).easing(Easing.out(Easing.back(1.5))).delay(300)}
+              style={styles.omSymbol}
+            >
+              ॐ
+            </Animated.Text>
+            <Animated.Text 
+              entering={FadeInDown.duration(1000).delay(800)}
+              style={styles.title}
+            >
+              Bhagavad Gita
+            </Animated.Text>
+            <Animated.Text 
+              entering={FadeInDown.duration(1000).delay(1100)}
+              style={styles.subtitle}
+            >
+              Awaken Your Inner Wisdom
+            </Animated.Text>
+          </View>
         </View>
-      </View>
 
-      <Animated.View
-        entering={FadeInDown.duration(800).delay(1500).easing(Easing.out(Easing.back(1.2)))}
-        style={styles.footer}
-      >
-        <TouchableOpacity 
-          style={styles.button}
-          onPress={() => router.push('/onboarding/step1' as any)}
-          activeOpacity={0.8}
+        <Animated.View
+          entering={FadeInDown.duration(800).delay(1500).easing(Easing.out(Easing.back(1.2)))}
+          style={styles.footer}
         >
-          <Text style={styles.buttonText}>Begin Journey</Text>
-          <Ionicons name="arrow-forward" size={20} color="#0A1128" />
-        </TouchableOpacity>
-      </Animated.View>
-    </SafeAreaView>
+          <TouchableOpacity 
+            style={styles.button}
+            onPress={() => router.push('/onboarding/step1' as any)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.buttonText}>Begin Journey</Text>
+            <Ionicons name="arrow-forward" size={20} color="#0A1128" />
+          </TouchableOpacity>
+        </Animated.View>
+      </SafeAreaView>
+    </OnboardingBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A1128', // Deep Cosmic Navy
+    backgroundColor: 'transparent',
     justifyContent: 'space-between',
   },
   centerContent: {

@@ -7,6 +7,10 @@ import Animated, { FadeInDown, FadeIn, Layout, Easing } from 'react-native-reani
 import * as Notifications from 'expo-notifications';
 import { saveOnboardingStep, completeOnboarding, getOnboardingData } from '../../src/utils/stats';
 import { scheduleSmartNotifications } from '../../src/utils/notifications';
+import { OnboardingBackground } from '../../src/components/OnboardingBackground';
+import { Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -67,133 +71,140 @@ export default function OnboardingStep5() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0A1128" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#D1D5DB" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Personalization</Text>
-        <View style={{ width: 40 }} />
-      </View>
+    <OnboardingBackground
+      image={require('../../assets/images/onboarding_3.png')}
+      quote="One who has control over the mind is already at peace, for such a person has conquered the self."
+      author="BG 6.7"
+      overlayOpacity={0.7}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#D1D5DB" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Personalization</Text>
+          <View style={{ width: 40 }} />
+        </View>
 
-      {/* Scrollable Content */}
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Progress */}
-        <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.progressContainer}>
-          <View style={styles.progressTextRow}>
-            <Text style={styles.progressStepLabel}>Final Step</Text>
-            <Text style={styles.progressStep}>5 OF 5</Text>
-          </View>
-          <View style={styles.progressBarBg}>
-            <Animated.View layout={Layout.springify().damping(15)} style={styles.progressBarFill} />
-          </View>
-        </Animated.View>
-
-        {/* Title */}
-        <Animated.View entering={FadeInDown.duration(600).delay(200)} style={styles.titleContainer}>
-          <Text style={styles.mainTitle}>Set your daily reminder</Text>
-          <Text style={styles.subtitle}>Consistency is key to a peaceful mind.</Text>
-        </Animated.View>
-
-        {/* Reminders Toggle */}
-        <Animated.View entering={FadeInDown.duration(500).delay(300)} style={styles.remindersContainer}>
-          <View style={styles.remindersContent}>
-            <Text style={styles.remindersTitle}>Daily Reminders</Text>
-            <Text style={styles.remindersDescription}>Remind me to stay on path</Text>
-          </View>
-          <Switch
-            value={remindersEnabled}
-            onValueChange={setRemindersEnabled}
-            trackColor={{ false: '#374151', true: '#1A2747' }}
-            thumbColor={remindersEnabled ? '#F48B29' : '#9CA3AF'}
-            ios_backgroundColor="#374151"
-          />
-        </Animated.View>
-
-        {/* Time Picker */}
-        {remindersEnabled && (
-          <Animated.View entering={FadeIn.duration(400).delay(400)} style={styles.timePickerContainer}>
-            <Text style={styles.timePickerLabel}>Choose a time</Text>
-            <View style={styles.timePickerWrapper}>
-              {Platform.OS === 'web' ? (
-                <View style={[styles.timePickerWrapper, { padding: 10 }]}>
-                  {React.createElement('input', {
-                    type: 'time',
-                    value: `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`,
-                    onChange: (e: any) => {
-                      if (e.target && e.target.value) {
-                        const [h, m] = e.target.value.split(':');
-                        const newTime = new Date(time);
-                        newTime.setHours(parseInt(h, 10), parseInt(m, 10));
-                        setTime(newTime);
-                      }
-                    },
-                    style: {
-                      padding: '12px 16px',
-                      fontSize: '20px',
-                      borderRadius: '12px',
-                      border: '1px solid #1E293B',
-                      backgroundColor: '#16203A',
-                      color: '#E5E7EB',
-                      outline: 'none',
-                      cursor: 'pointer',
-                      fontFamily: 'inherit'
-                    }
-                  })}
-                </View>
-              ) : (
-                <DateTimePicker
-                  value={time}
-                  mode="time"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={onTimeChange}
-                  style={styles.timePicker}
-                  textColor="#E5E7EB"
-                />
-              )}
+        {/* Scrollable Content */}
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Progress */}
+          <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.progressContainer}>
+            <View style={styles.progressTextRow}>
+              <Text style={styles.progressStepLabel}>Final Step</Text>
+              <Text style={styles.progressStep}>5 OF 5</Text>
+            </View>
+            <View style={styles.progressBarBg}>
+              <Animated.View layout={Layout.springify().damping(15)} style={styles.progressBarFill} />
             </View>
           </Animated.View>
-        )}
-      </ScrollView>
 
-      <Animated.View entering={FadeInDown.duration(600).delay(500)} style={styles.footer}>
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={handleComplete}
-          style={styles.completeButton}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <React.Fragment>
-              <Text style={styles.completeButtonText}>Saving...</Text>
-            </React.Fragment>
-          ) : (
-            <React.Fragment>
-              <Text style={styles.completeButtonText}>Complete Setup</Text>
-              <Ionicons name="sparkles" size={20} color="#0A1128" style={styles.sparkleIcon} />
-            </React.Fragment>
+          {/* Title */}
+          <Animated.View entering={FadeInDown.duration(600).delay(200)} style={styles.titleContainer}>
+            <Text style={styles.mainTitle}>Set your daily reminder</Text>
+            <Text style={styles.subtitle}>Consistency is key to a peaceful mind.</Text>
+          </Animated.View>
+
+          {/* Reminders Toggle */}
+          <Animated.View entering={FadeInDown.duration(500).delay(300)} style={styles.remindersContainer}>
+            <View style={styles.remindersContent}>
+              <Text style={styles.remindersTitle}>Daily Reminders</Text>
+              <Text style={styles.remindersDescription}>Remind me to stay on path</Text>
+            </View>
+            <Switch
+              value={remindersEnabled}
+              onValueChange={setRemindersEnabled}
+              trackColor={{ false: '#374151', true: '#1A2747' }}
+              thumbColor={remindersEnabled ? '#F48B29' : '#9CA3AF'}
+              ios_backgroundColor="#374151"
+            />
+          </Animated.View>
+
+          {/* Time Picker */}
+          {remindersEnabled && (
+            <Animated.View entering={FadeIn.duration(400).delay(400)} style={styles.timePickerContainer}>
+              <Text style={styles.timePickerLabel}>Choose a time</Text>
+              <View style={styles.timePickerWrapper}>
+                {Platform.OS === 'web' ? (
+                  <View style={[styles.timePickerWrapper, { padding: 10 }]}>
+                    {React.createElement('input', {
+                      type: 'time',
+                      value: `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`,
+                      onChange: (e: any) => {
+                        if (e.target && e.target.value) {
+                          const [h, m] = e.target.value.split(':');
+                          const newTime = new Date(time);
+                          newTime.setHours(parseInt(h, 10), parseInt(m, 10));
+                          setTime(newTime);
+                        }
+                      },
+                      style: {
+                        padding: '12px 16px',
+                        fontSize: '20px',
+                        borderRadius: '12px',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        backgroundColor: 'rgba(22, 32, 58, 0.7)',
+                        color: '#E5E7EB',
+                        outline: 'none',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit'
+                      }
+                    })}
+                  </View>
+                ) : (
+                  <DateTimePicker
+                    value={time}
+                    mode="time"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={onTimeChange}
+                    style={styles.timePicker}
+                    textColor="#E5E7EB"
+                  />
+                )}
+              </View>
+            </Animated.View>
           )}
-        </TouchableOpacity>
-        
-        <Text style={styles.footerHint}>
-          You can change these settings anytime in your profile.
-        </Text>
-      </Animated.View>
-    </SafeAreaView>
+        </ScrollView>
+
+        <Animated.View entering={FadeInDown.duration(600).delay(500)} style={styles.footer}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={handleComplete}
+            style={styles.completeButton}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <React.Fragment>
+                <Text style={styles.completeButtonText}>Saving...</Text>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <Text style={styles.completeButtonText}>Complete Setup</Text>
+                <Ionicons name="sparkles" size={20} color="#0A1128" style={styles.sparkleIcon} />
+              </React.Fragment>
+            )}
+          </TouchableOpacity>
+          
+          <Text style={styles.footerHint}>
+            You can change these settings anytime in your profile.
+          </Text>
+        </Animated.View>
+      </SafeAreaView>
+    </OnboardingBackground>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0A1128',
+    backgroundColor: 'transparent',
   },
   header: {
     flexDirection: 'row',
@@ -277,13 +288,13 @@ const styles = StyleSheet.create({
   remindersContainer: {
     marginTop: 8,
     padding: 18,
-    backgroundColor: '#16203A',
+    backgroundColor: 'rgba(22, 32, 58, 0.7)',
     borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: '#1E293B',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     marginBottom: 24,
   },
   remindersContent: {
@@ -303,10 +314,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#16203A',
+    backgroundColor: 'rgba(22, 32, 58, 0.7)',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#1E293B',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   timePickerLabel: {
     fontSize: 15,
