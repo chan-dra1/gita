@@ -17,11 +17,27 @@ const COMMON_DISTRACTIONS = [
 export default function DharmaModeScreen() {
   const router = useRouter();
   const [isActive, setIsActive] = useState(false);
-  const [selectedApps, setSelectedApps] = useState<Set<string>>(new Set(COMMON_DISTRACTIONS.map(a => a.id)));
+  const [installedApps, setInstalledApps] = useState<{packageName: string, label: string}[]>([]);
+  const [selectedApps, setSelectedApps] = useState<Set<string>>(new Set());
   const [stats, setStats] = useState({ slokasRead: 0, dayStreak: 0 });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getAllStats().then(setStats);
+    async function loadData() {
+      const s = await getAllStats();
+      setStats(s);
+      
+      try {
+        const apps = await DharmaBlocker.getInstalledApps();
+        // Sort alphabetically
+        setInstalledApps(apps.sort((a, b) => a.label.localeCompare(b.label)));
+      } catch (e) {
+        console.error("Failed to load apps", e);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
   }, []);
 
   const toggleApp = (id: string) => {
@@ -37,7 +53,7 @@ export default function DharmaModeScreen() {
   const handleToggleDharmaMode = async (value: boolean) => {
     if (value) {
       if (selectedApps.size === 0) {
-        Alert.alert('Select Apps', 'Please select at least one app to block.');
+        Alert.alert('Select Apps', 'Please select at least one app to restrict.');
         return;
       }
       try {
@@ -73,7 +89,7 @@ export default function DharmaModeScreen() {
           <Ionicons name="shield-checkmark" size={40} color="#F48B29" style={{ marginBottom: 12 }} />
           <Text style={styles.infoTitle}>Cultivate Focus</Text>
           <Text style={styles.infoDesc}>
-            Dharma mode eliminates temptations by temporarily blocking distracting apps until you complete your daily reading goal.
+            Restrict access to distracting social media and apps of your choice until you complete your daily reading.
           </Text>
           <View style={styles.goalRow}>
             <Text style={styles.goalText}>Daily Progress: {stats.slokasRead} Slokas Read</Text>
@@ -83,8 +99,8 @@ export default function DharmaModeScreen() {
         {/* Master Toggle */}
         <View style={styles.masterToggleCard}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.masterTitle}>Enable Dharma Mode</Text>
-            <Text style={styles.masterSub}>Blocks selected apps</Text>
+            <Text style={styles.masterTitle}>Activate Restriction</Text>
+            <Text style={styles.masterSub}>{isActive ? "Mode is ACTIVE" : "Blocks selected apps"}</Text>
           </View>
           <Switch
             value={isActive}
@@ -95,24 +111,28 @@ export default function DharmaModeScreen() {
         </View>
 
         {/* App Selection List */}
-        <Text style={styles.sectionTitle}>Apps to Restrict (Android Only)</Text>
-        <View style={styles.appList}>
-          {COMMON_DISTRACTIONS.map(app => (
-            <View key={app.id} style={styles.appRow}>
-              <View style={styles.appIconBg}>
-                <Ionicons name={app.icon as any} size={20} color="#B8A99A" />
+        <Text style={styles.sectionTitle}>Select Apps to Restrict</Text>
+        {isLoading ? (
+          <Text style={{ color: '#B8A99A', textAlign: 'center', marginTop: 20 }}>Loading installed apps...</Text>
+        ) : (
+          <View style={styles.appList}>
+            {installedApps.map(app => (
+              <View key={app.packageName} style={styles.appRow}>
+                <View style={styles.appIconBg}>
+                  <Ionicons name="apps-outline" size={20} color="#B8A99A" />
+                </View>
+                <Text style={styles.appName} numberOfLines={1}>{app.label}</Text>
+                <Switch
+                  value={selectedApps.has(app.packageName)}
+                  onValueChange={() => toggleApp(app.packageName)}
+                  disabled={isActive}
+                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: 'rgba(244, 139, 41, 0.5)' }}
+                  thumbColor={selectedApps.has(app.packageName) ? '#F48B29' : '#B8A99A'}
+                />
               </View>
-              <Text style={styles.appName}>{app.name}</Text>
-              <Switch
-                value={selectedApps.has(app.id)}
-                onValueChange={() => toggleApp(app.id)}
-                disabled={isActive}
-                trackColor={{ false: 'rgba(255,255,255,0.1)', true: 'rgba(244, 139, 41, 0.5)' }}
-                thumbColor={selectedApps.has(app.id) ? '#F48B29' : '#B8A99A'}
-              />
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
+        )}
 
         {Platform.OS === 'ios' && (
           <Text style={styles.iosWarning}>

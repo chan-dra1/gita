@@ -43,6 +43,30 @@ class DharmaBlockerModule : Module() {
       }
     }
 
+    AsyncFunction("getInstalledApps") { promise: expo.modules.kotlin.Promise ->
+      val context = appContext.reactContext
+      if (context == null) {
+          promise.reject("ERR", "Context is null", null)
+          return@AsyncFunction
+      }
+      val pm = context.packageManager
+      val packages = pm.getInstalledPackages(0)
+      val appList = mutableListOf<Map<String, String>>()
+      
+      for (pkg in packages) {
+          // Filter out system apps that shouldn't be blocked, but keep user apps
+          val isSystem = (pkg.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
+          if (!isSystem || pkg.packageName == "com.android.chrome" || pkg.packageName == "com.google.android.youtube") {
+              val appMap = mapOf(
+                  "packageName" to pkg.packageName,
+                  "label" to pkg.applicationInfo.loadLabel(pm).toString()
+              )
+              appList.add(appMap)
+          }
+      }
+      promise.resolve(appList)
+    }
+
     Function("stopBlocking") {
       val context = appContext.reactContext
       if (context != null) {
