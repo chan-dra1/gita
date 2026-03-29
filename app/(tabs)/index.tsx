@@ -21,7 +21,6 @@ const { width } = Dimensions.get('window');
 // Pre-define highly aesthetic Krishna images for random display.
 const KRISHNA_IMAGES = [
   require('../../assets/images/home/krishna_1.webp'),
-  require('../../assets/images/home/krishna_2.webp'),
   require('../../assets/images/home/krishna_3.webp'),
   require('../../assets/images/home/krishna_4.webp'),
   require('../../assets/images/home/krishna_5.webp'),
