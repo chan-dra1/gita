@@ -55,11 +55,11 @@ class DharmaBlockerModule : Module() {
       
       for (pkg in packages) {
           // Filter out system apps that shouldn't be blocked, but keep user apps
-          val isSystem = (pkg.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
+          val isSystem = (pkg.applicationInfo?.flags ?: 0) and android.content.pm.ApplicationInfo.FLAG_SYSTEM != 0
           if (!isSystem || pkg.packageName == "com.android.chrome" || pkg.packageName == "com.google.android.youtube") {
               val appMap = mapOf(
                   "packageName" to pkg.packageName,
-                  "label" to pkg.applicationInfo.loadLabel(pm).toString()
+                  "label" to (pkg.applicationInfo?.loadLabel(pm)?.toString() ?: pkg.packageName)
               )
               appList.add(appMap)
           }
