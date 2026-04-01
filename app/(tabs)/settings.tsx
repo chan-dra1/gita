@@ -77,7 +77,9 @@ export default function SettingsScreen() {
 
       setRecentSlokas(slokasRead.slice(-3).reverse());
     } catch (error) {
-      console.error('Failed to load stats:', error);
+      console.warn('Failed to load stats or settings:', error);
+      // Set some defaults to prevent crash
+      setStats({ slokasRead: 0, dayStreak: 0, saved: 0 });
     } finally {
       setLoading(false);
     }
@@ -128,7 +130,7 @@ export default function SettingsScreen() {
         Alert.alert("Dharma Mode Active", "Focus mode enabled. Distractions minimized.");
       }
     } else {
-      if (Platform.OS === 'android') {
+      if (Platform.OS === 'android' && DharmaBlocker) {
         try { DharmaBlocker.stopBlocking(); } catch (e) {}
       }
     }

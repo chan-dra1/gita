@@ -35,7 +35,7 @@ const translations = {
     readingHistory: 'Reading History',
     viewAllSlokas: 'View All Slokas',
     language: 'Language',
-    currentLanguage: 'English',
+    currentLanguageName: 'English',
     experienceLevel: 'Experience Level',
     spiritualPath: 'Spiritual Path',
     slokasRead: 'Slokas Read',
@@ -58,10 +58,12 @@ const translations = {
     studyPractice: "Study & Practice",
     savedSlokas: "Saved Slokas",
     askScholar: "Ask the Scholar",
-    dharmaModeDesc: "Block distracting apps during study",
-    dailyReminder: "Daily Reminder",
+    languageKey: "Language",
+    currentLanguage: "English",
     howGitaWorks: "How Gita Works",
     habitsWellbeing: "Habits & Wellbeing",
+    dharmaModeDesc: "Block distracting apps during study",
+    dailyReminder: "Daily Reminder",
     statsVersesRead: "Verses Read",
     statsDayStreak: "Day Streak",
     statsSavedSlokas: "Saved Slokas",
@@ -78,7 +80,7 @@ const translations = {
     readingHistory: 'पढ़ने का इतिहास',
     viewAllSlokas: 'सभी श्लोक देखें',
     language: 'भाषा',
-    currentLanguage: 'हिन्दी',
+    currentLanguageName: 'हिन्दी',
     experienceLevel: 'अनुभव स्तर',
     spiritualPath: 'आध्यात्मिक मार्ग',
     slokasRead: 'पढ़े गए श्लोक',
@@ -101,10 +103,12 @@ const translations = {
     studyPractice: "अध्ययन और अभ्यास",
     savedSlokas: "सहेजे गए श्लोक",
     askScholar: "विद्वान से पूछें",
-    dharmaModeDesc: "अध्ययन के दौरान विचलित करने वाले ऐप्स को ब्लॉक करें",
-    dailyReminder: "दैनिक अनुस्मारक",
+    languageKey: "भाषा",
+    currentLanguage: "हिन्दी",
     howGitaWorks: "गीता कैसे काम करती है",
     habitsWellbeing: "आदतें और कल्याण",
+    dharmaModeDesc: "अध्ययन के दौरान विचलित करने वाले ऐप्स को ब्लॉक करें",
+    dailyReminder: "दैनिक अनुस्मारक",
     statsVersesRead: "पढ़े गए श्लोक",
     statsDayStreak: "दिन की निरंतरता",
     statsSavedSlokas: "सहेजे गए श्लोक",
@@ -112,7 +116,7 @@ const translations = {
 };
 
 export const t = (key: keyof typeof translations.en, lang: Language = 'en', params?: Record<string, string | number>): string => {
-  let str = translations[lang][key] || translations.en[key];
+  let str = translations[lang]?.[key] || translations.en[key] || key;
   if (params) {
     Object.keys(params).forEach(pk => {
       str = str.replace(`{${pk}}`, String(params[pk]));
