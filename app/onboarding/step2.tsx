@@ -54,7 +54,7 @@ export default function OnboardingStep2() {
 
   return (
     <OnboardingBackground
-      image={require('../../assets/images/onboarding_2.png')}
+      image={require('../../assets/images/onboarding_3.png')}
       quote="The mind is restless and difficult to restrain, but it is subdued by practice."
       author="LORD KRISHNA"
       overlayOpacity={0.7}

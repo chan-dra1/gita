@@ -3,9 +3,33 @@ import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, Switch, Pl
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Notifications from 'expo-notifications';
-import DharmaBlocker from '../../modules/dharma-blocker';
+
+// Safe import: DateTimePicker crashes on web
+let DateTimePicker: any = null;
+try {
+  DateTimePicker = require('@react-native-community/datetimepicker').default;
+} catch (e) {
+  // Not available on web
+}
+
+// Safe import: DharmaBlocker native module is only available in dev builds
+let DharmaBlocker: any = null;
+try {
+  DharmaBlocker = require('../../modules/dharma-blocker').default;
+} catch (e) {
+  // Not available in Expo Go or web
+}
+
+// Fallback stub if module loaded but is null/undefined
+if (!DharmaBlocker) {
+  DharmaBlocker = {
+    requestPermissions: async () => { console.warn("DharmaBlocker not available"); return false; },
+    startBlocking: (_apps: string[]) => console.warn("DharmaBlocker not available"),
+    stopBlocking: () => console.warn("DharmaBlocker not available"),
+    getInstalledApps: async () => { console.warn("DharmaBlocker not available"); return []; },
+  };
+}
 import { 
   getAllStats, 
   getSlokasRead, 
@@ -401,7 +425,7 @@ export default function SettingsScreen() {
             )}
             
             {/* Hidden Picker - Only shows when triggered */}
-            {showTimePicker && (
+            {showTimePicker && DateTimePicker && (
               <DateTimePicker
                 value={reminderTime}
                 mode="time"

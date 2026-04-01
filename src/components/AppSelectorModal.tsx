@@ -12,7 +12,22 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import DharmaBlocker from '../../modules/dharma-blocker';
+
+// Safe import: DharmaBlocker is only available in dev/production builds
+let DharmaBlocker: any = null;
+try {
+  DharmaBlocker = require('../../modules/dharma-blocker').default;
+} catch (e) {
+  // Not available in Expo Go or web
+}
+if (!DharmaBlocker) {
+  DharmaBlocker = {
+    getInstalledApps: async () => [],
+    requestPermissions: async () => false,
+    startBlocking: () => {},
+    stopBlocking: () => {},
+  };
+}
 
 interface AppInfo {
   packageName: string;
@@ -50,7 +65,7 @@ export const AppSelectorModal: React.FC<AppSelectorModalProps> = ({
       if (Platform.OS === 'android' && DharmaBlocker) {
         const installedApps = await DharmaBlocker.getInstalledApps();
         // Sort alphabetically
-        const sorted = installedApps.sort((a, b) => a.label.localeCompare(b.label));
+        const sorted = installedApps.sort((a: AppInfo, b: AppInfo) => a.label.localeCompare(b.label));
         setApps(sorted);
       } else {
         // Mock data for testing/web

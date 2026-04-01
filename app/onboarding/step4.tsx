@@ -41,7 +41,7 @@ export default function OnboardingStep4() {
 
   return (
     <OnboardingBackground
-      image={require('../../assets/images/onboarding_2.png')}
+      image={require('../../assets/images/onboarding_5.png')}
       overlayOpacity={0.7}
     >
       <SafeAreaView style={styles.safeArea}>

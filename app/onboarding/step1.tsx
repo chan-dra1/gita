@@ -44,7 +44,7 @@ export default function OnboardingStep1() {
 
   return (
     <OnboardingBackground
-      image={require('../../assets/images/onboarding_1.png')}
+      image={require('../../assets/images/onboarding_2.png')}
       quote="Setting your intention is the first step toward transcendence."
       author="THE GITA"
       overlayOpacity={0.7}

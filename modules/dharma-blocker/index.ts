@@ -1,4 +1,4 @@
-import { requireNativeModule } from 'expo-modules-core';
+import { Platform } from 'react-native';
 
 interface DharmaBlockerInterface {
   requestPermissions(): Promise<boolean>;
@@ -7,12 +7,25 @@ interface DharmaBlockerInterface {
   getInstalledApps(): Promise<{packageName: string, label: string}[]>;
 }
 
-// Fallback for when the native module is not linked (e.g. in Expo Go)
-const DharmaBlocker = requireNativeModule<DharmaBlockerInterface>('DharmaBlocker') ?? {
-  requestPermissions: async () => { console.warn("Native module disabled"); return false; },
-  startBlocking: (apps: string[]) => console.warn("Native module disabled", apps),
-  stopBlocking: () => console.warn("Native module disabled"),
-  getInstalledApps: async () => { console.warn("Native module disabled"); return []; }
+const STUB: DharmaBlockerInterface = {
+  requestPermissions: async () => { console.warn("DharmaBlocker: native module not available"); return false; },
+  startBlocking: (_apps: string[]) => console.warn("DharmaBlocker: native module not available"),
+  stopBlocking: () => console.warn("DharmaBlocker: native module not available"),
+  getInstalledApps: async () => { console.warn("DharmaBlocker: native module not available"); return []; },
 };
+
+let DharmaBlocker: DharmaBlockerInterface = STUB;
+
+// Only attempt to load native module on actual native platforms
+if (Platform.OS !== 'web') {
+  try {
+    const { requireNativeModule } = require('expo-modules-core');
+    DharmaBlocker = requireNativeModule<DharmaBlockerInterface>('DharmaBlocker');
+  } catch (e) {
+    // Native module not linked (e.g., Expo Go) — use stub
+    console.warn("DharmaBlocker: failed to load native module, using stub", e);
+    DharmaBlocker = STUB;
+  }
+}
 
 export default DharmaBlocker;

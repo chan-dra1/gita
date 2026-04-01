@@ -72,7 +72,7 @@ export default function OnboardingStep5() {
 
   return (
     <OnboardingBackground
-      image={require('../../assets/images/onboarding_3.png')}
+      image={require('../../assets/images/onboarding_1.png')}
       overlayOpacity={0.7}
     >
       <SafeAreaView style={styles.safeArea}>
