@@ -60,6 +60,16 @@ export async function getUniqueSlokasReadCount(): Promise<number> {
   return unique.size;
 }
 
+export async function getTodaysSlokasReadCount(): Promise<number> {
+  const slokas = await getSlokasRead();
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  
+  const todaysSlokas = slokas.filter(s => s.timestamp >= todayStart.getTime());
+  const uniqueToday = new Set(todaysSlokas.map(s => `${s.chapter}:${s.verse}`));
+  return uniqueToday.size;
+}
+
 export async function getReadSlokasByChapter(chapter: number): Promise<number[]> {
   const slokas = await getSlokasRead();
   return slokas

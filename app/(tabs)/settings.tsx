@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
+import Purchases from 'react-native-purchases'; 
+import { Config } from '../../src/constants/config';
 
 // Safe import: DateTimePicker crashes on web
 let DateTimePicker: any = null;
@@ -74,6 +76,7 @@ export default function SettingsScreen() {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showAppSelector, setShowAppSelector] = useState(false);
   const [blockedApps, setBlockedApps] = useState<string[]>([]);
+  const [isPremium, setIsPremium] = useState(false);
 
   const loadStats = useCallback(async () => {
     try {
@@ -98,6 +101,17 @@ export default function SettingsScreen() {
       
       const blocked = await getBlockedApps();
       setBlockedApps(blocked);
+
+      // Check RevenueCat status
+      try {
+        const customerInfo = await Purchases.getCustomerInfo();
+        const isSelfManagedPremium = new Date() < new Date('2026-05-10');
+        setIsPremium(!!customerInfo.entitlements.active[Config.ENTITLEMENT_ID] || isSelfManagedPremium);
+      } catch (e) {
+        // Fallback to promo logic if SDK fails or offline
+        const isSelfManagedPremium = new Date() < new Date('2026-05-10');
+        setIsPremium(isSelfManagedPremium);
+      }
 
       setRecentSlokas(slokasRead.slice(-3).reverse());
     } catch (error) {
@@ -213,6 +227,23 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleRestorePurchases = async () => {
+    try {
+      setLoading(true);
+      const customerInfo = await Purchases.restorePurchases();
+      const active = !!customerInfo.entitlements.active[Config.ENTITLEMENT_ID];
+      setIsPremium(active || new Date() < new Date('2026-05-10'));
+      Alert.alert(
+        active ? 'Restored' : 'Status',
+        active ? 'Premium access restored successfully!' : 'No active subscriptions found.'
+      );
+    } catch (e: any) {
+      Alert.alert('Error', e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const scheduleNotification = async (time: Date) => {
     if (Platform.OS === 'web') return;
     try {
@@ -313,9 +344,17 @@ export default function SettingsScreen() {
             <SettingRow 
               icon="star" 
               label={t('gitaPremium', language)} 
-              desc="Unlock all features"
+              desc={isPremium ? "Active" : "Unlock all features"}
               iconColor="#F59E0B"
+              value={isPremium ? "PRO" : ""}
               onPress={() => router.push('/onboarding/paywall')} 
+            />
+            <SettingRow 
+              icon="refresh" 
+              label="Restore Purchases" 
+              desc="Renew access from App Store"
+              iconColor="#8B5CF6"
+              onPress={handleRestorePurchases} 
             />
             <SettingRow 
               icon="sync" 

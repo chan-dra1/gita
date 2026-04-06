@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView, Modal, Alert, ImageBackground, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import Purchases, { PurchasesPackage } from 'react-native-purchases';
+import Purchases, { PurchasesPackage, CustomerInfo } from 'react-native-purchases';
 import { BlurView } from 'expo-blur';
+import { Config } from '../../src/constants/config';
 
 // Use a beautiful Krishna image for the background
 const KRISHNA_BACKGROUND = require('../../assets/images/home/krishna_19.webp');
@@ -27,8 +28,14 @@ export default function PaywallScreen() {
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
+  const [isPromoActive, setIsPromoActive] = useState(false);
 
   useEffect(() => {
+    // First Month Free logic
+    const today = new Date();
+    const promoEnd = new Date('2026-05-10');
+    setIsPromoActive(today < promoEnd);
+
     if (Platform.OS === 'web') {
       setIsFetching(false);
       return;
@@ -54,6 +61,15 @@ export default function PaywallScreen() {
   }, []);
 
   const handleStartTrial = async () => {
+    if (isPromoActive) {
+      Alert.alert(
+        "First Month Free", 
+        "Welcome! Thank you for joining early. You have full access for free.", 
+        [{text: "Begin", onPress: () => router.replace('/(tabs)')}]
+      );
+      return;
+    }
+
     if (packages.length === 0) {
       // Fallback bypass mode if RevenueCat isn't hooked up correctly yet
       Alert.alert("Simulated Purchase", "RevenueCat is not active yet. Bypassing.", [{text: "OK", onPress: () => router.replace('/(tabs)')}]);
@@ -66,7 +82,7 @@ export default function PaywallScreen() {
     try {
       setIsPurchasing(true);
       const { customerInfo } = await Purchases.purchasePackage(selectedPackage);
-      if (typeof customerInfo.entitlements.active['pro'] !== 'undefined') {
+      if (customerInfo.entitlements.active[Config.ENTITLEMENT_ID]) {
         router.replace('/(tabs)');
       }
     } catch (e: any) {
@@ -81,7 +97,7 @@ export default function PaywallScreen() {
   const handleRestore = async () => {
     try {
       const customerInfo = await Purchases.restorePurchases();
-      if (typeof customerInfo.entitlements.active['pro'] !== 'undefined') {
+      if (customerInfo.entitlements.active[Config.ENTITLEMENT_ID]) {
         Alert.alert('Success', 'Your purchase has been restored.', [
           { text: 'OK', onPress: () => router.replace('/(tabs)') }
         ]);
@@ -123,12 +139,16 @@ export default function PaywallScreen() {
           </View>
 
         {/* Title */}
-        <Text style={styles.title}>Unlock Your Complete</Text>
+        <Text style={styles.title}>
+          {isPromoActive ? 'Welcome to our' : 'Unlock Your Complete'}
+        </Text>
         <Text style={styles.titleHighlight}>Spiritual Companion</Text>
 
         {/* Subtitle */}
         <Text style={styles.subtitle}>
-          Deepen your understanding of the Gita with exclusive premium features.
+          {isPromoActive 
+             ? 'Thank you for joining early! Enjoy full premium access for free until May 10th.' 
+             : 'Deepen your understanding of the Gita with exclusive premium features.'}
         </Text>
 
         {/* Features */}
@@ -219,6 +239,8 @@ export default function PaywallScreen() {
         >
           {isPurchasing ? (
             <ActivityIndicator color="#FFF" />
+          ) : isPromoActive ? (
+            <Text style={styles.ctaButtonText}>Claim Free Access</Text>
           ) : (
             <Text style={styles.ctaButtonText}>{selectedTier.includes('annual') || selectedTier.includes('yearly') ? 'Start 7-Day Free Trial' : 'Purchase'}</Text>
           )}

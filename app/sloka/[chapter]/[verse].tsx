@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { cacheAndPlayAudio, stopAudio, hasCachedAudio } from '../../../src/utils/audio';
+import * as Speech from 'expo-speech';
+import { hasCachedAudio } from '../../../src/utils/audio';
 import { Config } from '../../../src/constants/config';
 import {
   ActivityIndicator,
@@ -19,8 +20,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDeepDive } from '../../../src/hooks/useDeepDive';
 import { getChapter, getSloka } from '../../../src/utils/sloka';
 import { getCommentary, getGenericCommentary, type Commentary } from '../../../src/utils/commentary';
-import { addSlokaRead, isSlokaSaved, saveSloka, unsaveSloka } from '../../../src/utils/stats';
+import { addSlokaRead, isSlokaSaved, saveSloka, unsaveSloka, getOnboardingData, getTodaysSlokasReadCount } from '../../../src/utils/stats';
 import { getSlokaImage } from '../../../src/utils/slokaImages';
+
+// Safe import for DharmaBlocker
+let DharmaBlocker: any = null;
+try {
+  DharmaBlocker = require('../../../modules/dharma-blocker').default;
+} catch (e) {
+  // Not available in Expo Go or web
+}
 
 export default function SlokaScreen() {
   const { chapter: chapterStr, verse: verseStr } = useLocalSearchParams<{
@@ -79,6 +88,21 @@ export default function SlokaScreen() {
       await addSlokaRead(chapter, verse);
       setHasBeenRead(true);
 
+      if (Platform.OS === 'android' && DharmaBlocker) {
+        // Check if daily commitment is fulfilled to auto-unblock apps
+        const onboarding = await getOnboardingData();
+        if (onboarding && onboarding.dailyCommitment) {
+          const countOrAll = parseInt(onboarding.dailyCommitment);
+          if (!isNaN(countOrAll)) {
+            const todaysCount = await getTodaysSlokasReadCount();
+            if (todaysCount >= countOrAll) {
+              // Target met, turn off Dharma Blocker automatically
+              DharmaBlocker.stopBlocking();
+            }
+          }
+        }
+      }
+
       // Check if saved
       const saved = await isSlokaSaved(chapter, verse);
       setIsSaved(saved);
@@ -117,25 +141,25 @@ export default function SlokaScreen() {
       .trim();
   };
 
-  const { playDynamicAudio } = require('../../../src/utils/audio');
-  
   const handlePlayScholarMsg = async (text: string, msgId: number) => {
     if (playingScholarMsgId === msgId) {
-      await stopAudio();
+      Speech.stop();
       setPlayingScholarMsgId(null);
       return;
     }
     
-    await stopAudio();
+    Speech.stop();
     setPlayingScholarMsgId(msgId);
     
     try {
-      await playDynamicAudio(
-        text,
-        'english',
-        () => setPlayingScholarMsgId(null),
-        () => setPlayingScholarMsgId(null)
-      );
+      Speech.speak(text, {
+        language: 'en-US',
+        pitch: 1.0,
+        rate: 0.9,
+        onDone: () => setPlayingScholarMsgId(null),
+        onStopped: () => setPlayingScholarMsgId(null),
+        onError: () => setPlayingScholarMsgId(null)
+      });
     } catch (e) {
       setPlayingScholarMsgId(null);
     }
@@ -153,18 +177,8 @@ export default function SlokaScreen() {
 
     if (isSpeaking) {
       // Stop playback
-      await stopAudio();
+      Speech.stop();
       setIsSpeaking(false);
-      return;
-    }
-
-    const apiKey = Config.TTS_API_KEY;
-    if (!apiKey || apiKey === 'YOUR_TTS_API_KEY') {
-      Alert.alert(
-        '🎙️ Audio Setup Required',
-        'To hear the sloka, add your Google Cloud TTS key in src/constants/config.ts',
-        [{ text: 'Got it' }]
-      );
       return;
     }
 
@@ -173,25 +187,18 @@ export default function SlokaScreen() {
     const cleanText = getCleanAudioText(sloka.sanskrit);
 
     try {
-      await cacheAndPlayAudio(
-        chapter,
-        verse,
-        cleanText,
-        'sanskrit',
-        () => {
-          setIsSpeaking(false);
-          setIsAudioCached(true);
-        },
-        (err) => {
-          setAudioError(err);
-          setIsSpeaking(false);
-        }
-      );
+      setIsAudioLoading(false);
       setIsSpeaking(true);
-      setIsAudioCached(true);
+      Speech.speak(cleanText, {
+        language: 'hi-IN',
+        pitch: 0.9,
+        rate: 0.8,
+        onDone: () => setIsSpeaking(false),
+        onStopped: () => setIsSpeaking(false),
+        onError: () => setIsSpeaking(false)
+      });
     } catch (e) {
       setIsSpeaking(false);
-    } finally {
       setIsAudioLoading(false);
     }
   }, [sloka, chapter, verse, isSpeaking]);
@@ -232,7 +239,7 @@ export default function SlokaScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF7ED' }} edges={['bottom']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF7ED' }} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -245,7 +252,8 @@ export default function SlokaScreen() {
             alignItems: 'center',
             justifyContent: 'space-between',
             paddingHorizontal: 20,
-            paddingVertical: 12,
+            paddingTop: Platform.OS === 'android' ? 24 : 12,
+            paddingBottom: 12,
           }}
         >
           <TouchableOpacity

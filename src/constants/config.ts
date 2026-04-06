@@ -21,6 +21,10 @@ export const Config = {
     // ─── Audio Cache ───────────────────────────────────────────
     AUDIO_CACHE_DIR: 'gita_audio/',
 
+    // ─── RevenueCat ──────────────────────────────────────────
+    REVENUECAT_API_KEY_ANDROID: 'test_IRVEjFCkbDGUchCCRuhhwgErcVA',
+    ENTITLEMENT_ID: 'Gita Pro',
+
     // ─── Notification Defaults ────────────────────────────────
     DEFAULT_NOTIFICATION_HOUR: 6,
     DEFAULT_NOTIFICATION_MINUTE: 30,

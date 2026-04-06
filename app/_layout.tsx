@@ -4,19 +4,14 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import Purchases from 'react-native-purchases';
 
-// TODO: Replace with your actual RevenueCat API keys
-const API_KEYS = {
-  apple: "your_revenuecat_apple_api_key",
-  google: "your_revenuecat_google_api_key"
-};
+import { Config } from '../src/constants/config';
 
 export default function RootLayout() {
   useEffect(() => {
-    if (Platform.OS === 'ios') {
-      Purchases.configure({ apiKey: API_KEYS.apple });
-    } else if (Platform.OS === 'android') {
-      Purchases.configure({ apiKey: API_KEYS.google });
+    if (Platform.OS === 'android') {
+      Purchases.configure({ apiKey: Config.REVENUECAT_API_KEY_ANDROID });
     }
+    // Note: iOS key can be added in Config when ready
   }, []);
   return (
     <Stack

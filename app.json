@@ -10,10 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.gita"
+      "bundleIdentifier": "com.alphawolf.gita"
     },
     "android": {
-      "package": "com.yourcompany.gita",
+      "package": "com.alphawolf.gita",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
