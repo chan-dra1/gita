@@ -1,24 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView, Modal, Alert, ImageBackground, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView, Modal, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Purchases, { PurchasesPackage, CustomerInfo } from 'react-native-purchases';
-import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Config } from '../../src/constants/config';
 
-// Use a beautiful Krishna image for the background
-const KRISHNA_BACKGROUND = require('../../assets/images/home/krishna_19.webp');
-
 const FALLBACK_TIERS = [
-  { id: 'monthly', name: 'MONTHLY', price: '$4.99', period: '/month', popular: false },
-  { id: 'yearly', name: 'YEARLY', price: '$29.99', period: '/year', popular: true, badge: 'BEST VALUE', trial: 'Includes 7-Day Free Trial' },
-  { id: 'lifetime', name: 'LIFETIME', price: '$99.99', period: '/forever', popular: false },
+  { id: 'lifetime', name: 'Lifetime', description: 'One-time payment', price: '$99.99', period: '', popular: false, icon: 'infinite-outline' as const },
+  { id: 'yearly', name: 'Yearly', description: 'Includes 7-day free trial', price: '$29.99', period: 'Just $2.50/mo', popular: true, badge: 'BEST VALUE', icon: 'refresh-outline' as const },
+  { id: 'monthly', name: 'Monthly', description: 'Standard access', price: '$4.99', period: '', popular: false, icon: 'calendar-outline' as const },
 ];
 
 const FEATURES = [
-  { icon: 'person', text: 'Personalized AI sloka recommendations' },
-  { icon: 'headset', text: 'Unlimited HD audio recitations' },
-  { icon: 'checkmark-circle', text: 'Offline caching & ad-free experience' },
+  {
+    icon: 'lock-closed' as const,
+    title: 'Dharma Blocker',
+    description: 'Lock distracting apps to focus on your spiritual growth.',
+  },
+  {
+    icon: 'notifications' as const,
+    title: 'Personalized Spiritual Reminders',
+    description: 'Daily custom alerts to keep you grounded.',
+  },
+  {
+    icon: 'bookmark' as const,
+    title: 'Save Your Soul-Stirring Slokas',
+    description: 'Bookmark and revisit your favorites anytime.',
+  },
+  {
+    icon: 'volume-high' as const,
+    title: 'Divine Audio Recitations',
+    description: 'Listen to high-quality HD audio in multiple languages.',
+  },
 ];
 
 export default function PaywallScreen() {
@@ -46,7 +60,6 @@ export default function PaywallScreen() {
         const offerings = await Purchases.getOfferings();
         if (offerings.current !== null && offerings.current.availablePackages.length !== 0) {
           setPackages(offerings.current.availablePackages);
-          // Set default to annual if exists
           const annualParams = offerings.current.availablePackages.find(p => p.packageType === 'ANNUAL');
           if (annualParams) setSelectedTier(annualParams.identifier);
           else setSelectedTier(offerings.current.availablePackages[0].identifier);
@@ -63,15 +76,14 @@ export default function PaywallScreen() {
   const handleStartTrial = async () => {
     if (isPromoActive) {
       Alert.alert(
-        "First Month Free", 
-        "Welcome! Thank you for joining early. You have full access for free.", 
-        [{text: "Begin", onPress: () => router.replace('/(tabs)')}]
+        "Welcome to Gita Pro!", 
+        "Thank you for joining early. Enjoy full premium access for free this month.", 
+        [{text: "Begin Journey", onPress: () => router.replace('/(tabs)')}]
       );
       return;
     }
 
     if (packages.length === 0) {
-      // Fallback bypass mode if RevenueCat isn't hooked up correctly yet
       Alert.alert("Simulated Purchase", "RevenueCat is not active yet. Bypassing.", [{text: "OK", onPress: () => router.replace('/(tabs)')}]);
       return;
     }
@@ -113,88 +125,84 @@ export default function PaywallScreen() {
     router.replace('/(tabs)');
   };
 
+  const getDisplayTiers = () => {
+    if (packages.length > 0) {
+      return packages.map(p => ({
+        id: p.identifier,
+        name: p.packageType === 'ANNUAL' ? 'Yearly' : p.packageType === 'MONTHLY' ? 'Monthly' : p.packageType === 'LIFETIME' ? 'Lifetime' : p.identifier,
+        description: p.packageType === 'ANNUAL' ? 'Includes 7-day free trial' : p.packageType === 'MONTHLY' ? 'Standard access' : 'One-time payment',
+        price: p.product.priceString,
+        period: p.packageType === 'ANNUAL' ? `Just ${(p.product.price / 12).toFixed(2)}/mo` : '',
+        popular: p.packageType === 'ANNUAL',
+        badge: p.packageType === 'ANNUAL' ? 'BEST VALUE' : undefined,
+        icon: (p.packageType === 'ANNUAL' ? 'refresh-outline' : p.packageType === 'MONTHLY' ? 'calendar-outline' : 'infinite-outline') as any,
+      }));
+    }
+    return FALLBACK_TIERS;
+  };
+
   return (
-    <ImageBackground source={KRISHNA_BACKGROUND} style={styles.backgroundImage} blurRadius={Platform.OS === 'android' ? 3 : 0}>
-      <BlurView intensity={80} tint="dark" style={StyleSheet.absoluteFill} />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" translucent />
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
         
-        {/* Close Button */}
-        <TouchableOpacity onPress={handleMaybeLater} style={styles.closeButton}>
-          <BlurView intensity={40} tint="dark" style={styles.closeBlur}>
-            <Ionicons name="close" size={24} color="#FFF" />
-          </BlurView>
-        </TouchableOpacity>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={handleMaybeLater} style={styles.closeButton}>
+            <Ionicons name="close" size={24} color="rgba(255,255,255,0.6)" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Gita Pro</Text>
+          <View style={{ width: 32 }} />
+        </View>
 
         <ScrollView 
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Icon */}
-          <View style={styles.iconContainer}>
-            <View style={styles.iconCircle}>
-              <Ionicons name="book" size={36} color="#F48B29" />
-            </View>
+          {/* Hero Title */}
+          <View style={styles.heroContainer}>
+            <Text style={styles.heroTitle}>
+              Embrace the Divine{'\n'}Wisdom of the Gita
+            </Text>
+            <Text style={styles.heroSubtitle}>
+              Take control of your spiritual journey with{'\n'}the Dharma Blocker and custom reminders.
+            </Text>
           </View>
 
-        {/* Title */}
-        <Text style={styles.title}>
-          {isPromoActive ? 'Welcome to our' : 'Unlock Your Complete'}
-        </Text>
-        <Text style={styles.titleHighlight}>Spiritual Companion</Text>
-
-        {/* Subtitle */}
-        <Text style={styles.subtitle}>
-          {isPromoActive 
-             ? 'Thank you for joining early! Enjoy full premium access for free until May 10th.' 
-             : 'Deepen your understanding of the Gita with exclusive premium features.'}
-        </Text>
-
-        {/* Features */}
-        <View style={styles.featuresContainer}>
-          {FEATURES.map((feature, index) => (
-            <BlurView intensity={30} tint="dark" key={index} style={styles.featureRow}>
-              <View style={styles.featureIconContainer}>
-                <Ionicons name={feature.icon as any} size={18} color="#F48B29" />
+          {/* Features */}
+          <View style={styles.featuresContainer}>
+            {FEATURES.map((feature, index) => (
+              <View key={index} style={styles.featureRow}>
+                <View style={styles.featureIconContainer}>
+                  <Ionicons name={feature.icon} size={20} color="#D4A44C" />
+                </View>
+                <View style={styles.featureTextContainer}>
+                  <Text style={styles.featureTitle}>{feature.title}</Text>
+                  <Text style={styles.featureDescription}>{feature.description}</Text>
+                </View>
               </View>
-              <Text style={styles.featureText}>{feature.text}</Text>
-            </BlurView>
-          ))}
-        </View>
+            ))}
+          </View>
 
-        {/* Pricing Tiers */}
-        <View style={styles.pricingContainer}>
-          {isFetching ? (
-            <ActivityIndicator size="large" color="#F48B29" style={{ marginVertical: 32 }} />
-          ) : (
-            (() => {
-              const displayTiers = packages.length > 0
-                ? packages.map(p => ({
-                    id: p.identifier,
-                    name: p.packageType === 'ANNUAL' ? 'YEARLY' : p.packageType === 'MONTHLY' ? 'MONTHLY' : p.packageType === 'LIFETIME' ? 'LIFETIME' : p.identifier.toUpperCase(),
-                    price: p.product.priceString,
-                    period: p.packageType === 'ANNUAL' ? '/year' : p.packageType === 'MONTHLY' ? '/month' : '',
-                    popular: p.packageType === 'ANNUAL',
-                    badge: p.packageType === 'ANNUAL' ? 'BEST VALUE' : undefined,
-                    trial: p.packageType === 'ANNUAL' ? 'Includes 7-Day Free Trial' : undefined,
-                  }))
-                : FALLBACK_TIERS;
+          {/* Divider */}
+          <View style={styles.divider} />
 
-              return displayTiers.map((tier) => (
-                <TouchableOpacity
-                  key={tier.id}
-                  activeOpacity={0.8}
-                  onPress={() => setSelectedTier(tier.id)}
-                  style={styles.tierCardWrapper}
-                >
-                  <BlurView 
-                    intensity={selectedTier === tier.id ? 50 : 20} 
-                    tint={selectedTier === tier.id ? "light" : "dark"} 
+          {/* Pricing Tiers */}
+          <View style={styles.pricingContainer}>
+            {isFetching ? (
+              <ActivityIndicator size="large" color="#D4A44C" style={{ marginVertical: 32 }} />
+            ) : (
+              getDisplayTiers().map((tier) => {
+                const isSelected = selectedTier === tier.id;
+                return (
+                  <TouchableOpacity
+                    key={tier.id}
+                    activeOpacity={0.8}
+                    onPress={() => setSelectedTier(tier.id)}
                     style={[
                       styles.tierCard,
-                      selectedTier === tier.id && styles.tierCardSelected,
-                      tier.popular && styles.tierCardPopular,
+                      isSelected && styles.tierCardSelected,
                     ]}
                   >
                     {tier.badge && (
@@ -204,248 +212,243 @@ export default function PaywallScreen() {
                     )}
                     <View style={styles.tierContent}>
                       <View style={styles.tierLeft}>
-                        <Text style={[styles.tierName, selectedTier === tier.id && styles.tierNameSelected]}>
-                          {tier.name}
-                        </Text>
-                        <View style={styles.priceRow}>
-                          <Text style={[styles.tierPrice, selectedTier === tier.id && styles.tierPriceSelected]}>
-                            {tier.price}
-                          </Text>
-                          <Text style={[styles.tierPeriod, selectedTier === tier.id && styles.tierPeriodSelected]}>
-                            {tier.period}
-                          </Text>
+                        <View style={[styles.tierIconCircle, isSelected && styles.tierIconCircleSelected]}>
+                          <Ionicons name={tier.icon} size={18} color={isSelected ? '#0D0D0D' : '#D4A44C'} />
                         </View>
-                        {tier.trial && (
-                          <Text style={[styles.trialText, selectedTier === tier.id && styles.trialTextSelected]}>{tier.trial}</Text>
-                        )}
+                        <View style={styles.tierInfo}>
+                          <Text style={[styles.tierName, isSelected && styles.tierNameSelected]}>{tier.name}</Text>
+                          <Text style={[styles.tierDescription, isSelected && styles.tierDescriptionSelected]}>{tier.description}</Text>
+                        </View>
                       </View>
-                      <View style={[styles.radioCircle, selectedTier === tier.id && styles.radioCircleSelected]}>
-                        {selectedTier === tier.id && <View style={styles.radioDot} />}
+                      <View style={styles.tierRight}>
+                        <Text style={[styles.tierPrice, isSelected && styles.tierPriceSelected]}>{tier.price}</Text>
+                        {tier.period ? <Text style={[styles.tierPeriod, isSelected && styles.tierPeriodSelected]}>{tier.period}</Text> : null}
                       </View>
                     </View>
-                  </BlurView>
-                </TouchableOpacity>
-              ));
-            })()
-          )}
-        </View>
+                  </TouchableOpacity>
+                );
+              })
+            )}
+          </View>
 
-        {/* CTA Button */}
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={handleStartTrial}
-          style={styles.ctaButton}
-          disabled={isPurchasing}
-        >
-          {isPurchasing ? (
-            <ActivityIndicator color="#FFF" />
-          ) : isPromoActive ? (
-            <Text style={styles.ctaButtonText}>Claim Free Access</Text>
-          ) : (
-            <Text style={styles.ctaButtonText}>{selectedTier.includes('annual') || selectedTier.includes('yearly') ? 'Start 7-Day Free Trial' : 'Purchase'}</Text>
-          )}
-        </TouchableOpacity>
-
-        {/* Footer */}
-        <Text style={styles.footerText}>
-          Cancel anytime in your settings. No commitment required.
-        </Text>
-
-        <View style={styles.footerLinks}>
-          <TouchableOpacity onPress={() => setShowTerms(true)}>
-            <Text style={styles.footerLink}>Terms</Text>
-          </TouchableOpacity>
-          <Text style={styles.footerDivider}>·</Text>
-          <TouchableOpacity onPress={handleRestore}>
-            <Text style={styles.footerLink}>Restore</Text>
-          </TouchableOpacity>
-          <Text style={styles.footerDivider}>·</Text>
-          <TouchableOpacity onPress={handleMaybeLater}>
-            <Text style={styles.footerLink}>Maybe Later</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-      {/* Terms Modal */}
-      <Modal
-        visible={showTerms}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowTerms(false)}
-      >
-        <View style={styles.modalOverlay}>
-              <BlurView intensity={90} tint="dark" style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Terms & Privacy</Text>
-                <ScrollView style={styles.modalScroll}>
-                  <Text style={styles.modalText}>
-                    By continuing, you agree to our Terms of Service and Privacy Policy.{'\n\n'}
-                    Your subscription will automatically renew unless canceled at least 24 hours before the end of the current period.{'\n\n'}
-                    You can manage your subscriptions in your account settings after purchase.
+          {/* CTA Button */}
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={handleStartTrial}
+            style={styles.ctaButton}
+            disabled={isPurchasing}
+          >
+            <LinearGradient
+              colors={['#D4A44C', '#B8862D']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.ctaGradient}
+            >
+              {isPurchasing ? (
+                <ActivityIndicator color="#0D0D0D" />
+              ) : isPromoActive ? (
+                <>
+                  <Text style={styles.ctaButtonText}>Claim Your Free Trial</Text>
+                  <Ionicons name="arrow-forward" size={20} color="#0D0D0D" style={{ marginLeft: 8 }} />
+                </>
+              ) : (
+                <>
+                  <Text style={styles.ctaButtonText}>
+                    {selectedTier.includes('annual') || selectedTier === 'yearly' ? 'Claim Your Free Trial' : 'Purchase'}
                   </Text>
-                </ScrollView>
-                <TouchableOpacity
-                  style={styles.modalCloseButton}
-                  onPress={() => setShowTerms(false)}
-                >
-                  <Text style={styles.modalCloseText}>Got it</Text>
-                </TouchableOpacity>
-              </BlurView>
+                  <Ionicons name="arrow-forward" size={20} color="#0D0D0D" style={{ marginLeft: 8 }} />
+                </>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+
+          {/* Maybe Later */}
+          <TouchableOpacity onPress={handleMaybeLater} style={styles.maybeLaterButton}>
+            <Text style={styles.maybeLaterText}>MAYBE LATER</Text>
+          </TouchableOpacity>
+
+          {/* Footer Links */}
+          <View style={styles.footerLinks}>
+            <TouchableOpacity onPress={() => setShowTerms(true)}>
+              <Text style={styles.footerLink}>TERMS OF{'\n'}SERVICE</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowTerms(true)}>
+              <Text style={styles.footerLink}>PRIVACY{'\n'}POLICY</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleRestore}>
+              <Text style={styles.footerLink}>RESTORE{'\n'}PURCHASE</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Copyright */}
+          <Text style={styles.copyright}>
+            © 2026 THE GITA EDITORIAL. ALL RIGHTS{'\n'}RESERVED.
+          </Text>
+        </ScrollView>
+
+        {/* Terms Modal */}
+        <Modal
+          visible={showTerms}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowTerms(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Terms & Privacy</Text>
+              <ScrollView style={styles.modalScroll}>
+                <Text style={styles.modalText}>
+                  By continuing, you agree to our Terms of Service and Privacy Policy.{'\n\n'}
+                  Your subscription will automatically renew unless canceled at least 24 hours before the end of the current period.{'\n\n'}
+                  You can manage your subscriptions in your account settings after purchase.
+                </Text>
+              </ScrollView>
+              <TouchableOpacity
+                style={styles.modalCloseButton}
+                onPress={() => setShowTerms(false)}
+              >
+                <Text style={styles.modalCloseText}>Got it</Text>
+              </TouchableOpacity>
             </View>
-          </Modal>
-        </SafeAreaView>
-      </ImageBackground>
+          </View>
+        </Modal>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  backgroundImage: {
+  container: {
     flex: 1,
-    width: '100%',
-    height: '100%',
+    backgroundColor: '#0D0D0D',
   },
   safeArea: {
     flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'android' ? 40 : 8,
+    paddingBottom: 12,
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#D4A44C',
+    letterSpacing: 1,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingTop: 40,
     paddingBottom: 40,
   },
-  closeButton: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 40,
-    right: 24,
-    zIndex: 100,
-  },
-  closeBlur: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  /* Hero */
+  heroContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
+    marginTop: 16,
+    marginBottom: 32,
   },
-  iconContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  iconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-  },
-  title: {
-    fontSize: 32,
+  heroTitle: {
+    fontSize: 28,
     fontWeight: '800',
     color: '#FFFFFF',
     textAlign: 'center',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    lineHeight: 38,
+    fontStyle: 'italic',
   },
-  titleHighlight: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#F48B29',
+  heroSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.5)',
     textAlign: 'center',
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    marginBottom: 16,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    lineHeight: 22,
+    marginTop: 16,
   },
-  subtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 32,
-    paddingHorizontal: 16,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
+  /* Features */
   featuresContainer: {
-    gap: 12,
+    gap: 20,
     marginBottom: 32,
   },
   featureRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
-    overflow: 'hidden',
+    alignItems: 'flex-start',
   },
   featureIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: 'rgba(212, 164, 76, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 14,
+    marginRight: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 164, 76, 0.2)',
   },
-  featureText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#FFFFFF',
+  featureTextContainer: {
     flex: 1,
+    paddingTop: 2,
   },
+  featureTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  featureDescription: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.45)',
+    lineHeight: 20,
+  },
+  /* Divider */
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: 24,
+  },
+  /* Pricing */
   pricingContainer: {
-    gap: 16,
-    marginBottom: 32,
-  },
-  tierCardWrapper: {
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    gap: 12,
+    marginBottom: 24,
   },
   tierCard: {
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    padding: 20,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    padding: 16,
     position: 'relative',
+    overflow: 'hidden',
   },
   tierCardSelected: {
-    borderColor: 'rgba(244, 139, 41, 0.8)',
+    borderColor: '#D4A44C',
     borderWidth: 2,
-  },
-  tierCardPopular: {
-    paddingTop: 32,
+    backgroundColor: 'rgba(212, 164, 76, 0.08)',
   },
   badge: {
     position: 'absolute',
     top: 0,
-    right: 20,
-    backgroundColor: '#F48B29',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
+    right: 16,
+    backgroundColor: '#D4A44C',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
   },
   badgeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
-    color: '#FFF',
+    color: '#0D0D0D',
     letterSpacing: 0.5,
   },
   tierContent: {
@@ -454,113 +457,123 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   tierLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  tierIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(212, 164, 76, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  tierIconCircleSelected: {
+    backgroundColor: '#D4A44C',
+  },
+  tierInfo: {
     flex: 1,
   },
   tierName: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '700',
-    color: 'rgba(255, 255, 255, 0.7)',
-    letterSpacing: 1.5,
-    marginBottom: 6,
+    color: '#FFFFFF',
+    marginBottom: 2,
   },
   tierNameSelected: {
-    color: '#1A1A1A',
+    color: '#FFFFFF',
   },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
+  tierDescription: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.4)',
+  },
+  tierDescriptionSelected: {
+    color: 'rgba(255, 255, 255, 0.6)',
+  },
+  tierRight: {
+    alignItems: 'flex-end',
   },
   tierPrice: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: '800',
     color: '#FFFFFF',
   },
   tierPriceSelected: {
-    color: '#1A1A1A',
+    color: '#D4A44C',
   },
   tierPeriod: {
-    fontSize: 15,
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginLeft: 4,
-    fontWeight: '500',
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.4)',
+    marginTop: 2,
   },
   tierPeriodSelected: {
-    color: 'rgba(26, 26, 26, 0.7)',
+    color: 'rgba(212, 164, 76, 0.7)',
   },
-  trialText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#F48B29',
-    marginTop: 6,
-  },
-  trialTextSelected: {
-    color: '#D87010',
-  },
-  radioCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 16,
-    backgroundColor: 'rgba(0,0,0,0.1)',
-  },
-  radioCircleSelected: {
-    borderColor: '#F48B29',
-    backgroundColor: '#FFF',
-    borderWidth: 0,
-  },
-  radioDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#F48B29',
-  },
+  /* CTA */
   ctaButton: {
-    height: 60,
-    borderRadius: 20,
-    backgroundColor: '#F48B29',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    shadowColor: '#F48B29',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  ctaButtonText: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-  },
-  footerText: {
-    fontSize: 13,
-    color: 'rgba(255, 255, 255, 0.6)',
-    textAlign: 'center',
+    borderRadius: 30,
+    overflow: 'hidden',
     marginBottom: 16,
+    shadowColor: '#D4A44C',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   },
-  footerLinks: {
+  ctaGradient: {
+    height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
+    borderRadius: 30,
+  },
+  ctaButtonText: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#0D0D0D',
+    letterSpacing: 0.3,
+  },
+  /* Maybe Later */
+  maybeLaterButton: {
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginBottom: 32,
+  },
+  maybeLaterText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.3)',
+    letterSpacing: 1.5,
+  },
+  /* Footer */
+  footerLinks: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+    paddingHorizontal: 8,
   },
   footerLink: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontWeight: '500',
+    fontSize: 10,
+    color: 'rgba(255, 255, 255, 0.25)',
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    textAlign: 'center',
+    lineHeight: 16,
   },
-  footerDivider: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.3)',
+  copyright: {
+    fontSize: 10,
+    color: 'rgba(255, 255, 255, 0.15)',
+    textAlign: 'center',
+    lineHeight: 16,
+    marginBottom: 16,
   },
+  /* Modal */
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'flex-end',
   },
   modalContent: {
@@ -568,9 +581,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 32,
     padding: 32,
     maxHeight: '65%',
-    overflow: 'hidden',
+    backgroundColor: '#1A1A1A',
     borderTopWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
+    borderColor: 'rgba(212, 164, 76, 0.2)',
   },
   modalTitle: {
     fontSize: 24,
@@ -591,16 +604,14 @@ const styles = StyleSheet.create({
   modalCloseButton: {
     marginTop: 24,
     height: 56,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 28,
+    backgroundColor: '#D4A44C',
     alignItems: 'center',
     justifyContent: 'center',
   },
   modalCloseText: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#0D0D0D',
   },
 });

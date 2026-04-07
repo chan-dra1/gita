@@ -59,9 +59,9 @@ const FALLBACK_IMAGES = [
   require('../../assets/images/contextual/cosmic.webp'),
   require('../../assets/images/contextual/duty.webp'),
   require('../../assets/images/contextual/peace.webp'),
-  require('../../assets/images/contextual/soul.webp'),
-  require('../../assets/images/contextual/karma.webp'),
-  require('../../assets/images/contextual/cosmic2.webp'),
+  require('../../assets/images/contextual/soul.png'),
+  require('../../assets/images/contextual/karma.png'),
+  require('../../assets/images/contextual/cosmic2.png'),
 ];
 
 export const SLOKA_IMAGES: Record<string, any> = {
