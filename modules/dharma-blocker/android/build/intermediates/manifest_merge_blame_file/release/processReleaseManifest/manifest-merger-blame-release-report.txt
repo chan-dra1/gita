@@ -7,34 +7,44 @@
 7
 8    <!-- Permissions required for Dharma Mode -->
 9    <uses-permission
-9-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:5:3-6:89
+9-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:5:3-7:42
 10        xmlns:tools="http://schemas.android.com/tools"
-10-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:6:41-87
+10-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:6:5-51
 11        android:name="android.permission.PACKAGE_USAGE_STATS"
 11-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:5:20-73
 12        tools:ignore="ProtectedPermissions" />
-12-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:6:5-40
+12-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:7:5-40
 13    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-13-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:7:3-76
-13-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:7:20-73
+13-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:8:3-76
+13-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:8:20-73
 14    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-14-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:8:3-75
-14-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:8:20-72
-15
-16    <application>
-16-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:10:3-17:17
-17
-18        <!-- Foreground Service Declaration -->
-19        <service
-19-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:12:5-16:54
-20            android:name="expo.modules.dharmablocker.DharmaForegroundService"
-20-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:13:7-46
-21            android:enabled="true"
-21-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:14:7-29
-22            android:exported="false"
-22-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:15:7-31
-23            android:foregroundServiceType="shortService" />
-23-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:16:7-51
-24    </application>
-25
-26</manifest>
+14-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:9:3-75
+14-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:9:20-72
+15    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+15-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:10:3-87
+15-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:10:20-84
+16
+17    <application>
+17-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:12:3-21:17
+18
+19        <!-- Foreground Service Declaration -->
+20        <service
+20-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:14:5-20:15
+21            android:name="expo.modules.dharmablocker.DharmaForegroundService"
+21-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:15:7-46
+22            android:enabled="true"
+22-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:16:7-29
+23            android:exported="false"
+23-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:17:7-31
+24            android:foregroundServiceType="specialUse" >
+24-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:18:7-49
+25            <property
+25-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:19:7-158
+26                android:name="android.app.PROPERTY_SPECIAL_USE_SERVICE_TYPE"
+26-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:19:17-77
+27                android:value="Monitoring distracting apps for spiritual focus/productivity." />
+27-->/Users/ncsr/Desktop/gita/modules/dharma-blocker/android/src/main/AndroidManifest.xml:19:78-155
+28        </service>
+29    </application>
+30
+31</manifest>
