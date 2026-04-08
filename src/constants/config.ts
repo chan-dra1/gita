@@ -8,21 +8,21 @@ import { TTSProviderName } from '../types';
  */
 export const Config = {
     // ─── Gemini AI ─────────────────────────────────────────────
-    GEMINI_API_KEY: 'AIzaSyC1fmHGmhXFIeK1wMP_eP-P8xGFjKq7bOA',
+    GEMINI_API_KEY: process.env.EXPO_PUBLIC_GEMINI_API_KEY || '',
     GEMINI_MODEL: 'gemini-2.0-flash', // fast + cheap
 
     // ─── TTS Provider ─────────────────────────────────────────
     TTS_PROVIDER: 'google' as TTSProviderName,
-    TTS_API_KEY: 'YOUR_TTS_API_KEY',
+    TTS_API_KEY: process.env.EXPO_PUBLIC_TTS_API_KEY || '',
 
     // ElevenLabs-specific (only if TTS_PROVIDER === 'elevenlabs')
-    ELEVENLABS_VOICE_ID: '21m00Tcm4TlvDq8ikWAM', // 'Rachel' - default
+    ELEVENLABS_VOICE_ID: process.env.EXPO_PUBLIC_ELEVENLABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM', // 'Rachel' - default
 
     // ─── Audio Cache ───────────────────────────────────────────
     AUDIO_CACHE_DIR: 'gita_audio/',
 
     // ─── RevenueCat ──────────────────────────────────────────
-    REVENUECAT_API_KEY_ANDROID: 'goog_placeholder_api_key_for_android',
+    REVENUECAT_API_KEY_ANDROID: process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID || '',
     ENTITLEMENT_ID: 'Gita Pro',
 
     // ─── Notification Defaults ────────────────────────────────
