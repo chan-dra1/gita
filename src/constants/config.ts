@@ -22,7 +22,7 @@ export const Config = {
     AUDIO_CACHE_DIR: 'gita_audio/',
 
     // ─── RevenueCat ──────────────────────────────────────────
-    REVENUECAT_API_KEY_ANDROID: 'test_IRVEjFCkbDGUchCCRuhhwgErcVA',
+    REVENUECAT_API_KEY_ANDROID: 'goog_placeholder_api_key_for_android',
     ENTITLEMENT_ID: 'Gita Pro',
 
     // ─── Notification Defaults ────────────────────────────────

@@ -8,8 +8,12 @@ import { Config } from '../src/constants/config';
 
 export default function RootLayout() {
   useEffect(() => {
-    if (Platform.OS === 'android') {
-      Purchases.configure({ apiKey: Config.REVENUECAT_API_KEY_ANDROID });
+    if (Platform.OS === 'android' && Config.REVENUECAT_API_KEY_ANDROID && !Config.REVENUECAT_API_KEY_ANDROID.startsWith('test_')) {
+      try {
+        Purchases.configure({ apiKey: Config.REVENUECAT_API_KEY_ANDROID });
+      } catch (e) {
+        console.warn('Failed to configure RevenueCat:', e);
+      }
     }
     // Note: iOS key can be added in Config when ready
   }, []);
