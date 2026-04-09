@@ -15,6 +15,8 @@ import {
   View,
   Alert,
   Image,
+  StyleSheet,
+  StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDeepDive } from '../../../src/hooks/useDeepDive';
@@ -35,6 +37,34 @@ try {
   // Not available in Expo Go or web
 }
 
+// Helper: strip author attribution from purport text
+function stripAttribution(text: string): string {
+  return text
+    .replace(/^(English|Hindi)\s+Commentary\s+By\s+Swami\s+\w+\.?\s*/i, '')
+    .replace(/Swami Sivananda/gi, '')
+    .replace(/Swami Ramsukhdas/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+// Helper: parse word meanings into pairs
+function parseWordMeanings(wm: string): { word: string; meaning: string }[] {
+  if (!wm) return [];
+  // Common patterns: "karmaṇi—in prescribed duties; eva—certainly; adhikāraḥ—right"
+  // or "karmaṇi — in prescribed duties; eva — certainly"
+  const entries = wm.split(/[;]/);
+  return entries.map(entry => {
+    const parts = entry.split(/[—–-]/);
+    if (parts.length >= 2) {
+      return {
+        word: parts[0].trim(),
+        meaning: parts.slice(1).join('—').trim(),
+      };
+    }
+    return { word: entry.trim(), meaning: '' };
+  }).filter(e => e.word.length > 0);
+}
+
 export default function SlokaScreen() {
   const { chapter: chapterStr, verse: verseStr } = useLocalSearchParams<{
     chapter: string;
@@ -48,13 +78,12 @@ export default function SlokaScreen() {
   const chapterData = getChapter(chapter);
   const slokaImage = getSlokaImage(chapter, verse);
 
-  // Audio state - disabled until API keys are available
+  // Audio state
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
 
   // UI state
-  // Tabs removed — all content rendered in vertical scroll
   const [questionText, setQuestionText] = useState('');
   const [playingScholarMsgId, setPlayingScholarMsgId] = useState<number | null>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -84,7 +113,8 @@ export default function SlokaScreen() {
   } = useDeepDive(slokaContext);
 
   const purportDb = language === 'hi' ? purportsHiData : purportsData;
-  const purport = (purportDb as Record<string, string>)[`${chapter}:${verse}`];
+  let rawPurport = (purportDb as Record<string, string>)[`${chapter}:${verse}`];
+  const purport = rawPurport ? stripAttribution(rawPurport) : null;
   const precomputedQuestions = (scholarAnswersData as Record<string, any[]>)[`${chapter}:${verse}`] || [];
 
   // Track sloka view on mount and load saved status
@@ -134,16 +164,12 @@ export default function SlokaScreen() {
     }
   };
 
-  /**
-   * Clean TTS text — only the English translation, stripped of
-   * semicolons, leading/trailing whitespace, and chapter/verse prefixes.
-   */
   const getCleanAudioText = (translation: string): string => {
     return translation
-      .replace(/^(chapter|verse|sloka)\s+\d+[,.]?\s*/gi, '') // Remove "Chapter X, Verse Y" prefixes
-      .replace(/;/g, ',') // Replace semicolons with natural pauses
-      .replace(/(\\||॥)[^\\|॥]*(\\||॥)/g, '') // Remove Sanskrit verse markers ||1-1||
-      .replace(/\\s{2,}/g, ' ') // Collapse extra whitespace
+      .replace(/^(chapter|verse|sloka)\s+\d+[,.]?\s*/gi, '')
+      .replace(/;/g, ',')
+      .replace(/(\\||॥)[^\\|॥]*(\\||॥)/g, '')
+      .replace(/\\s{2,}/g, ' ')
       .trim();
   };
 
@@ -174,7 +200,6 @@ export default function SlokaScreen() {
   const [isAudioCached, setIsAudioCached] = useState(false);
 
   useEffect(() => {
-    // Check if audio is already cached when component mounts
     hasCachedAudio(chapter, verse, 'sanskrit').then(setIsAudioCached);
   }, [chapter, verse]);
 
@@ -182,7 +207,6 @@ export default function SlokaScreen() {
     if (!sloka) return;
 
     if (isSpeaking) {
-      // Stop playback
       Speech.stop();
       setIsSpeaking(false);
       return;
@@ -196,8 +220,6 @@ export default function SlokaScreen() {
       setIsAudioLoading(false);
       setIsSpeaking(true);
       
-      // Using en-IN (Indian English) instead of hi-IN. 
-      // en-IN is universally installed and reads transliterated Sanskrit very cleanly.
       Speech.speak(cleanText, {
         language: 'en-IN',
         pitch: 0.9,
@@ -218,17 +240,10 @@ export default function SlokaScreen() {
 
   if (!sloka) {
     return (
-      <SafeAreaView
-        style={{
-          flex: 1,
-          backgroundColor: '#FFF7ED',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+      <SafeAreaView style={s.loadingContainer}>
         <Text style={{ fontSize: 18, color: '#999' }}>Sloka not found</Text>
         <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 16 }}>
-          <Text style={{ color: '#E8751A', fontWeight: '600', fontSize: 16 }}>
+          <Text style={{ color: '#D4A44C', fontWeight: '600', fontSize: 16 }}>
             Go Back
           </Text>
         </TouchableOpacity>
@@ -251,286 +266,145 @@ export default function SlokaScreen() {
     }, 300);
   };
 
+  const wordPairs = sloka.word_meanings ? parseWordMeanings(sloka.word_meanings) : [];
+  const translation = getLocalizedTranslation(chapter, verse, sloka.translation_english, language);
+  // Strip "Swami Sivananda did not comment" from translations
+  const cleanTranslation = translation.replace(/Swami Sivananda did not comment on this sloka/gi, 'Translation not available for this verse.').trim();
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF7ED' }} edges={['top', 'bottom']}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={90}
-      >
-        {/* Header */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingHorizontal: 20,
-            paddingTop: Platform.OS === 'android' ? 24 : 12,
-            paddingBottom: 12,
-          }}
+    <View style={s.root}>
+      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" />
+      <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={90}
         >
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: '#FFF',
-              alignItems: 'center',
-              justifyContent: 'center',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.06,
-              shadowRadius: 6,
-              elevation: 2,
-            }}
-          >
-            <Ionicons name="arrow-back" size={20} color="#1A1A1A" />
-          </TouchableOpacity>
-          <View style={{ alignItems: 'center' }}>
-            <Text style={{ fontSize: 17, fontWeight: '600', color: '#1A1A1A' }}>
-              Chapter {chapter}, Verse {verse}
-            </Text>
-            {hasBeenRead && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-                <Ionicons name="checkmark-circle" size={12} color="#22C55E" />
-                <Text style={{ fontSize: 11, color: '#22C55E', marginLeft: 3 }}>Read</Text>
-              </View>
-            )}
-          </View>
-          <TouchableOpacity
-            onPress={handleToggleSave}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: isSaved ? '#FEF3E8' : '#FFF',
-              alignItems: 'center',
-              justifyContent: 'center',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.06,
-              shadowRadius: 6,
-              elevation: 2,
-            }}
-          >
-            <Ionicons 
-              name={isSaved ? 'bookmark' : 'bookmark-outline'} 
-              size={20} 
-              color={isSaved ? '#E8751A' : '#1A1A1A'} 
-            />
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView
-          ref={scrollRef}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
-        >
-          {/* ── Illustration (If Available) ── */}
-          {slokaImage && (
-            <View style={{ alignItems: 'center', marginTop: 8, paddingHorizontal: 20 }}>
-              <View
-                style={{
-                  width: '100%',
-                  aspectRatio: 1.2,
-                  borderRadius: 24,
-                  overflow: 'hidden',
-                  backgroundColor: '#F5EDE0',
-                  borderWidth: 1,
-                  borderColor: '#F0E0CC',
-                  shadowColor: '#E8751A',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 12,
-                  elevation: 4,
-                }}
-              >
-                <Image
-                  source={slokaImage}
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode="cover"
-                />
-              </View>
+          {/* ─── Dark Header ─── */}
+          <View style={s.header}>
+            <TouchableOpacity onPress={() => router.back()} style={s.headerBtn}>
+              <Ionicons name="arrow-back" size={20} color="#FFF" />
+            </TouchableOpacity>
+            <View style={{ alignItems: 'center', flex: 1 }}>
+              <Text style={s.headerLabel}>CHAPTER {chapter} · VERSE {verse}</Text>
             </View>
-          )}
-
-          {/* ── Sanskrit Card ── */}
-          <View
-            style={{
-              marginHorizontal: 20,
-              marginTop: 8,
-              borderRadius: 24,
-              overflow: 'hidden',
-              backgroundColor: '#FFF8EE',
-              borderWidth: 1,
-              borderColor: '#F0E0CC',
-              shadowColor: '#E8751A',
-              shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.1,
-              shadowRadius: 20,
-              elevation: 5,
-            }}
-          >
-            <View style={{ height: 4, backgroundColor: '#F5C518' }} />
-            <View style={{ padding: 28, alignItems: 'center' }}>
-              <Text style={{ fontSize: 32, color: '#F5C518', marginBottom: 16 }}>❝</Text>
-              <Text
-                style={{
-                  fontSize: 22,
-                  fontWeight: '600',
-                  color: '#1A1A1A',
-                  textAlign: 'center',
-                  lineHeight: 34,
-                }}
-              >
-                {sloka.sanskrit}
-              </Text>
-              <View
-                style={{
-                  height: 1,
-                  backgroundColor: '#F0E0CC',
-                  width: '60%',
-                  marginVertical: 20,
-                }}
+            <TouchableOpacity onPress={handleToggleSave} style={[s.headerBtn, isSaved && { backgroundColor: 'rgba(212, 164, 76, 0.2)' }]}>
+              <Ionicons
+                name={isSaved ? 'bookmark' : 'bookmark-outline'}
+                size={20}
+                color={isSaved ? '#D4A44C' : '#FFF'}
               />
-              <Text style={{ fontSize: 14, fontStyle: 'italic', color: '#B0A090' }}>
-                Bhagavad Gita - Chapter {chapter}, Verse {verse}
-              </Text>
-            </View>
+            </TouchableOpacity>
           </View>
 
-          {/* ── Audio Player ── */}
-          <View
-            style={{
-              marginHorizontal: 20,
-              marginTop: 20,
-              borderRadius: 20,
-              backgroundColor: '#FFF',
-              borderWidth: 1,
-              borderColor: isSpeaking ? '#E8751A' : '#F0E0CC',
-              overflow: 'hidden',
-              shadowColor: isSpeaking ? '#E8751A' : '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: isSpeaking ? 0.15 : 0.04,
-              shadowRadius: 8,
-              elevation: 2,
-            }}
+          <ScrollView
+            ref={scrollRef}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 60 }}
           >
-            {isSpeaking && <View style={{ height: 3, backgroundColor: '#E8751A' }} />}
-            <View style={{ padding: 16, flexDirection: 'row', alignItems: 'center' }}>
-              <TouchableOpacity
-                onPress={handlePlayPause}
-                style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: 28,
-                  backgroundColor: isAudioLoading ? '#F5F5F5' : isSpeaking ? '#E8751A' : '#FFF3E8',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+            {/* ─── Sanskrit Verse Card ─── */}
+            <View style={s.sanskritCard}>
+              <View style={s.goldBar} />
+              <View style={s.sanskritInner}>
+                <Text style={s.sanskritText}>{sloka.sanskrit}</Text>
+                <View style={s.divider} />
+                <Text style={s.translitText}>"{sloka.transliteration}"</Text>
+              </View>
+            </View>
+
+            {/* ─── Audio Player ─── */}
+            <TouchableOpacity onPress={handlePlayPause} style={s.audioRow} activeOpacity={0.7}>
+              <View style={[s.playBtn, isSpeaking && { backgroundColor: '#D4A44C' }]}>
                 {isAudioLoading ? (
-                  <ActivityIndicator size="small" color="#E8751A" />
+                  <ActivityIndicator size="small" color="#D4A44C" />
                 ) : (
                   <Ionicons
                     name={isSpeaking ? 'stop' : 'play'}
-                    size={26}
-                    color={isSpeaking ? '#FFF' : '#E8751A'}
-                    style={{ marginLeft: isSpeaking ? 0 : 3 }}
+                    size={20}
+                    color={isSpeaking ? '#0D0D0D' : '#D4A44C'}
+                    style={{ marginLeft: isSpeaking ? 0 : 2 }}
                   />
                 )}
-              </TouchableOpacity>
-
-              <View style={{ flex: 1, marginLeft: 16 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <Text style={{ fontSize: 15, fontWeight: '700', color: '#1A1A1A' }}>
-                    {isSpeaking ? 'Playing...' : 'Audio Recitation'}
-                  </Text>
-                  {isAudioCached && !isSpeaking && (
-                    <View style={{ backgroundColor: '#EDF7EE', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 }}>
-                      <Text style={{ fontSize: 10, fontWeight: '600', color: '#2D7A3A' }}>CACHED ✓</Text>
-                    </View>
-                  )}
+              </View>
+              <View style={{ flex: 1, marginLeft: 14 }}>
+                <Text style={s.audioTitle}>{isSpeaking ? 'Playing...' : 'Listen to Recitation'}</Text>
+                <Text style={s.audioSub}>
+                  {isSpeaking ? 'Tap to stop' : 'Sanskrit verse audio'}
+                </Text>
+              </View>
+              {isAudioCached && !isSpeaking && (
+                <View style={s.cachedBadge}>
+                  <Text style={s.cachedText}>OFFLINE ✓</Text>
                 </View>
-                <Text style={{ fontSize: 12, color: '#B0A090', marginTop: 3 }}>
-                  {isAudioLoading ? 'Generating audio...' : isSpeaking ? 'Tap to stop' : isAudioCached ? 'Instant playback — saved offline' : 'Sanskrit recitation'}
-                </Text>
-                {audioError && <Text style={{ fontSize: 11, color: '#E53935', marginTop: 4 }}>{audioError}</Text>}
-              </View>
-            </View>
-          </View>
+              )}
+            </TouchableOpacity>
+            {audioError && (
+              <Text style={{ color: '#E53935', fontSize: 12, marginHorizontal: 20, marginTop: 4 }}>{audioError}</Text>
+            )}
 
-          {/* ── All Verse Content (Vertical Scroll) ── */}
-          <View style={{ marginHorizontal: 20, marginTop: 24 }}>
-
-            {/* ── 1. Transliteration & Translation ── */}
-            <View style={{ padding: 20, backgroundColor: '#FFF', borderRadius: 20, borderWidth: 1, borderColor: '#F0E0CC' }}>
-              <View style={{ borderLeftWidth: 3, borderLeftColor: '#F5C518', paddingLeft: 14, marginBottom: 16 }}>
-                <Text style={{ fontSize: 15, fontStyle: 'italic', color: '#666', lineHeight: 24 }}>
-                  "{sloka.transliteration}"
-                </Text>
-              </View>
-              <Text style={{ fontSize: 16, color: '#333', lineHeight: 26 }}>
-                {getLocalizedTranslation(chapter, verse, sloka.translation_english, language)}
+            {/* ─── Translation ─── */}
+            <View style={s.section}>
+              <Text style={s.sectionTitle}>TRANSLATION</Text>
+              <Text style={s.translationText}>
+                "{cleanTranslation}"
               </Text>
             </View>
 
-            {/* ── 2. Word-for-Word ── */}
-            {sloka.word_meanings && language === 'en' && (
-              <View style={{ marginTop: 12, padding: 16, backgroundColor: '#FFFDF9', borderRadius: 16, borderWidth: 1, borderColor: '#F0E0CC' }}>
-                <Text style={{ fontSize: 13, fontWeight: '700', color: '#E8751A', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Word-for-Word</Text>
-                <Text style={{ fontSize: 14, color: '#444', lineHeight: 24 }}>
-                  {sloka.word_meanings.replace(/—/g, ' — ')}
-                </Text>
+            {/* ─── Word-by-Word Breakdown ─── */}
+            {wordPairs.length > 0 && language === 'en' && (
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>WORD BY WORD BREAKDOWN</Text>
+                <View style={s.wordGrid}>
+                  {wordPairs.map((pair, ix) => (
+                    <View key={ix} style={s.wordRow}>
+                      <Text style={s.wordSanskrit}>{pair.word}</Text>
+                      <Text style={s.wordMeaning}>{pair.meaning}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
             )}
 
-            {/* ── 3. Spiritual Meaning & In Your Life ── */}
+            {/* ─── Spiritual Meaning & In Your Life ─── */}
             {commentary && (
-              <View style={{ marginTop: 12, padding: 20, backgroundColor: '#FFF', borderRadius: 20, borderWidth: 1, borderColor: '#F0E0CC' }}>
+              <View style={s.section}>
                 {commentary.meaning && (
-                  <View style={{ marginBottom: commentary.application ? 16 : 0 }}>
-                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#E8751A', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>Spiritual Meaning</Text>
-                    <Text style={{ fontSize: 15, color: '#555', lineHeight: 24 }}>{commentary.meaning}</Text>
-                  </View>
+                  <>
+                    <Text style={s.sectionTitle}>SPIRITUAL MEANING</Text>
+                    <Text style={s.bodyText}>{commentary.meaning}</Text>
+                  </>
                 )}
                 {commentary.application && (
-                  <View>
-                    <View style={{ height: 1, backgroundColor: '#F0E0CC', width: '100%', marginBottom: 16 }} />
-                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#E8751A', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>In Your Life</Text>
-                    <Text style={{ fontSize: 15, color: '#555', lineHeight: 24 }}>{commentary.application}</Text>
+                  <View style={{ marginTop: commentary.meaning ? 20 : 0 }}>
+                    <Text style={s.sectionTitle}>IN YOUR LIFE</Text>
+                    <Text style={s.bodyText}>{commentary.application}</Text>
                   </View>
                 )}
               </View>
             )}
 
-            {/* ── 4. Expanded Purport ── */}
+            {/* ─── Expanded Purport ─── */}
             {purport && (
-              <View style={{ marginTop: 12, padding: 20, backgroundColor: '#FFF', borderRadius: 20, borderWidth: 1, borderColor: '#F0E0CC' }}>
-                <Text style={{ fontSize: 16, fontWeight: '700', color: '#1A1A1A', marginBottom: 12 }}>Expanded Purport</Text>
-                <Text style={{ fontSize: 15, color: '#444', lineHeight: 26 }}>
-                  {purport}
-                </Text>
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>EXPANDED PURPORT</Text>
+                <Text style={s.bodyText}>{purport}</Text>
               </View>
             )}
 
-            {/* ── 5. Scholar Q&A ── */}
-            <View style={{ marginTop: 16 }}>
-              <Text style={{ fontSize: 13, fontWeight: '700', color: '#E8751A', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12 }}>
-                Ask About This Verse
-              </Text>
+            {/* ─── Scholar Q&A ─── */}
+            <View style={s.section}>
+              <Text style={s.sectionTitle}>ASK ABOUT THIS VERSE</Text>
 
               {/* Predefined Q&A */}
               {precomputedQuestions.length > 0 && messages.length === 0 && (
-                <View style={{ marginBottom: 12 }}>
+                <View style={{ marginBottom: 16 }}>
                   {precomputedQuestions.map((q: any, i: number) => (
-                    <View key={i} style={{ marginBottom: 12, backgroundColor: '#FFF', borderRadius: 16, borderWidth: 1, borderColor: '#F0E0CC', overflow: 'hidden' }}>
-                      <View style={{ padding: 14, backgroundColor: '#FFF8EE', borderBottomWidth: 1, borderBottomColor: '#F0E0CC' }}>
-                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#1A1A1A' }}>Q: {q.question}</Text>
+                    <View key={i} style={s.qaCard}>
+                      <View style={s.qaQuestion}>
+                        <Text style={s.qaQuestionText}>Q: {q.question}</Text>
                       </View>
-                      <View style={{ padding: 14 }}>
-                        <Text style={{ fontSize: 14, color: '#444', lineHeight: 22 }}>{q.answer}</Text>
+                      <View style={s.qaAnswer}>
+                        <Text style={s.qaAnswerText}>{q.answer}</Text>
                       </View>
                     </View>
                   ))}
@@ -541,18 +415,28 @@ export default function SlokaScreen() {
               {messages.map((msg, i) => (
                 <View key={i} style={{ marginBottom: 12, alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                   {msg.role === 'assistant' && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, width: '85%', maxWidth: '85%' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, width: '85%' }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                         <Text style={{ fontSize: 12 }}>🙏</Text>
-                        <Text style={{ fontSize: 11, fontWeight: '700', color: '#E8751A' }}>Gita Scholar</Text>
+                        <Text style={{ fontSize: 11, fontWeight: '700', color: '#D4A44C' }}>Gita Scholar</Text>
                       </View>
                       <TouchableOpacity onPress={() => handlePlayScholarMsg(msg.content, i)}>
-                        <Ionicons name={playingScholarMsgId === i ? "stop-circle" : "volume-medium"} size={16} color="#E8751A" />
+                        <Ionicons name={playingScholarMsgId === i ? "stop-circle" : "volume-medium"} size={16} color="#D4A44C" />
                       </TouchableOpacity>
                     </View>
                   )}
-                  <View style={{ maxWidth: '85%', borderRadius: 18, padding: 16, ...(msg.role === 'user' ? { backgroundColor: '#E8751A', borderTopRightRadius: 4 } : { backgroundColor: '#FFF', borderTopLeftRadius: 4, borderWidth: 1, borderColor: '#F0E0CC' }) }}>
-                    <Text style={{ fontSize: 14, lineHeight: 22, color: msg.role === 'user' ? '#FFF' : '#333' }}>{msg.content}</Text>
+                  <View style={{
+                    maxWidth: '85%',
+                    borderRadius: 18,
+                    padding: 16,
+                    ...(msg.role === 'user'
+                      ? { backgroundColor: '#D4A44C', borderTopRightRadius: 4 }
+                      : { backgroundColor: '#1A1A1A', borderTopLeftRadius: 4, borderWidth: 1, borderColor: '#2A2A2A' }
+                    )
+                  }}>
+                    <Text style={{ fontSize: 14, lineHeight: 22, color: msg.role === 'user' ? '#0D0D0D' : '#E0D5C5' }}>
+                      {msg.content}
+                    </Text>
                   </View>
                 </View>
               ))}
@@ -562,28 +446,28 @@ export default function SlokaScreen() {
                 <View style={{ alignItems: 'flex-start', marginBottom: 12 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 4 }}>
                     <Text style={{ fontSize: 12 }}>🙏</Text>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#E8751A' }}>Gita Scholar</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#D4A44C' }}>Gita Scholar</Text>
                   </View>
-                  <View style={{ borderRadius: 18, borderTopLeftRadius: 4, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#F0E0CC', padding: 16, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    <ActivityIndicator size="small" color="#E8751A" />
-                    <Text style={{ fontSize: 14, color: '#999' }}>Contemplating...</Text>
+                  <View style={{ borderRadius: 18, borderTopLeftRadius: 4, backgroundColor: '#1A1A1A', borderWidth: 1, borderColor: '#2A2A2A', padding: 16, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <ActivityIndicator size="small" color="#D4A44C" />
+                    <Text style={{ fontSize: 14, color: '#777' }}>Contemplating...</Text>
                   </View>
                 </View>
               )}
 
               {/* AI Error */}
               {aiError && (
-                <View style={{ marginBottom: 12, padding: 14, borderRadius: 12, backgroundColor: '#FFF0F0', borderWidth: 1, borderColor: '#FFD0D0' }}>
-                  <Text style={{ fontSize: 14, color: '#CC3333' }}>{aiError}</Text>
+                <View style={{ marginBottom: 12, padding: 14, borderRadius: 12, backgroundColor: 'rgba(229,57,53,0.1)', borderWidth: 1, borderColor: 'rgba(229,57,53,0.3)' }}>
+                  <Text style={{ fontSize: 14, color: '#E53935' }}>{aiError}</Text>
                 </View>
               )}
 
               {/* Question Input */}
-              <View style={{ marginBottom: 12, borderRadius: 20, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#F0E0CC', flexDirection: 'row', alignItems: 'flex-end', padding: 6 }}>
+              <View style={s.inputRow}>
                 <TextInput
-                  style={{ flex: 1, fontSize: 14, color: '#333', paddingHorizontal: 14, paddingVertical: 10, minHeight: 42, maxHeight: 100 }}
-                  placeholder={messages.length === 0 ? "Ask a question about this verse..." : "Ask about this verse..."}
-                  placeholderTextColor="#C0B0A0"
+                  style={s.input}
+                  placeholder="Ask a question about this verse..."
+                  placeholderTextColor="#555"
                   multiline
                   value={questionText}
                   onChangeText={setQuestionText}
@@ -592,90 +476,329 @@ export default function SlokaScreen() {
                 <TouchableOpacity
                   onPress={() => handleAskQuestion(questionText)}
                   disabled={isAiLoading || !questionText.trim()}
-                  style={{ width: 42, height: 42, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: isAiLoading || !questionText.trim() ? '#E0D0C0' : '#E8751A' }}
+                  style={[s.sendBtn, (isAiLoading || !questionText.trim()) && { opacity: 0.4 }]}
                 >
-                  <Ionicons name="send" size={16} color="#FFF" />
+                  <Ionicons name="send" size={16} color="#0D0D0D" />
                 </TouchableOpacity>
               </View>
 
               {/* Clear Chat */}
               {messages.length > 0 && (
-                <TouchableOpacity onPress={clearChat} style={{ marginBottom: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                  <Ionicons name="refresh-outline" size={14} color="#999" />
-                  <Text style={{ fontSize: 12, color: '#999' }}>Clear conversation</Text>
+                <TouchableOpacity onPress={clearChat} style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                  <Ionicons name="refresh-outline" size={14} color="#555" />
+                  <Text style={{ fontSize: 12, color: '#555' }}>Clear conversation</Text>
                 </TouchableOpacity>
               )}
             </View>
-          </View>
 
-          {/* ── Bottom Navigation ── */}
-          <View
-            style={{
-              flexDirection: 'row',
-              marginHorizontal: 20,
-              marginTop: 24,
-              gap: 12,
-            }}
-          >
-            <TouchableOpacity
-              onPress={() => goToVerse(verse - 1)}
-              disabled={verse <= 1}
-              style={{
-                flex: 1,
-                paddingVertical: 16,
-                borderRadius: 20,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                borderWidth: 1.5,
-                borderColor: verse <= 1 ? '#E0D8D0' : '#E8751A',
-                backgroundColor: '#FFF',
-                opacity: verse <= 1 ? 0.5 : 1,
-              }}
-            >
-              <Ionicons
-                name="chevron-back"
-                size={16}
-                color={verse <= 1 ? '#C0B0A0' : '#E8751A'}
-              />
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: '600',
-                  color: verse <= 1 ? '#C0B0A0' : '#E8751A',
-                }}
+            {/* ─── Bottom Navigation ─── */}
+            <View style={s.navRow}>
+              <TouchableOpacity
+                onPress={() => goToVerse(verse - 1)}
+                disabled={verse <= 1}
+                style={[s.navBtn, s.navPrev, verse <= 1 && { opacity: 0.3 }]}
               >
-                Previous
-              </Text>
-            </TouchableOpacity>
+                <Ionicons name="chevron-back" size={16} color={verse <= 1 ? '#555' : '#D4A44C'} />
+                <Text style={[s.navText, { color: verse <= 1 ? '#555' : '#D4A44C' }]}>Previous</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => goToVerse(verse + 1)}
-              style={{
-                flex: 1.2,
-                paddingVertical: 16,
-                borderRadius: 20,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                backgroundColor: '#E8751A',
-                shadowColor: '#E8751A',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 12,
-                elevation: 6,
-              }}
-            >
-              <Text style={{ fontSize: 14, fontWeight: '700', color: '#FFF' }}>
-                Next Verse
-              </Text>
-              <Ionicons name="chevron-forward" size={16} color="#FFF" />
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+              <TouchableOpacity
+                onPress={() => goToVerse(verse + 1)}
+                style={s.navNext}
+              >
+                <Text style={s.navNextText}>Next Verse</Text>
+                <Ionicons name="chevron-forward" size={16} color="#0D0D0D" />
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
+
+const s = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: '#0D0D0D',
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#0D0D0D',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // ── Header ──
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'android' ? 20 : 8,
+    paddingBottom: 12,
+  },
+  headerBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  headerLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#D4A44C',
+    letterSpacing: 2,
+  },
+
+  // ── Sanskrit Card ──
+  sanskritCard: {
+    marginHorizontal: 20,
+    marginTop: 8,
+    borderRadius: 24,
+    overflow: 'hidden',
+    backgroundColor: '#141414',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 164, 76, 0.15)',
+  },
+  goldBar: {
+    height: 3,
+    backgroundColor: '#D4A44C',
+  },
+  sanskritInner: {
+    padding: 28,
+    alignItems: 'center',
+  },
+  sanskritText: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    lineHeight: 36,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(212, 164, 76, 0.25)',
+    width: '50%',
+    marginVertical: 20,
+  },
+  translitText: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    color: 'rgba(212, 164, 76, 0.7)',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+
+  // ── Audio ──
+  audioRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 16,
+    backgroundColor: '#141414',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  playBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(212, 164, 76, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  audioTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  audioSub: {
+    fontSize: 12,
+    color: '#777',
+    marginTop: 2,
+  },
+  cachedBadge: {
+    backgroundColor: 'rgba(74, 222, 128, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(74, 222, 128, 0.2)',
+  },
+  cachedText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#4ADE80',
+    letterSpacing: 0.5,
+  },
+
+  // ── Sections ──
+  section: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    padding: 20,
+    borderRadius: 20,
+    backgroundColor: '#141414',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#D4A44C',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    marginBottom: 14,
+  },
+  translationText: {
+    fontSize: 17,
+    color: '#E0D5C5',
+    lineHeight: 28,
+    fontStyle: 'italic',
+  },
+  bodyText: {
+    fontSize: 15,
+    color: '#B8AFA3',
+    lineHeight: 26,
+  },
+
+  // ── Word Grid ──
+  wordGrid: {
+    gap: 1,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  wordRow: {
+    flexDirection: 'row',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: '#0D0D0D',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.04)',
+  },
+  wordSanskrit: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#D4A44C',
+    width: '40%',
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+  },
+  wordMeaning: {
+    fontSize: 14,
+    color: '#B8AFA3',
+    width: '60%',
+    lineHeight: 20,
+  },
+
+  // ── Q&A ──
+  qaCard: {
+    marginBottom: 12,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#1A1A1A',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  qaQuestion: {
+    padding: 14,
+    backgroundColor: 'rgba(212, 164, 76, 0.08)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.06)',
+  },
+  qaQuestionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#D4A44C',
+  },
+  qaAnswer: {
+    padding: 14,
+  },
+  qaAnswerText: {
+    fontSize: 14,
+    color: '#B8AFA3',
+    lineHeight: 22,
+  },
+
+  // ── Input ──
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    borderRadius: 20,
+    backgroundColor: '#1A1A1A',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    padding: 6,
+  },
+  input: {
+    flex: 1,
+    fontSize: 14,
+    color: '#E0D5C5',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    minHeight: 42,
+    maxHeight: 100,
+  },
+  sendBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#D4A44C',
+  },
+
+  // ── Navigation ──
+  navRow: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginTop: 28,
+    gap: 12,
+  },
+  navBtn: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  navPrev: {
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 164, 76, 0.3)',
+    backgroundColor: 'rgba(212, 164, 76, 0.05)',
+  },
+  navText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  navNext: {
+    flex: 1.2,
+    paddingVertical: 16,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#D4A44C',
+    shadowColor: '#D4A44C',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  navNextText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0D0D0D',
+  },
+});

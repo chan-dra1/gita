@@ -16,7 +16,7 @@ The app operates on a **Hard Paywall** model with a 15-day complimentary trial f
 2.  **The Scholarly Stack**:
     *   **700+ Verified Slokas**: Offline-first JSON data.
     *   **Word-by-Word Breakdown**: Authentic Sanskrit-to-English/Hindi meanings for every verse.
-    *   **Dual-Language Purports**: High-quality commentaries by Swami Sivananda (English) and Swami Ramsukhdas (Hindi).
+    *   **Dual-Language Purports**: High-quality commentaries in English and Hindi, sourced from classical scholarly works.
     *   **Scholar QA**: A cost-optimized AI interface that answers verse-specific context based on scholarly texts.
 3.  **Divine Audio Engine**: Offline-optimized recite-and-repeat audio for Sanskrit transliterations using high-quality voices (en-IN fallback).
 4.  **Spiritual Reminders**: Non-intrusive, timed notifications to bring users back to their daily sloka goals.
