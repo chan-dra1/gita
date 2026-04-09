@@ -481,9 +481,18 @@ export default function SlokaScreen() {
                      "{sloka.transliteration}"
                    </Text>
                  </View>
-                 <Text style={{ fontSize: 16, color: '#333', lineHeight: 26, marginBottom: commentary ? 20 : 0 }}>
+                 <Text style={{ fontSize: 16, color: '#333', lineHeight: 26, marginBottom: (commentary || sloka.word_meanings) ? 20 : 0 }}>
                    {getLocalizedTranslation(chapter, verse, sloka.translation_english, language)}
                  </Text>
+                 
+                 {sloka.word_meanings && language === 'en' && (
+                    <View style={{ marginBottom: 20, backgroundColor: '#FFFDF9', padding: 16, borderRadius: 12, borderWidth: 1, borderColor: '#F0E0CC' }}>
+                       <Text style={{ fontSize: 13, fontWeight: '700', color: '#E8751A', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Word-for-Word</Text>
+                       <Text style={{ fontSize: 14, color: '#444', lineHeight: 24 }}>
+                          {sloka.word_meanings.replace(/—/g, ' — ')}
+                       </Text>
+                    </View>
+                 )}
                  
                  {commentary && (
                     <View>

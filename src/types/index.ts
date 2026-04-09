@@ -5,6 +5,7 @@ export interface Sloka {
     sanskrit: string;
     transliteration: string;
     translation_english: string;
+    word_meanings?: string;
 }
 
 export interface Chapter {
