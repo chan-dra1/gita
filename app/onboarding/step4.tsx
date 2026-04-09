@@ -43,18 +43,12 @@ const COMMITMENT_OPTIONS = [
 export default function OnboardingStep4() {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState<string>('2');
-  const [customValue, setCustomValue] = useState<string>('');
+  const [customValue, setCustomValue] = useState<number>(3);
 
   const handleComplete = async () => {
-    const value = selectedId === 'custom' ? (customValue || '3') : selectedId;
+    const value = selectedId === 'custom' ? customValue.toString() : selectedId;
     await saveOnboardingStep('dailyCommitment', value);
     router.push('/onboarding/step5' as any);
-  };
-
-  const handleCustomInput = (text: string) => {
-    // Only allow numbers, max 3 digits
-    const cleaned = text.replace(/[^0-9]/g, '').slice(0, 3);
-    setCustomValue(cleaned);
   };
 
   return (
@@ -132,19 +126,26 @@ export default function OnboardingStep4() {
                     {option.id === 'custom' && isSelected && (
                       <Animated.View entering={FadeIn.duration(300)} style={styles.customInputContainer}>
                         <View style={styles.customInputRow}>
-                          <TextInput
-                            style={styles.customInput}
-                            value={customValue}
-                            onChangeText={handleCustomInput}
-                            placeholder="e.g. 7"
-                            placeholderTextColor="rgba(255,255,255,0.3)"
-                            keyboardType="number-pad"
-                            maxLength={3}
-                            autoFocus
-                          />
-                          <Text style={styles.customInputLabel}>Slokas / day</Text>
+                          <TouchableOpacity 
+                            onPress={() => setCustomValue(prev => Math.max(1, prev - 1))}
+                            style={styles.dialButtonMinus}
+                          >
+                            <Ionicons name="remove" size={24} color="#D1D5DB" />
+                          </TouchableOpacity>
+                          
+                          <View style={styles.dialNumberContainer}>
+                            <Text style={styles.dialNumber}>{customValue}</Text>
+                            <Text style={styles.dialLabel}>Slokas / day</Text>
+                          </View>
+                          
+                          <TouchableOpacity 
+                            onPress={() => setCustomValue(prev => Math.min(700, prev + 1))}
+                            style={styles.dialButtonPlus}
+                          >
+                            <Ionicons name="add" size={24} color="#0D0D0D" />
+                          </TouchableOpacity>
                         </View>
-                        <Text style={styles.customInputHint}>Enter any number between 1 and 700</Text>
+                        <Text style={styles.customInputHint}>Use the controls to set your exact target</Text>
                       </Animated.View>
                     )}
                   </TouchableOpacity>
@@ -162,9 +163,9 @@ export default function OnboardingStep4() {
             onPress={handleComplete}
             style={[
               styles.completeButton,
-              selectedId === 'custom' && !customValue && styles.completeButtonDisabled,
+              selectedId === 'custom' && customValue < 1 && styles.completeButtonDisabled,
             ]}
-            disabled={selectedId === 'custom' && !customValue}
+            disabled={selectedId === 'custom' && customValue < 1}
           >
             <Text style={styles.completeButtonText}>Continue</Text>
             <Ionicons name="arrow-forward" size={20} color="#0A1128" style={styles.sparkleIcon} />
@@ -350,30 +351,55 @@ const styles = StyleSheet.create({
   customInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-  },
-  customInput: {
-    flex: 1,
-    height: 48,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 12,
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+    padding: 8,
     borderWidth: 1,
-    borderColor: 'rgba(244, 139, 41, 0.4)',
-    paddingHorizontal: 16,
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#F48B29',
-    textAlign: 'center',
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
-  customInputLabel: {
-    fontSize: 15,
+  dialButtonMinus: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dialButtonPlus: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#F48B29',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#F48B29',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  dialNumberContainer: {
+    alignItems: 'center',
+  },
+  dialNumber: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#F48B29',
+    fontVariant: ['tabular-nums'],
+  },
+  dialLabel: {
+    fontSize: 12,
     fontWeight: '600',
     color: '#D1D5DB',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: -2,
   },
   customInputHint: {
     fontSize: 12,
     color: '#6B7280',
-    marginTop: 8,
+    marginTop: 12,
     textAlign: 'center',
   },
   /* Footer */

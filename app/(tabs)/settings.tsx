@@ -274,7 +274,7 @@ export default function SettingsScreen() {
       <View style={styles.rightContent}>
         {value && <Text style={styles.rowValue}>{value}</Text>}
         {rightContent}
-        {onPress && <Ionicons name="chevron-forward" size={18} color="#C7C7CC" style={{marginLeft: 8}} />}
+        {onPress && <Ionicons name="chevron-forward" size={18} color="#475569" style={{marginLeft: 8}} />}
       </View>
     </TouchableOpacity>
   );
@@ -585,8 +585,8 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8FAFC' },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC' },
+  container: { flex: 1, backgroundColor: '#0D0D0D' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0D0D0D' },
   header: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
@@ -594,13 +594,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24, 
     paddingTop: 12, 
     paddingBottom: 20,
-    backgroundColor: '#FFF' 
+    backgroundColor: '#0D0D0D' 
   },
-  headerSubtitle: { fontSize: 11, fontWeight: '700', color: '#E8751A', letterSpacing: 1 },
-  headerTitle: { fontSize: 28, fontWeight: '800', color: '#1A1A1A', marginTop: 4 },
-  profileButton: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#FEF3E8', alignItems: 'center', justifyContent: 'center' },
-  avatarPlaceholder: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#E8751A', alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: '#FFF', fontSize: 18, fontWeight: '700' },
+  headerSubtitle: { fontSize: 11, fontWeight: '700', color: '#D4A44C', letterSpacing: 1 },
+  headerTitle: { fontSize: 28, fontWeight: '800', color: '#FFFFFF', marginTop: 4, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  profileButton: { width: 50, height: 50, borderRadius: 25, backgroundColor: 'rgba(212, 164, 76, 0.15)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(212, 164, 76, 0.3)' },
+  avatarPlaceholder: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#D4A44C', alignItems: 'center', justifyContent: 'center' },
+  avatarText: { color: '#0D0D0D', fontSize: 18, fontWeight: '800' },
   
   scrollContent: { paddingBottom: 60 },
   
@@ -608,24 +608,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row', 
     marginHorizontal: 20, 
     marginTop: 16, 
-    backgroundColor: '#FFF', 
+    backgroundColor: '#1A1A1A', 
     borderRadius: 20, 
     paddingVertical: 20,
     alignItems: 'center',
-    shadowColor: '#000', 
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    shadowColor: '#D4A44C', 
     shadowOffset: { width: 0, height: 4 }, 
-    shadowOpacity: 0.05, 
+    shadowOpacity: 0.1, 
     shadowRadius: 10, 
     elevation: 3 
   },
-  statDivider: { width: 1, height: '60%', backgroundColor: '#F1F5F9' },
+  statDivider: { width: 1, height: '60%', backgroundColor: 'rgba(255, 255, 255, 0.1)' },
   statBox: { flex: 1, alignItems: 'center' },
-  statNumber: { fontSize: 24, fontWeight: '800', color: '#1A1A1A' },
-  statLabel: { fontSize: 11, color: '#64748B', fontWeight: '600', marginTop: 4, textTransform: 'uppercase' },
+  statNumber: { fontSize: 26, fontWeight: '800', color: '#FFFFFF' },
+  statLabel: { fontSize: 11, color: '#9CA3AF', fontWeight: '600', marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
 
   section: { marginTop: 24, marginHorizontal: 20 },
-  sectionHeader: { fontSize: 12, fontWeight: '700', color: '#94A3B8', marginLeft: 8, marginBottom: 8, letterSpacing: 0.5 },
-  sectionBody: { backgroundColor: '#FFF', borderRadius: 20, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 1 },
+  sectionHeader: { fontSize: 12, fontWeight: '700', color: '#D4A44C', marginLeft: 8, marginBottom: 8, letterSpacing: 1 },
+  sectionBody: { backgroundColor: '#1A1A1A', borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.08)' },
   
   row: { 
     flexDirection: 'row', 
@@ -634,35 +636,35 @@ const styles = StyleSheet.create({
     paddingRight: 16, 
     paddingLeft: 16, 
     borderBottomWidth: StyleSheet.hairlineWidth, 
-    borderBottomColor: '#F1F5F9' 
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)' 
   },
   rowLast: { borderBottomWidth: 0 },
   iconContainer: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
   rowContent: { flex: 1, justifyContent: 'center' },
-  rowLabel: { fontSize: 16, fontWeight: '600', color: '#1E293B' },
-  rowDesc: { fontSize: 12, color: '#64748B', marginTop: 2 },
+  rowLabel: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
+  rowDesc: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
   rightContent: { flexDirection: 'row', alignItems: 'center' },
-  rowValue: { fontSize: 15, color: '#94A3B8' },
+  rowValue: { fontSize: 15, color: '#D4A44C', fontWeight: '500' },
   
   footer: { alignItems: 'center', marginTop: 40, marginBottom: 20 },
-  footerText: { fontSize: 12, color: '#94A3B8', marginBottom: 4, fontWeight: '500' },
+  footerText: { fontSize: 12, color: '#6B7280', marginBottom: 4, fontWeight: '500', letterSpacing: 0.5 },
 
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.4)', justifyContent: 'center', alignItems: 'center' },
-  modalContent: { backgroundColor: '#FFF', borderRadius: 24, padding: 24, width: '85%', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20 },
-  modalTitle: { fontSize: 20, fontWeight: '800', color: '#1A1A1A', marginBottom: 20 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.8)', justifyContent: 'center', alignItems: 'center' },
+  modalContent: { backgroundColor: '#1A1A1A', borderRadius: 24, padding: 24, width: '85%', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(212, 164, 76, 0.3)' },
+  modalTitle: { fontSize: 20, fontWeight: '800', color: '#FFFFFF', marginBottom: 20 },
   inputWrapper: { width: '100%', marginBottom: 24 },
-  textInput: { width: '100%', backgroundColor: '#F8FAFC', borderRadius: 12, padding: 16, fontSize: 16, color: '#1A1A1A', borderWidth: 1, borderColor: '#E2E8F0' },
+  textInput: { width: '100%', backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 12, padding: 16, fontSize: 16, color: '#FFFFFF', borderWidth: 1, borderColor: '#333' },
   modalButtons: { flexDirection: 'row', gap: 12, width: '100%' },
-  modalButton: { flex: 1, paddingVertical: 14, borderRadius: 14, alignItems: 'center', backgroundColor: '#F1F5F9' },
-  modalButtonPrimary: { backgroundColor: '#E8751A' },
-  modalButtonText: { fontSize: 16, fontWeight: '700', color: '#64748B' },
-  modalButtonPrimaryText: { fontSize: 16, fontWeight: '700', color: '#FFF' },
+  modalButton: { flex: 1, paddingVertical: 14, borderRadius: 14, alignItems: 'center', backgroundColor: '#333' },
+  modalButtonPrimary: { backgroundColor: '#D4A44C' },
+  modalButtonText: { fontSize: 16, fontWeight: '700', color: '#FFF' },
+  modalButtonPrimaryText: { fontSize: 16, fontWeight: '800', color: '#0D0D0D' },
 
-  modalContentLarge: { backgroundColor: '#FFF', borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 24, width: '100%', height: '85%', position: 'absolute', bottom: 0 },
+  modalContentLarge: { backgroundColor: '#1A1A1A', borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 24, width: '100%', height: '85%', position: 'absolute', bottom: 0, borderWidth: 1, borderColor: 'rgba(212, 164, 76, 0.2)' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  modalTitleLarge: { fontSize: 24, fontWeight: '800', color: '#1A1A1A' },
-  modalClose: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
+  modalTitleLarge: { fontSize: 24, fontWeight: '800', color: '#D4A44C', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  modalClose: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' },
   modalScroll: { flex: 1 },
-  modalSectionTitle: { fontSize: 18, fontWeight: '800', color: '#1A1A1A', marginTop: 24, marginBottom: 8 },
-  modalText: { fontSize: 15, color: '#475569', lineHeight: 24 },
+  modalSectionTitle: { fontSize: 18, fontWeight: '800', color: '#FFFFFF', marginTop: 24, marginBottom: 8 },
+  modalText: { fontSize: 15, color: '#9CA3AF', lineHeight: 24 },
 });

@@ -193,17 +193,24 @@ export default function SlokaScreen() {
     try {
       setIsAudioLoading(false);
       setIsSpeaking(true);
+      
+      // Using en-IN (Indian English) instead of hi-IN. 
+      // en-IN is universally installed and reads transliterated Sanskrit very cleanly.
       Speech.speak(cleanText, {
-        language: 'hi-IN',
+        language: 'en-IN',
         pitch: 0.9,
-        rate: 0.5,
+        rate: 0.6,
         onDone: () => setIsSpeaking(false),
         onStopped: () => setIsSpeaking(false),
-        onError: () => setIsSpeaking(false)
+        onError: () => {
+          setIsSpeaking(false);
+          setAudioError("Unable to play audio. Please ensure 'Speech Services by Google' is installed.");
+        }
       });
     } catch (e) {
       setIsSpeaking(false);
       setIsAudioLoading(false);
+      setAudioError("Speech engine unavailable on this device.");
     }
   }, [sloka, chapter, verse, isSpeaking]);
 

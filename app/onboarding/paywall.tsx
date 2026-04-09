@@ -43,6 +43,7 @@ export default function PaywallScreen() {
   const [isFetching, setIsFetching] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isPromoActive, setIsPromoActive] = useState(false);
+  const [showDeveloperNote, setShowDeveloperNote] = useState(true);
 
   useEffect(() => {
     // First Month Free logic
@@ -121,10 +122,6 @@ export default function PaywallScreen() {
     }
   };
 
-  const handleMaybeLater = () => {
-    router.replace('/(tabs)');
-  };
-
   const getDisplayTiers = () => {
     if (packages.length > 0) {
       return packages.map(p => ({
@@ -148,9 +145,7 @@ export default function PaywallScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleMaybeLater} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="rgba(255,255,255,0.6)" />
-          </TouchableOpacity>
+          <View style={styles.closeButton} />
           <Text style={styles.headerTitle}>Gita Pro</Text>
           <View style={{ width: 32 }} />
         </View>
@@ -262,11 +257,6 @@ export default function PaywallScreen() {
             </LinearGradient>
           </TouchableOpacity>
 
-          {/* Maybe Later */}
-          <TouchableOpacity onPress={handleMaybeLater} style={styles.maybeLaterButton}>
-            <Text style={styles.maybeLaterText}>MAYBE LATER</Text>
-          </TouchableOpacity>
-
           {/* Footer Links */}
           <View style={styles.footerLinks}>
             <TouchableOpacity onPress={() => setShowTerms(true)}>
@@ -308,6 +298,38 @@ export default function PaywallScreen() {
                 onPress={() => setShowTerms(false)}
               >
                 <Text style={styles.modalCloseText}>Got it</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Developer Note Modal */}
+        <Modal
+          visible={showDeveloperNote}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowDeveloperNote(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { borderColor: '#D4A44C', borderWidth: 2, padding: 28 }]}>
+              <View style={{ marginBottom: 20 }}>
+                <Ionicons name="heart" size={40} color="#D4A44C" style={{ alignSelf: 'center' }} />
+              </View>
+              <Text style={styles.modalTitle}>A Note from the Developer</Text>
+              <ScrollView style={[styles.modalScroll, { maxHeight: 300 }]}>
+                <Text style={styles.modalText}>
+                  Namaste 🙏{'\n\n'}
+                  I am still passionately working to make this application better for you every single day.{'\n\n'}
+                  Building ad-free, deeply native spiritual experiences takes immense resources, but I want to reward those who believe in this project early on.{'\n\n'}
+                  As a heart-touching thank you to my first users, enjoy your <Text style={{fontWeight: 'bold', color: '#D4A44C'}}>first month completely complimentary!</Text>{'\n\n'}
+                  In return, you can always share your ideas and reviews with me. Your feedback means the world.
+                </Text>
+              </ScrollView>
+              <TouchableOpacity
+                style={styles.modalCloseButton}
+                onPress={() => setShowDeveloperNote(false)}
+              >
+                <Text style={styles.modalCloseText}>Accept Gift & Continue</Text>
               </TouchableOpacity>
             </View>
           </View>
