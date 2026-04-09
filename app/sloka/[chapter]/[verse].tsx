@@ -18,10 +18,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDeepDive } from '../../../src/hooks/useDeepDive';
-import { getChapter, getSloka } from '../../../src/utils/sloka';
+import { getChapter, getSloka, getLocalizedTranslation } from '../../../src/utils/sloka';
 import { getCommentary, getGenericCommentary, type Commentary } from '../../../src/utils/commentary';
 import { addSlokaRead, isSlokaSaved, saveSloka, unsaveSloka, getOnboardingData, getTodaysSlokasReadCount } from '../../../src/utils/stats';
 import { getSlokaImage } from '../../../src/utils/slokaImages';
+import { useLanguage } from '../../../src/context/LanguageContext';
 
 // Safe import for DharmaBlocker
 let DharmaBlocker: any = null;
@@ -39,6 +40,7 @@ export default function SlokaScreen() {
   const router = useRouter();
   const chapter = parseInt(chapterStr, 10);
   const verse = parseInt(verseStr, 10);
+  const { language } = useLanguage();
   const sloka = getSloka(chapter, verse);
   const chapterData = getChapter(chapter);
   const slokaImage = getSlokaImage(chapter, verse);
@@ -136,8 +138,8 @@ export default function SlokaScreen() {
     return translation
       .replace(/^(chapter|verse|sloka)\s+\d+[,.]?\s*/gi, '') // Remove "Chapter X, Verse Y" prefixes
       .replace(/;/g, ',') // Replace semicolons with natural pauses
-      .replace(/॥[^॥]*॥/g, '') // Remove Sanskrit verse markers if leaked in
-      .replace(/\s{2,}/g, ' ') // Collapse extra whitespace
+      .replace(/(\\||॥)[^\\|॥]*(\\||॥)/g, '') // Remove Sanskrit verse markers ||1-1||
+      .replace(/\\s{2,}/g, ' ') // Collapse extra whitespace
       .trim();
   };
 
@@ -192,7 +194,7 @@ export default function SlokaScreen() {
       Speech.speak(cleanText, {
         language: 'hi-IN',
         pitch: 0.9,
-        rate: 0.8,
+        rate: 0.5,
         onDone: () => setIsSpeaking(false),
         onStopped: () => setIsSpeaking(false),
         onError: () => setIsSpeaking(false)
@@ -504,7 +506,7 @@ export default function SlokaScreen() {
                   </Text>
                 </View>
                 <Text style={{ fontSize: 16, color: '#333', lineHeight: 26 }}>
-                  {sloka.translation_english}
+                  {getLocalizedTranslation(chapter, verse, sloka.translation_english, language)}
                 </Text>
               </View>
             )}
@@ -576,6 +578,48 @@ export default function SlokaScreen() {
                 )}
               </View>
             )}
+          </TouchableOpacity>
+
+          {/* ── Comprehensive Purport Link ── */}
+          <TouchableOpacity
+            onPress={() => Alert.alert("Expanded Purport", "In a future update, this will feature an expanded chapter and verse discourse like the 900+ page formats of traditional commentaries.", [{text: "OK"}])}
+            activeOpacity={0.8}
+            style={{
+              marginHorizontal: 20,
+              marginTop: 12,
+              borderRadius: 20,
+              backgroundColor: '#FFF',
+              borderWidth: 1,
+              borderColor: '#F0E0CC',
+              overflow: 'hidden',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.04,
+              shadowRadius: 6,
+              elevation: 1,
+            }}
+          >
+            <View
+              style={{
+                padding: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Text style={{ fontSize: 18 }}>📜</Text>
+                <View>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#1A1A1A' }}>
+                    Expanded Purport
+                  </Text>
+                  <Text style={{ fontSize: 12, color: '#B0A090', marginTop: 2 }}>
+                    Read detailed 944-page format commentaries
+                  </Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </View>
           </TouchableOpacity>
 
           {/* ═══════════════════════════════════════════════════ */}

@@ -127,3 +127,28 @@ export function getTotalVerseCount(): number {
 export function getTotalChapterCount(): number {
     return data.chapters.length;
 }
+
+/**
+ * Get localized translation from bundled packs.
+ * Falls back to English if the translation does not exist.
+ */
+export function getLocalizedTranslation(chapter: number, verse: number, englishTranslation: string, languageCode: string): string {
+    if (languageCode === 'en') return englishTranslation;
+    
+    try {
+        let langPack: Record<string, string> = {};
+        if (languageCode === 'hi') {
+            langPack = require('../data/languages/hi.json');
+        }
+        
+        const key = `${chapter}_${verse}`;
+        if (langPack[key]) {
+            return langPack[key];
+        }
+        
+        // Fallback note + English
+        return `[Translation in ${languageCode} pending] \n\n${englishTranslation}`;
+    } catch (e) {
+        return englishTranslation;
+    }
+}

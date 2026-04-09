@@ -45,7 +45,8 @@ import {
   type OnboardingData, 
   type SlokaReadEntry 
 } from '../../src/utils/stats';
-import { Language, getLanguage, saveLanguage, t } from '../../src/utils/i18n';
+import { t } from '../../src/utils/i18n';
+import { useLanguage } from '../../src/context/LanguageContext';
 import { scheduleSmartNotifications } from '../../src/utils/notifications';
 import { AppSelectorModal } from '../../src/components/AppSelectorModal';
 
@@ -61,7 +62,7 @@ export default function SettingsScreen() {
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
   const [recentSlokas, setRecentSlokas] = useState<SlokaReadEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [language, setLanguage] = useState<Language>('en');
+  const { language, setLanguage } = useLanguage();
 
   // New Features
   const [profileName, setProfileName] = useState('Scholar');
@@ -80,17 +81,15 @@ export default function SettingsScreen() {
 
   const loadStats = useCallback(async () => {
     try {
-      const [allStats, onboarding, slokasRead, saved, lang, pName] = await Promise.all([
+      const [allStats, onboarding, slokasRead, saved, pName] = await Promise.all([
         getAllStats(),
         getOnboardingData(),
         getSlokasRead(),
         getSavedSlokas(),
-        getLanguage(),
         getProfileName(),
       ]);
       setStats(allStats);
       setOnboardingData(onboarding);
-      setLanguage(lang);
       setProfileName(pName);
       setEditNameValue(pName);
       
@@ -129,8 +128,7 @@ export default function SettingsScreen() {
 
   const handleLanguageToggle = async () => {
     const newLang = language === 'en' ? 'hi' : 'en';
-    setLanguage(newLang);
-    await saveLanguage(newLang);
+    await setLanguage(newLang);
   };
 
   const handleSaveName = async () => {
@@ -294,7 +292,7 @@ export default function SettingsScreen() {
       {/* Settings Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.headerSubtitle}>OM NAMO NARAYANAYA</Text>
+          <Text style={styles.headerSubtitle}>BHAGAVAD GITA</Text>
           <Text style={styles.headerTitle}>Gita for {profileName}</Text>
         </View>
         <TouchableOpacity 
@@ -384,12 +382,7 @@ export default function SettingsScreen() {
               iconColor="#8B5CF6"
               onPress={() => router.push('/scholar' as any)} 
             />
-            <SettingRow 
-              icon="library" 
-              label={t('viewAllSlokas', language)} 
-              iconColor="#3B82F6"
-              onPress={() => router.push('/(tabs)/library')} 
-            />
+
             <SettingRow 
               icon="language" 
               label={t('language', language)} 
@@ -464,14 +457,53 @@ export default function SettingsScreen() {
             )}
             
             {/* Hidden Picker - Only shows when triggered */}
-            {showTimePicker && DateTimePicker && (
-              <DateTimePicker
-                value={reminderTime}
-                mode="time"
-                display="spinner"
-                onChange={onTimeChange}
-              />
-            )}
+            {showTimePicker && (() => {
+              if (Platform.OS === 'web') {
+                 return (
+                    <View style={{ marginVertical: 10, alignSelf: 'center', backgroundColor: '#FFF', padding: 10, borderRadius: 10, elevation: 2 }}>
+                       {/* @ts-ignore - Web specific input element */}
+                       <input
+                          type="time"
+                          value={`${reminderTime.getHours().toString().padStart(2, '0')}:${reminderTime.getMinutes().toString().padStart(2, '0')}`}
+                          onChange={(e: any) => {
+                             if (e.target && e.target.value) {
+                                const [h, m] = e.target.value.split(':');
+                                const newDate = new Date();
+                                newDate.setHours(parseInt(h, 10), parseInt(m, 10));
+                                onTimeChange({ type: 'set' }, newDate);
+                             }
+                          }}
+                          onBlur={() => setShowTimePicker(false)}
+                          color="#E8751A"
+                          style={{
+                             padding: '8px 12px',
+                             fontSize: '16px',
+                             borderRadius: '8px',
+                             border: '1px solid #E8751A',
+                             backgroundColor: '#FFF8F0',
+                             color: '#E8751A',
+                             fontWeight: 'bold',
+                             outline: 'none',
+                             cursor: 'pointer'
+                          }}
+                       />
+                       <TouchableOpacity style={{ marginTop: 10, alignItems: 'center' }} onPress={() => setShowTimePicker(false)}>
+                          <Text style={{ color: '#E8751A', fontWeight: 'bold' }}>Done</Text>
+                       </TouchableOpacity>
+                    </View>
+                 );
+              } else if (DateTimePicker) {
+                 return (
+                   <DateTimePicker
+                     value={reminderTime}
+                     mode="time"
+                     display="spinner"
+                     onChange={onTimeChange}
+                   />
+                 );
+              }
+              return null;
+            })()}
           </View>
         </View>
 

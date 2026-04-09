@@ -4,7 +4,8 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { getSavedSlokas } from '../src/utils/stats';
-import { getSloka, getChapter } from '../src/utils/sloka';
+import { getSloka, getChapter, getLocalizedTranslation } from '../src/utils/sloka';
+import { useLanguage } from '../src/context/LanguageContext';
 import type { SlokaReadEntry } from '../src/types';
 
 interface SavedSlokaDetails extends SlokaReadEntry {
@@ -17,6 +18,7 @@ export default function SavedSlokasScreen() {
   const router = useRouter();
   const [savedItems, setSavedItems] = useState<SavedSlokaDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { language } = useLanguage();
 
   const loadSaved = useCallback(async () => {
     try {
@@ -31,7 +33,7 @@ export default function SavedSlokasScreen() {
         return {
           ...entry,
           sanskrit: slokaData?.sanskrit.split('\n')[0] || 'Sanskrit text unavailable', // Just first line
-          translation: slokaData?.translation_english || 'Translation unavailable',
+          translation: slokaData ? getLocalizedTranslation(entry.chapter, entry.verse, slokaData.translation_english, language) : 'Translation unavailable',
           chapterName: chapterData?.name || `Chapter ${entry.chapter}`,
         };
       });
@@ -42,7 +44,7 @@ export default function SavedSlokasScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     loadSaved();

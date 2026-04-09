@@ -1,0 +1,11 @@
+node_modules/
+.expo/
+dist/
+web-build/
+android/
+ios/
+.git/
+.vercel/
+build_debug.log
+build_error.log
+build_full.log

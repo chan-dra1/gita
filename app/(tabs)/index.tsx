@@ -12,9 +12,10 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getRandomSloka } from '../../src/utils/sloka';
+import { getRandomSloka, getLocalizedTranslation } from '../../src/utils/sloka';
 import { getOnboardingData, isOnboardingComplete, type OnboardingData } from '../../src/utils/stats';
-import { Language, getLanguage, t } from '../../src/utils/i18n';
+import { t } from '../../src/utils/i18n';
+import { useLanguage } from '../../src/context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
@@ -43,22 +44,20 @@ const KRISHNA_IMAGES = [
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { language } = useLanguage();
   const [dailySloka, setDailySloka] = useState<any | null>(null);
   const [isChecking, setIsChecking] = useState(true);
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
   const [randomKrishnaImage, setRandomKrishnaImage] = useState<any>(KRISHNA_IMAGES[0]);
-  const [language, setLanguage] = useState<Language>('en');
 
   const loadData = async () => {
     try {
-      const [todaySloka, data, lang] = await Promise.all([
+      const [todaySloka, data] = await Promise.all([
         getRandomSloka(),
         getOnboardingData(),
-        getLanguage(),
       ]);
       setDailySloka(todaySloka);
       setOnboardingData(data);
-      setLanguage(lang);
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -161,41 +160,44 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Action Grid */}
+        {/* Action List */}
         <View style={{ marginTop: 32, paddingHorizontal: 20 }}>
           <Text style={{ fontSize: 18, fontWeight: '700', color: '#1A1A1A', marginBottom: 16, paddingHorizontal: 4 }}>
             {t('quickActions', language)}
           </Text>
           
-          <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ flexDirection: 'column', gap: 12 }}>
             {/* Library Action */}
             <TouchableOpacity
               onPress={() => router.push('/(tabs)/library' as any)}
               style={{
-                flex: 1,
+                flexDirection: 'row',
                 backgroundColor: '#FFF',
-                paddingVertical: 20,
-                paddingHorizontal: 16,
-                borderRadius: 24,
+                paddingVertical: 16,
+                paddingHorizontal: 20,
+                borderRadius: 20,
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.04,
-                shadowRadius: 16,
-                elevation: 4,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.03,
+                shadowRadius: 12,
+                elevation: 3,
                 alignItems: 'center',
                 borderWidth: 1,
-                borderColor: 'rgba(232, 117, 26, 0.05)',
+                borderColor: 'rgba(232, 117, 26, 0.08)',
               }}
             >
-              <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: '#FFF3E8', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                <Ionicons name="book" size={24} color="#E8751A" />
+              <View style={{ width: 44, height: 44, borderRadius: 16, backgroundColor: '#FFF3E8', alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                <Ionicons name="book" size={22} color="#E8751A" />
               </View>
-              <Text style={{ color: '#1A1A1A', fontSize: 16, fontWeight: '600' }}>
-                {t('library', language)}
-              </Text>
-              <Text style={{ color: '#9A9A9A', fontSize: 12, marginTop: 4, textAlign: 'center' }}>
-                {t('exploreChapters', language)}
-              </Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: '#1A1A1A', fontSize: 16, fontWeight: '700', marginBottom: 2 }}>
+                  {t('library', language)}
+                </Text>
+                <Text style={{ color: '#9A9A9A', fontSize: 13 }}>
+                  {t('exploreChapters', language)}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#D0C0B0" />
             </TouchableOpacity>
 
             {/* Listen Action */}
@@ -206,30 +208,33 @@ export default function HomeScreen() {
                 }
               }}
               style={{
-                flex: 1,
+                flexDirection: 'row',
                 backgroundColor: '#FFF',
-                paddingVertical: 20,
-                paddingHorizontal: 16,
-                borderRadius: 24,
+                paddingVertical: 16,
+                paddingHorizontal: 20,
+                borderRadius: 20,
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.04,
-                shadowRadius: 16,
-                elevation: 4,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.03,
+                shadowRadius: 12,
+                elevation: 3,
                 alignItems: 'center',
                 borderWidth: 1,
-                borderColor: 'rgba(232, 117, 26, 0.05)',
+                borderColor: 'rgba(74, 124, 89, 0.08)',
               }}
             >
-              <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: '#F0F5ED', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                <Ionicons name="headset" size={24} color="#4A7C59" />
+              <View style={{ width: 44, height: 44, borderRadius: 16, backgroundColor: '#F0F5ED', alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                <Ionicons name="headset" size={22} color="#4A7C59" />
               </View>
-              <Text style={{ color: '#1A1A1A', fontSize: 16, fontWeight: '600' }}>
-                {t('listen', language)}
-              </Text>
-              <Text style={{ color: '#9A9A9A', fontSize: 12, marginTop: 4, textAlign: 'center' }}>
-                {t('audioSlokas', language)}
-              </Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: '#1A1A1A', fontSize: 16, fontWeight: '700', marginBottom: 2 }}>
+                  {t('listen', language)}
+                </Text>
+                <Text style={{ color: '#9A9A9A', fontSize: 13 }}>
+                  {t('audioSlokas', language)}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#D0C0B0" />
             </TouchableOpacity>
           </View>
         </View>
@@ -309,7 +314,7 @@ export default function HomeScreen() {
                   fontStyle: 'italic',
                 }}
               >
-                "{dailySloka.translation_english}"
+                "{getLocalizedTranslation(dailySloka.chapter, dailySloka.verse, dailySloka.translation_english, language)}"
               </Text>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
                 <Text style={{ fontSize: 13, color: '#888', fontWeight: '500' }}>

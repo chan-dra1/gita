@@ -20,7 +20,7 @@ let DharmaBlocker: DharmaBlockerInterface = STUB;
 if (Platform.OS !== 'web') {
   try {
     const { requireNativeModule } = require('expo-modules-core');
-    DharmaBlocker = requireNativeModule<DharmaBlockerInterface>('DharmaBlocker');
+    DharmaBlocker = requireNativeModule('DharmaBlocker') as DharmaBlockerInterface;
   } catch (e) {
     // Native module not linked (e.g., Expo Go) — use stub
     console.warn("DharmaBlocker: failed to load native module, using stub", e);

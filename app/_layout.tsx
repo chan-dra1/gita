@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import Purchases from 'react-native-purchases';
+import { LanguageProvider } from '../src/context/LanguageContext';
 
 import { Config } from '../src/constants/config';
 
@@ -18,28 +19,30 @@ export default function RootLayout() {
     // Note: iOS key can be added in Config when ready
   }, []);
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: '#FFF7ED' },
-        animation: 'slide_from_right',
-      }}
-    >
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen
-        name="sloka/[chapter]/[verse]"
-        options={{
+    <LanguageProvider>
+      <Stack
+        screenOptions={{
           headerShown: false,
+          contentStyle: { backgroundColor: '#FFF7ED' },
           animation: 'slide_from_right',
         }}
-      />
-      <Stack.Screen
-        name="settings"
-        options={{
-          headerShown: false,
-          animation: 'slide_from_right',
-        }}
-      />
-    </Stack>
+      >
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="sloka/[chapter]/[verse]"
+          options={{
+            headerShown: false,
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name="settings"
+          options={{
+            headerShown: false,
+            animation: 'slide_from_right',
+          }}
+        />
+      </Stack>
+    </LanguageProvider>
   );
 }

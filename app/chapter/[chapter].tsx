@@ -11,7 +11,7 @@ import { getSlokasRead } from '../../src/utils/stats';
 import { preDownloadChapterAudio, cancelPreDownload } from '../../src/utils/audio';
 import { Config } from '../../src/constants/config';
 import type { Chapter } from '../../src/types';
-import { t, getLanguage, Language } from '../../src/utils/i18n';
+import { useLanguage } from '../../src/context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
@@ -25,16 +25,13 @@ export default function ChapterDetailScreen() {
   
   const [chapterData, setChapterData] = useState<Chapter | null>(null);
   const [readVerses, setReadVerses] = useState<Set<number>>(new Set());
-  const [lang, setLang] = useState<Language>('en');
+  const { language: lang } = useLanguage();
   const [audioProgress, setAudioProgress] = useState<{ done: number; total: number } | null>(null);
   const preDownloadStarted = useRef(false);
 
   // Load chapter data and read progress
   const loadData = useCallback(async () => {
     try {
-      const currentLang = await getLanguage();
-      setLang(currentLang);
-      
       const chData = getChapter(chapterId);
       if (chData) {
         setChapterData(chData);
