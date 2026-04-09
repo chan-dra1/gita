@@ -13,9 +13,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getRandomSloka, getLocalizedTranslation } from '../../src/utils/sloka';
-import { getOnboardingData, isOnboardingComplete, type OnboardingData } from '../../src/utils/stats';
+import { getOnboardingData, isOnboardingComplete, type OnboardingData, getStreakData } from '../../src/utils/stats';
+import { type StreakData } from '../../src/types';
 import { t } from '../../src/utils/i18n';
 import { useLanguage } from '../../src/context/LanguageContext';
+import { StreakCalendar } from '../../src/components/StreakCalendar';
 
 const { width } = Dimensions.get('window');
 
@@ -48,16 +50,19 @@ export default function HomeScreen() {
   const [dailySloka, setDailySloka] = useState<any | null>(null);
   const [isChecking, setIsChecking] = useState(true);
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
+  const [streakData, setStreakData] = useState<StreakData | null>(null);
   const [randomKrishnaImage, setRandomKrishnaImage] = useState<any>(KRISHNA_IMAGES[0]);
 
   const loadData = async () => {
     try {
-      const [todaySloka, data] = await Promise.all([
+      const [todaySloka, data, fetchedStreakData] = await Promise.all([
         getRandomSloka(),
         getOnboardingData(),
+        getStreakData(),
       ]);
       setDailySloka(todaySloka);
       setOnboardingData(data);
+      setStreakData(fetchedStreakData);
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -159,6 +164,9 @@ export default function HomeScreen() {
             {/* Clean image without overlay */}
           </View>
         </View>
+
+        {/* Sadhana Tracker */}
+        <StreakCalendar streakData={streakData} />
 
         {/* Action List */}
         <View style={{ marginTop: 32, paddingHorizontal: 20 }}>

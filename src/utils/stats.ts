@@ -133,7 +133,24 @@ export async function getStreakData(): Promise<StreakData> {
   try {
     const data = await AsyncStorage.getItem(STORAGE_KEYS.STREAK_DATA);
     if (data) {
-      return JSON.parse(data);
+      const parsed: StreakData = JSON.parse(data);
+      // Ensure new fields exist even if old data was loaded
+      if (!parsed.startDate) parsed.startDate = new Date().toISOString().split('T')[0];
+      if (!parsed.readHistory) parsed.readHistory = [];
+      
+      // Strict Reset Logic Check on load
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      if (parsed.lastOpenedDate && parsed.lastOpenedDate !== today && parsed.lastOpenedDate !== yesterdayStr) {
+         // Missed a day! Reset current streak.
+         parsed.currentStreak = 0;
+         await AsyncStorage.setItem(STORAGE_KEYS.STREAK_DATA, JSON.stringify(parsed));
+      }
+
+      return parsed;
     }
   } catch {
     // Fall through to default
@@ -141,7 +158,9 @@ export async function getStreakData(): Promise<StreakData> {
   return {
     currentStreak: 0,
     lastOpenedDate: null,
+    startDate: new Date().toISOString().split('T')[0],
     longestStreak: 0,
+    readHistory: [],
   };
 }
 
@@ -163,10 +182,25 @@ export async function updateStreak(): Promise<StreakData> {
       newStreak = current.currentStreak + 1;
     }
 
+    // Append to read history
+    const updatedHistory = [...current.readHistory];
+    if (!updatedHistory.includes(today)) {
+      updatedHistory.push(today);
+      // If we are reading for the first time today, cancel the nag reminder
+      try {
+        const { cancelStreakReminder } = require('./notifications');
+        await cancelStreakReminder();
+      } catch (e) {
+        // silent fail - might be web or unconfigured
+      }
+    }
+
     const newData: StreakData = {
+      ...current,
       currentStreak: newStreak,
       lastOpenedDate: today,
       longestStreak: Math.max(current.longestStreak, newStreak),
+      readHistory: updatedHistory,
     };
 
     await AsyncStorage.setItem(STORAGE_KEYS.STREAK_DATA, JSON.stringify(newData));
@@ -175,7 +209,9 @@ export async function updateStreak(): Promise<StreakData> {
     return {
       currentStreak: 0,
       lastOpenedDate: null,
+      startDate: new Date().toISOString().split('T')[0],
       longestStreak: 0,
+      readHistory: [new Date().toISOString().split('T')[0]],
     };
   }
 }

@@ -86,3 +86,49 @@ export async function scheduleSmartNotifications(baseTime: Date | string, slokas
     }
   }
 }
+
+export async function scheduleStreakReminder() {
+  if (Platform.OS === 'web') return;
+  
+  const { status } = await Notifications.getPermissionsAsync();
+  if (status !== 'granted') return;
+
+  // Schedule a smart reminder for 7 PM today if they haven't opened yet to save their streak
+  const now = new Date();
+  const trigger = new Date();
+  trigger.setHours(19, 0, 0, 0);
+
+  // If it's already past 7 PM, schedule for tomorrow
+  if (trigger <= now) {
+    trigger.setDate(trigger.getDate() + 1);
+  }
+
+  try {
+    // Note: We use a specific identifier so we can cancel just the streak reminder
+    await Notifications.cancelScheduledNotificationAsync('streak_reminder');
+    
+    await Notifications.scheduleNotificationAsync({
+      identifier: 'streak_reminder',
+      content: {
+        title: '🙏 Preserve Your Spiritual Streak',
+        body: "Take 5 minutes to read your daily verses. Don't break your Sadhana chain today.",
+        sound: true,
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DEFAULT, // ensure correct enum
+        date: trigger,
+      } as any,
+    });
+  } catch (e) {
+    console.warn("Could not schedule streak reminder", e);
+  }
+}
+
+export async function cancelStreakReminder() {
+  if (Platform.OS === 'web') return;
+  try {
+    await Notifications.cancelScheduledNotificationAsync('streak_reminder');
+  } catch (e) {
+    // Ignore if not scheduled
+  }
+}

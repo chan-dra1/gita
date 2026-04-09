@@ -179,6 +179,10 @@ export default function ChapterDetailScreen() {
               <View style={styles.gridContainer}>
                 {chapterData.verses.map((verse, index) => {
                   const isRead = readVerses.has(verse.verse);
+                  const highestReadVerse = readVerses.size > 0 ? Math.max(...Array.from(readVerses)) : 0;
+                  // Allow up to 3 verses ahead to be unlocked to feel less restrictive
+                  const isUnlocked = verse.verse <= highestReadVerse + 3;
+                  
                   return (
                     <Animated.View
                       key={verse.verse}
@@ -186,23 +190,32 @@ export default function ChapterDetailScreen() {
                       style={styles.gridItemWrapper}
                     >
                       <TouchableOpacity
-                        activeOpacity={0.7}
-                        onPress={() => router.push(`/sloka/${chapterId}/${verse.verse}` as any)}
+                        activeOpacity={isUnlocked ? 0.7 : 1}
+                        onPress={() => {
+                          if (isUnlocked) {
+                            router.push(`/sloka/${chapterId}/${verse.verse}` as any);
+                          }
+                        }}
                         style={styles.gridItemPressable}
                       >
                         <BlurView 
-                          intensity={isRead ? 40 : 20} 
+                          intensity={isRead ? 40 : (isUnlocked ? 20 : 10)} 
                           style={[
                             styles.gridItem,
-                            isRead ? styles.gridItemRead : styles.gridItemUnread
+                            isRead ? styles.gridItemRead : (isUnlocked ? styles.gridItemUnread : styles.gridItemLocked)
                           ]}
                         >
-                          <Text style={[
-                              styles.verseNumberText, 
-                              isRead ? styles.verseNumberTextRead : styles.verseNumberTextUnread
-                            ]}>
-                            {verse.verse}
-                          </Text>
+                          {isUnlocked ? (
+                            <Text style={[
+                                styles.verseNumberText, 
+                                isRead ? styles.verseNumberTextRead : styles.verseNumberTextUnread
+                              ]}>
+                              {verse.verse}
+                            </Text>
+                          ) : (
+                            <Ionicons name="lock-closed" size={16} color="rgba(255,255,255,0.3)" />
+                          )}
+                          
                           {isRead && (
                             <View style={styles.checkIcon}>
                               <Ionicons name="checkmark" size={12} color="#FFFFFF" />
@@ -341,6 +354,10 @@ const styles = StyleSheet.create({
   gridItemUnread: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  gridItemLocked: {
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.03)',
   },
   verseNumberText: {
     fontSize: 22,

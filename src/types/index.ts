@@ -97,7 +97,9 @@ export interface SlokaReadEntry {
 export interface StreakData {
     currentStreak: number;
     lastOpenedDate: string | null;
+    startDate: string | null;
     longestStreak: number;
+    readHistory: string[]; // Keep track of specific read days for the calendar
 }
 
 export interface OnboardingData {

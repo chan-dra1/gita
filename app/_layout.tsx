@@ -17,6 +17,11 @@ export default function RootLayout() {
       }
     }
     // Note: iOS key can be added in Config when ready
+
+    // Schedule smart streak reminder (will be cancelled if they read today)
+    import('../src/utils/notifications').then(({ scheduleStreakReminder }) => {
+      scheduleStreakReminder();
+    }).catch(() => {});
   }, []);
   return (
     <LanguageProvider>
