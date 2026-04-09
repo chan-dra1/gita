@@ -8,7 +8,7 @@ import { Config } from '../../src/constants/config';
 
 const FALLBACK_TIERS = [
   { id: 'lifetime', name: 'Lifetime', description: 'One-time payment', price: '$99.99', period: '', popular: false, icon: 'infinite-outline' as const },
-  { id: 'yearly', name: 'Yearly', description: 'Includes 7-day free trial', price: '$29.99', period: 'Just $2.50/mo', popular: true, badge: 'BEST VALUE', icon: 'refresh-outline' as const },
+  { id: 'yearly', name: 'Yearly', description: 'Includes 7-day free trial', price: '$35.88', period: 'Just $2.99/mo', popular: true, badge: 'BEST VALUE', icon: 'refresh-outline' as const },
   { id: 'monthly', name: 'Monthly', description: 'Standard access', price: '$4.99', period: '', popular: false, icon: 'calendar-outline' as const },
 ];
 
@@ -20,8 +20,8 @@ const FEATURES = [
   },
   {
     icon: 'notifications' as const,
-    title: 'Personalized Spiritual Reminders',
-    description: 'Daily custom alerts to keep you grounded.',
+    title: 'Spiritual Reminders',
+    description: 'Daily alerts to keep you grounded.',
   },
   {
     icon: 'bookmark' as const,
@@ -78,7 +78,7 @@ export default function PaywallScreen() {
     if (isPromoActive) {
       Alert.alert(
         "Welcome to Gita Pro!", 
-        "Thank you for joining early. Enjoy full premium access for free this month.", 
+        "Thank you for joining early. Enjoy full premium access free for 15 days.", 
         [{text: "Begin Journey", onPress: () => router.replace('/(tabs)')}]
       );
       return;
@@ -161,7 +161,7 @@ export default function PaywallScreen() {
               Embrace the Divine{'\n'}Wisdom of the Gita
             </Text>
             <Text style={styles.heroSubtitle}>
-              Take control of your spiritual journey with{'\n'}the Dharma Blocker and custom reminders.
+              Take control of your spiritual journey with{'\n'}the Dharma Blocker and reminders.
             </Text>
           </View>
 
@@ -321,7 +321,7 @@ export default function PaywallScreen() {
                   Namaste 🙏{'\n\n'}
                   I am still passionately working to make this application better for you every single day.{'\n\n'}
                   Building ad-free, deeply native spiritual experiences takes immense resources, but I want to reward those who believe in this project early on.{'\n\n'}
-                  As a heart-touching thank you to my first users, enjoy your <Text style={{fontWeight: 'bold', color: '#D4A44C'}}>first month completely complimentary!</Text>{'\n\n'}
+                  As a heart-touching thank you to my first users, enjoy your <Text style={{fontWeight: 'bold', color: '#D4A44C'}}>first 15 days completely complimentary!</Text>{'\n\n'}
                   In return, you can always share your ideas and reviews with me. Your feedback means the world.
                 </Text>
               </ScrollView>

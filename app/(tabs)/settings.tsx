@@ -293,15 +293,19 @@ export default function SettingsScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.headerSubtitle}>BHAGAVAD GITA</Text>
-          <Text style={styles.headerTitle}>Gita for {profileName}</Text>
+          <Text style={styles.headerTitle}>Settings</Text>
         </View>
         <TouchableOpacity 
-          onPress={() => setShowNameModal(true)}
+          onPress={() => {
+            setEditNameValue(profileName);
+            setShowNameModal(true);
+          }}
           style={styles.profileButton}
         >
           <View style={styles.avatarPlaceholder}>
             <Text style={styles.avatarText}>{profileName.charAt(0).toUpperCase()}</Text>
           </View>
+          <Text style={{ color: '#D4A44C', fontSize: 12, marginTop: 4, fontWeight: '600' }}>{profileName}</Text>
         </TouchableOpacity>
       </View>
 
@@ -329,16 +333,6 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <SectionHeader title={t('accountSync', language)} />
           <View style={styles.sectionBody}>
-            <SettingRow 
-              icon="person" 
-              label={t('profileName', language)} 
-              value={profileName}
-              iconColor="#4F46E5"
-              onPress={() => {
-                setEditNameValue(profileName);
-                setShowNameModal(true);
-              }} 
-            />
             <SettingRow 
               icon="star" 
               label={t('gitaPremium', language)} 

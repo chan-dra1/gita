@@ -54,7 +54,7 @@ export default function SlokaScreen() {
   const [audioError, setAudioError] = useState<string | null>(null);
 
   // UI state
-  const [activeTab, setActiveTab] = useState<'meaning' | 'purport' | 'scholar'>('meaning');
+  // Tabs removed — all content rendered in vertical scroll
   const [questionText, setQuestionText] = useState('');
   const [playingScholarMsgId, setPlayingScholarMsgId] = useState<number | null>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -461,170 +461,151 @@ export default function SlokaScreen() {
             </View>
           </View>
 
-          {/* ── Tabs Header ── */}
-          <View style={{ flexDirection: 'row', marginHorizontal: 20, marginTop: 24, backgroundColor: '#FFF', borderRadius: 16, padding: 4, borderWidth: 1, borderColor: '#F0E0CC' }}>
-            <TouchableOpacity onPress={() => setActiveTab('meaning')} style={{ flex: 1, paddingVertical: 10, alignItems: 'center', backgroundColor: activeTab === 'meaning' ? '#FFF3E8' : 'transparent', borderRadius: 12 }}>
-              <Text style={{ fontSize: 14, fontWeight: activeTab === 'meaning' ? '700' : '500', color: activeTab === 'meaning' ? '#E8751A' : '#999' }}>Meaning</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setActiveTab('purport')} style={{ flex: 1, paddingVertical: 10, alignItems: 'center', backgroundColor: activeTab === 'purport' ? '#FFF3E8' : 'transparent', borderRadius: 12 }}>
-              <Text style={{ fontSize: 14, fontWeight: activeTab === 'purport' ? '700' : '500', color: activeTab === 'purport' ? '#E8751A' : '#999' }}>Deep Purport</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setActiveTab('scholar')} style={{ flex: 1, paddingVertical: 10, alignItems: 'center', backgroundColor: activeTab === 'scholar' ? '#FFF3E8' : 'transparent', borderRadius: 12 }}>
-              <Text style={{ fontSize: 14, fontWeight: activeTab === 'scholar' ? '700' : '500', color: activeTab === 'scholar' ? '#E8751A' : '#999' }}>Scholar QA</Text>
-            </TouchableOpacity>
-          </View>
+          {/* ── All Verse Content (Vertical Scroll) ── */}
+          <View style={{ marginHorizontal: 20, marginTop: 24 }}>
 
-          {/* ── Tab Content ── */}
-          <View style={{ marginHorizontal: 20, marginTop: 16 }}>
-            {activeTab === 'meaning' && (
-               <View style={{ padding: 20, backgroundColor: '#FFF', borderRadius: 20, borderWidth: 1, borderColor: '#F0E0CC' }}>
-                 <View style={{ borderLeftWidth: 3, borderLeftColor: '#F5C518', paddingLeft: 14, marginBottom: 16 }}>
-                   <Text style={{ fontSize: 15, fontStyle: 'italic', color: '#666', lineHeight: 24 }}>
-                     "{sloka.transliteration}"
-                   </Text>
-                 </View>
-                 <Text style={{ fontSize: 16, color: '#333', lineHeight: 26, marginBottom: (commentary || sloka.word_meanings) ? 20 : 0 }}>
-                   {getLocalizedTranslation(chapter, verse, sloka.translation_english, language)}
-                 </Text>
-                 
-                 {sloka.word_meanings && language === 'en' && (
-                    <View style={{ marginBottom: 20, backgroundColor: '#FFFDF9', padding: 16, borderRadius: 12, borderWidth: 1, borderColor: '#F0E0CC' }}>
-                       <Text style={{ fontSize: 13, fontWeight: '700', color: '#E8751A', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Word-for-Word</Text>
-                       <Text style={{ fontSize: 14, color: '#444', lineHeight: 24 }}>
-                          {sloka.word_meanings.replace(/—/g, ' — ')}
-                       </Text>
-                    </View>
-                 )}
-                 
-                 {commentary && (
-                    <View>
-                      <View style={{ height: 1, backgroundColor: '#F0E0CC', width: '100%', marginBottom: 16 }} />
-                      {commentary.meaning && (
-                        <View style={{ marginBottom: 16 }}>
-                          <Text style={{ fontSize: 13, fontWeight: '600', color: '#E8751A', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>Spiritual Meaning</Text>
-                          <Text style={{ fontSize: 15, color: '#555', lineHeight: 24 }}>{commentary.meaning}</Text>
-                        </View>
-                      )}
-                      {commentary.application && (
-                        <View>
-                          <Text style={{ fontSize: 13, fontWeight: '600', color: '#E8751A', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>In Your Life</Text>
-                          <Text style={{ fontSize: 15, color: '#555', lineHeight: 24 }}>{commentary.application}</Text>
-                        </View>
-                      )}
-                    </View>
-                 )}
-               </View>
+            {/* ── 1. Transliteration & Translation ── */}
+            <View style={{ padding: 20, backgroundColor: '#FFF', borderRadius: 20, borderWidth: 1, borderColor: '#F0E0CC' }}>
+              <View style={{ borderLeftWidth: 3, borderLeftColor: '#F5C518', paddingLeft: 14, marginBottom: 16 }}>
+                <Text style={{ fontSize: 15, fontStyle: 'italic', color: '#666', lineHeight: 24 }}>
+                  "{sloka.transliteration}"
+                </Text>
+              </View>
+              <Text style={{ fontSize: 16, color: '#333', lineHeight: 26 }}>
+                {getLocalizedTranslation(chapter, verse, sloka.translation_english, language)}
+              </Text>
+            </View>
+
+            {/* ── 2. Word-for-Word ── */}
+            {sloka.word_meanings && language === 'en' && (
+              <View style={{ marginTop: 12, padding: 16, backgroundColor: '#FFFDF9', borderRadius: 16, borderWidth: 1, borderColor: '#F0E0CC' }}>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: '#E8751A', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Word-for-Word</Text>
+                <Text style={{ fontSize: 14, color: '#444', lineHeight: 24 }}>
+                  {sloka.word_meanings.replace(/—/g, ' — ')}
+                </Text>
+              </View>
             )}
 
-            {activeTab === 'purport' && (
-              <View style={{ padding: 20, backgroundColor: '#FFF', borderRadius: 20, borderWidth: 1, borderColor: '#F0E0CC' }}>
-                <Text style={{ fontSize: 18, fontWeight: '700', color: '#1A1A1A', marginBottom: 12 }}>Expanded Purport</Text>
-                {purport ? (
-                  <Text style={{ fontSize: 15, color: '#444', lineHeight: 26 }}>
-                    {purport}
-                  </Text>
-                ) : (
-                  <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-                     <Text style={{ fontSize: 40, marginBottom: 10 }}>📖</Text>
-                     <Text style={{ fontSize: 16, color: '#666', textAlign: 'center', lineHeight: 24 }}>
-                       The comprehensive purport for this verse is coming soon in a future update.
-                     </Text>
+            {/* ── 3. Spiritual Meaning & In Your Life ── */}
+            {commentary && (
+              <View style={{ marginTop: 12, padding: 20, backgroundColor: '#FFF', borderRadius: 20, borderWidth: 1, borderColor: '#F0E0CC' }}>
+                {commentary.meaning && (
+                  <View style={{ marginBottom: commentary.application ? 16 : 0 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#E8751A', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>Spiritual Meaning</Text>
+                    <Text style={{ fontSize: 15, color: '#555', lineHeight: 24 }}>{commentary.meaning}</Text>
+                  </View>
+                )}
+                {commentary.application && (
+                  <View>
+                    <View style={{ height: 1, backgroundColor: '#F0E0CC', width: '100%', marginBottom: 16 }} />
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#E8751A', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>In Your Life</Text>
+                    <Text style={{ fontSize: 15, color: '#555', lineHeight: 24 }}>{commentary.application}</Text>
                   </View>
                 )}
               </View>
             )}
 
-            {activeTab === 'scholar' && (
-              <View style={{ minHeight: 250 }}>
-                {/* Cost-Optimized Predefined Q&A */}
-                {precomputedQuestions.length > 0 && messages.length === 0 && (
-                  <View style={{ marginBottom: 16 }}>
-                    <Text style={{ fontSize: 12, fontWeight: '700', color: '#E8751A', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12 }}>
-                      Frequently Asked
-                    </Text>
-                    {precomputedQuestions.map((q: any, i: number) => (
-                      <View key={i} style={{ marginBottom: 12, backgroundColor: '#FFF', borderRadius: 16, borderWidth: 1, borderColor: '#F0E0CC', overflow: 'hidden' }}>
-                        <View style={{ padding: 14, backgroundColor: '#FFF8EE', borderBottomWidth: 1, borderBottomColor: '#F0E0CC' }}>
-                          <Text style={{ fontSize: 14, fontWeight: '600', color: '#1A1A1A' }}>Q: {q.question}</Text>
-                        </View>
-                        <View style={{ padding: 14 }}>
-                          <Text style={{ fontSize: 14, color: '#444', lineHeight: 22 }}>{q.answer}</Text>
-                        </View>
+            {/* ── 4. Expanded Purport ── */}
+            {purport && (
+              <View style={{ marginTop: 12, padding: 20, backgroundColor: '#FFF', borderRadius: 20, borderWidth: 1, borderColor: '#F0E0CC' }}>
+                <Text style={{ fontSize: 16, fontWeight: '700', color: '#1A1A1A', marginBottom: 12 }}>Expanded Purport</Text>
+                <Text style={{ fontSize: 15, color: '#444', lineHeight: 26 }}>
+                  {purport}
+                </Text>
+              </View>
+            )}
+
+            {/* ── 5. Scholar Q&A ── */}
+            <View style={{ marginTop: 16 }}>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: '#E8751A', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12 }}>
+                Ask About This Verse
+              </Text>
+
+              {/* Predefined Q&A */}
+              {precomputedQuestions.length > 0 && messages.length === 0 && (
+                <View style={{ marginBottom: 12 }}>
+                  {precomputedQuestions.map((q: any, i: number) => (
+                    <View key={i} style={{ marginBottom: 12, backgroundColor: '#FFF', borderRadius: 16, borderWidth: 1, borderColor: '#F0E0CC', overflow: 'hidden' }}>
+                      <View style={{ padding: 14, backgroundColor: '#FFF8EE', borderBottomWidth: 1, borderBottomColor: '#F0E0CC' }}>
+                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#1A1A1A' }}>Q: {q.question}</Text>
                       </View>
-                    ))}
-                  </View>
-                )}
-
-                {/* AI Chat Messages */}
-                {messages.map((msg, i) => (
-                  <View key={i} style={{ marginBottom: 12, alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                    {msg.role === 'assistant' && (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, width: '85%', maxWidth: '85%' }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                          <Text style={{ fontSize: 12 }}>🙏</Text>
-                          <Text style={{ fontSize: 11, fontWeight: '700', color: '#E8751A' }}>Gita Scholar</Text>
-                        </View>
-                        <TouchableOpacity onPress={() => handlePlayScholarMsg(msg.content, i)}>
-                          <Ionicons name={playingScholarMsgId === i ? "stop-circle" : "volume-medium"} size={16} color="#E8751A" />
-                        </TouchableOpacity>
+                      <View style={{ padding: 14 }}>
+                        <Text style={{ fontSize: 14, color: '#444', lineHeight: 22 }}>{q.answer}</Text>
                       </View>
-                    )}
-                    <View style={{ maxWidth: '85%', borderRadius: 18, padding: 16, ...(msg.role === 'user' ? { backgroundColor: '#E8751A', borderTopRightRadius: 4 } : { backgroundColor: '#FFF', borderTopLeftRadius: 4, borderWidth: 1, borderColor: '#F0E0CC' }) }}>
-                      <Text style={{ fontSize: 14, lineHeight: 22, color: msg.role === 'user' ? '#FFF' : '#333' }}>{msg.content}</Text>
                     </View>
-                  </View>
-                ))}
-
-                {/* AI Loading */}
-                {isAiLoading && (
-                  <View style={{ alignItems: 'flex-start', marginBottom: 12 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 4 }}>
-                      <Text style={{ fontSize: 12 }}>🙏</Text>
-                      <Text style={{ fontSize: 11, fontWeight: '700', color: '#E8751A' }}>Gita Scholar</Text>
-                    </View>
-                    <View style={{ borderRadius: 18, borderTopLeftRadius: 4, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#F0E0CC', padding: 16, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                      <ActivityIndicator size="small" color="#E8751A" />
-                      <Text style={{ fontSize: 14, color: '#999' }}>Contemplating...</Text>
-                    </View>
-                  </View>
-                )}
-
-                {/* AI Error */}
-                {aiError && (
-                  <View style={{ marginBottom: 12, padding: 14, borderRadius: 12, backgroundColor: '#FFF0F0', borderWidth: 1, borderColor: '#FFD0D0' }}>
-                    <Text style={{ fontSize: 14, color: '#CC3333' }}>{aiError}</Text>
-                  </View>
-                )}
-
-                {/* Question Input */}
-                <View style={{ marginTop: 'auto', marginBottom: 12, borderRadius: 20, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#F0E0CC', flexDirection: 'row', alignItems: 'flex-end', padding: 6 }}>
-                  <TextInput
-                    style={{ flex: 1, fontSize: 14, color: '#333', paddingHorizontal: 14, paddingVertical: 10, minHeight: 42, maxHeight: 100 }}
-                    placeholder={messages.length === 0 ? "Or ask a unique question..." : "Ask about this verse..."}
-                    placeholderTextColor="#C0B0A0"
-                    multiline
-                    value={questionText}
-                    onChangeText={setQuestionText}
-                    editable={!isAiLoading}
-                  />
-                  <TouchableOpacity
-                    onPress={() => handleAskQuestion(questionText)}
-                    disabled={isAiLoading || !questionText.trim()}
-                    style={{ width: 42, height: 42, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: isAiLoading || !questionText.trim() ? '#E0D0C0' : '#E8751A' }}
-                  >
-                    <Ionicons name="send" size={16} color="#FFF" />
-                  </TouchableOpacity>
+                  ))}
                 </View>
+              )}
 
-                {/* Clear Chat */}
-                {messages.length > 0 && (
-                  <TouchableOpacity onPress={clearChat} style={{ marginBottom: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                    <Ionicons name="refresh-outline" size={14} color="#999" />
-                    <Text style={{ fontSize: 12, color: '#999' }}>Clear conversation</Text>
-                  </TouchableOpacity>
-                )}
+              {/* AI Chat Messages */}
+              {messages.map((msg, i) => (
+                <View key={i} style={{ marginBottom: 12, alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                  {msg.role === 'assistant' && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, width: '85%', maxWidth: '85%' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Text style={{ fontSize: 12 }}>🙏</Text>
+                        <Text style={{ fontSize: 11, fontWeight: '700', color: '#E8751A' }}>Gita Scholar</Text>
+                      </View>
+                      <TouchableOpacity onPress={() => handlePlayScholarMsg(msg.content, i)}>
+                        <Ionicons name={playingScholarMsgId === i ? "stop-circle" : "volume-medium"} size={16} color="#E8751A" />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                  <View style={{ maxWidth: '85%', borderRadius: 18, padding: 16, ...(msg.role === 'user' ? { backgroundColor: '#E8751A', borderTopRightRadius: 4 } : { backgroundColor: '#FFF', borderTopLeftRadius: 4, borderWidth: 1, borderColor: '#F0E0CC' }) }}>
+                    <Text style={{ fontSize: 14, lineHeight: 22, color: msg.role === 'user' ? '#FFF' : '#333' }}>{msg.content}</Text>
+                  </View>
+                </View>
+              ))}
+
+              {/* AI Loading */}
+              {isAiLoading && (
+                <View style={{ alignItems: 'flex-start', marginBottom: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 4 }}>
+                    <Text style={{ fontSize: 12 }}>🙏</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#E8751A' }}>Gita Scholar</Text>
+                  </View>
+                  <View style={{ borderRadius: 18, borderTopLeftRadius: 4, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#F0E0CC', padding: 16, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <ActivityIndicator size="small" color="#E8751A" />
+                    <Text style={{ fontSize: 14, color: '#999' }}>Contemplating...</Text>
+                  </View>
+                </View>
+              )}
+
+              {/* AI Error */}
+              {aiError && (
+                <View style={{ marginBottom: 12, padding: 14, borderRadius: 12, backgroundColor: '#FFF0F0', borderWidth: 1, borderColor: '#FFD0D0' }}>
+                  <Text style={{ fontSize: 14, color: '#CC3333' }}>{aiError}</Text>
+                </View>
+              )}
+
+              {/* Question Input */}
+              <View style={{ marginBottom: 12, borderRadius: 20, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#F0E0CC', flexDirection: 'row', alignItems: 'flex-end', padding: 6 }}>
+                <TextInput
+                  style={{ flex: 1, fontSize: 14, color: '#333', paddingHorizontal: 14, paddingVertical: 10, minHeight: 42, maxHeight: 100 }}
+                  placeholder={messages.length === 0 ? "Ask a question about this verse..." : "Ask about this verse..."}
+                  placeholderTextColor="#C0B0A0"
+                  multiline
+                  value={questionText}
+                  onChangeText={setQuestionText}
+                  editable={!isAiLoading}
+                />
+                <TouchableOpacity
+                  onPress={() => handleAskQuestion(questionText)}
+                  disabled={isAiLoading || !questionText.trim()}
+                  style={{ width: 42, height: 42, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: isAiLoading || !questionText.trim() ? '#E0D0C0' : '#E8751A' }}
+                >
+                  <Ionicons name="send" size={16} color="#FFF" />
+                </TouchableOpacity>
               </View>
-            )}
+
+              {/* Clear Chat */}
+              {messages.length > 0 && (
+                <TouchableOpacity onPress={clearChat} style={{ marginBottom: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                  <Ionicons name="refresh-outline" size={14} color="#999" />
+                  <Text style={{ fontSize: 12, color: '#999' }}>Clear conversation</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
 
           {/* ── Bottom Navigation ── */}
