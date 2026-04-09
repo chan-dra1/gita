@@ -24,6 +24,7 @@ import { addSlokaRead, isSlokaSaved, saveSloka, unsaveSloka, getOnboardingData, 
 import { getSlokaImage } from '../../../src/utils/slokaImages';
 import { useLanguage } from '../../../src/context/LanguageContext';
 import purportsData from '../../../src/data/purports.json';
+import purportsHiData from '../../../src/data/purports_hi.json';
 import scholarAnswersData from '../../../src/data/scholar_answers.json';
 
 // Safe import for DharmaBlocker
@@ -82,7 +83,8 @@ export default function SlokaScreen() {
     clearChat,
   } = useDeepDive(slokaContext);
 
-  const purport = (purportsData as Record<string, string>)[`${chapter}:${verse}`];
+  const purportDb = language === 'hi' ? purportsHiData : purportsData;
+  const purport = (purportDb as Record<string, string>)[`${chapter}:${verse}`];
   const precomputedQuestions = (scholarAnswersData as Record<string, any[]>)[`${chapter}:${verse}`] || [];
 
   // Track sloka view on mount and load saved status

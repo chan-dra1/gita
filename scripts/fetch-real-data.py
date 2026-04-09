@@ -22,6 +22,7 @@ def main():
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     b_gita_path = os.path.join(project_root, 'src', 'data', 'bhagavad-gita.json')
     purports_path = os.path.join(project_root, 'src', 'data', 'purports.json')
+    purports_hi_path = os.path.join(project_root, 'src', 'data', 'purports_hi.json')
     
     # 2. Load existing localized gita json (for structure)
     with open(b_gita_path, 'r', encoding='utf-8') as f:
@@ -36,31 +37,36 @@ def main():
     for v in verses_raw:
         cv_to_id[f"{v['chapter_number']}_{v['verse_number']}"] = v['id']
 
-    # Organise purports (English, specifically Swami Sivananda id 16, else fallback to another english)
-    purports_map = {} # "chap:verse" -> "purport text"
+    # Organise purports
+    purports_en_map = {} # "chap:verse" -> "english purport text"
+    purports_hi_map = {} # "chap:verse" -> "hindi purport text"
     
     for c in commentary_raw:
+        ch = c['verse_id']
+        v_match = verse_map.get(c['verse_id'])
+        if not v_match:
+            continue
+            
+        chap = v_match['chapter_number']
+        vers = v_match['verse_number']
+        key = f"{chap}:{vers}"
+        
+        p_text = c.get('description', '')
+        if not p_text.strip():
+            continue
+
         if c.get('lang') == 'english':
-            ch = c['verse_id'] # We need to map verse_id back to (chapter, verse)
-            
-            # Find chapter and verse based on verse_id
-            v_match = verse_map.get(c['verse_id'])
-            if not v_match:
-                continue
-                
-            chap = v_match['chapter_number']
-            vers = v_match['verse_number']
-            key = f"{chap}:{vers}"
-            
-            p_text = c.get('description', '')
-            if not p_text.strip():
-                continue
-            
-            # Prefer Swami Sivananda
-            if key not in purports_map:
-                purports_map[key] = p_text
+            # Prefer Swami Sivananda (id 16)
+            if key not in purports_en_map:
+                purports_en_map[key] = p_text
             elif c.get('author_id') == 16:
-                purports_map[key] = p_text
+                purports_en_map[key] = p_text
+        elif c.get('lang') == 'hindi':
+            # Prefer Swami Ramsukhdas (id 1) or Tejomayananda (id 17)
+            if key not in purports_hi_map:
+                purports_hi_map[key] = p_text
+            elif c.get('author_id') == 1:
+                purports_hi_map[key] = p_text
 
     # 3. Update local gita structure with word meanings
     for idx, chapter in enumerate(local_gita['chapters']):
@@ -81,9 +87,13 @@ def main():
         json.dump(local_gita, f, indent=2, ensure_ascii=False)
 
     # Save purports.json
-    print(f"Saving purports.json ({len(purports_map)} purports generated)...")
+    print(f"Saving purports.json ({len(purports_en_map)} English purports generated)...")
     with open(purports_path, 'w', encoding='utf-8') as f:
-        json.dump(purports_map, f, indent=2, ensure_ascii=False)
+        json.dump(purports_en_map, f, indent=2, ensure_ascii=False)
+
+    print(f"Saving purports_hi.json ({len(purports_hi_map)} Hindi purports generated)...")
+    with open(purports_hi_path, 'w', encoding='utf-8') as f:
+        json.dump(purports_hi_map, f, indent=2, ensure_ascii=False)
 
     print("Successfully ingested 700 verses of real data!")
 
