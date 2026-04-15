@@ -1,10 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { StyleSheet, View, Animated, Dimensions, ImageBackground, Text } from 'react-native';
+import { StyleSheet, View, Animated, Dimensions, Platform } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 
 interface OnboardingBackgroundProps {
-  image: any;
+  image?: any; // Deprecated, kept for API compatibility
   quote?: string;
   author?: string;
   overlayOpacity?: number;
@@ -12,64 +13,62 @@ interface OnboardingBackgroundProps {
 }
 
 export const OnboardingBackground: React.FC<OnboardingBackgroundProps> = ({ 
-  image, 
-  quote, 
-  author, 
   overlayOpacity = 0.5,
   children 
 }) => {
   const driftAnim = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Continuous screensaver drift effect
+    // Subtle breathing animation for ambient feel
     Animated.loop(
       Animated.sequence([
         Animated.timing(driftAnim, {
           toValue: 1,
-          duration: 20000,
+          duration: 12000,
           useNativeDriver: true,
         }),
         Animated.timing(driftAnim, {
           toValue: 0,
-          duration: 20000,
+          duration: 12000,
           useNativeDriver: true,
         }),
       ])
     ).start();
-
-    // Fade in text
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 1500,
-      useNativeDriver: true,
-    }).start();
   }, []);
 
-  const translateX = driftAnim.interpolate({
+  const translateY = driftAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-10, 10], // Subtle lateral drift
+    outputRange: [0, -40], // Slow vertical float
   });
 
-  const scale = driftAnim.interpolate({
+  const opacity = driftAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [1.1, 1.15], // Subtle zoom
+    outputRange: [0.3, 0.5], // Gentle pulse
   });
 
   return (
     <View style={styles.container}>
+      {/* Base Dark Background */}
+      <View style={styles.baseDark} />
+      
+      {/* Animated Subtle Ambient Glow */}
       <Animated.View style={[
-        styles.backgroundWrapper,
+        styles.glowWrapper,
         {
-          transform: [{ translateX }, { scale }],
+          transform: [{ translateY }],
+          opacity,
         }
       ]}>
-        <ImageBackground source={image} style={styles.image} resizeMode="cover" />
+        <LinearGradient
+          colors={['rgba(212, 164, 76, 0.15)', 'transparent']}
+          style={styles.glowGradient}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+        />
       </Animated.View>
       
-      <View style={[styles.overlay, { backgroundColor: `rgba(10, 17, 40, ${overlayOpacity})` }]} />
-      
-      {/* Quote rendering removed as per user request for visual cleanup */}
+      {/* Secondary Overlay (for contrast) */}
+      <View style={[styles.overlay, { backgroundColor: `rgba(13, 13, 13, ${overlayOpacity})` }]} />
       
       {children}
     </View>
@@ -79,46 +78,23 @@ export const OnboardingBackground: React.FC<OnboardingBackgroundProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A1128',
+    backgroundColor: '#0D0D0D', // Pure deep dark background
   },
-  backgroundWrapper: {
+  baseDark: {
     ...StyleSheet.absoluteFillObject,
-    width: width * 1.2,
-    height: height * 1.2,
-    left: -width * 0.1,
-    top: -height * 0.1,
+    backgroundColor: '#0D0D0D',
   },
-  image: {
-    width: '100%',
-    height: '100%',
+  glowWrapper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: height * 0.8,
+  },
+  glowGradient: {
+    flex: 1,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-  },
-  quoteContainer: {
-    position: 'absolute',
-    top: '15%',
-    left: 20,
-    right: 20,
-    alignItems: 'center',
-    padding: 20,
-  },
-  quoteText: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 18,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    fontFamily: 'serif',
-    lineHeight: 26,
-    textShadowColor: 'black',
-    textShadowRadius: 10,
-  },
-  authorText: {
-    color: 'rgba(244, 139, 41, 0.8)',
-    fontSize: 14,
-    marginTop: 8,
-    fontWeight: 'bold',
-    letterSpacing: 2,
-    textTransform: 'uppercase',
   },
 });

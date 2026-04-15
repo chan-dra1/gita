@@ -1,0 +1,307 @@
+[
+  {
+    "id": "8d9181da-99dd-473f-b32e-c38448ca8dcf",
+    "status": "ERRORED",
+    "platform": "ANDROID",
+    "error": {
+      "errorCode": "EAS_BUILD_UNKNOWN_GRADLE_ERROR",
+      "message": "Gradle build failed with unknown error. See logs for the \"Run gradlew\" phase for more information."
+    },
+    "artifacts": {},
+    "fingerprint": {
+      "id": "019d900d-236e-7c6c-891e-8efc1d1b465f",
+      "hash": "e203f29bc9f300dfdefd62f8c250d243944e9ce9"
+    },
+    "initiatingActor": {
+      "id": "cd56efd3-e077-4c6a-b0b7-2b6435bedd84",
+      "displayName": "alphawolf3382"
+    },
+    "logFiles": [
+      "https://job-logs.eascdn.net/production/8d9181da-99dd-473f-b32e-c38448ca8dcf/1776238273626-475aba12-a20b-4a1f-9cbd-a263ec6ed9e0.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=c3fd9660c673216457acc2c8a93b6a45b543466966dbe850892b566e96d2acc0c2ac1d78735d63c4af3ab7c539fb24d342a8bcbcf8b7be92066612add3f4b134cae22efbdab3bf315dfe115af463ac0f6a6bf7de56383254881a03f651426d5162c5e2b87429c1df1b65ece3abb6d97c2159d9bc10fb71b1c5f6adc2674ddf23bbc198cffc7e2fe06b75eb4bda771a870ea7aa4e3b603eefd949f1bbe98e7170cf69e5d71b876329db232eb19cacb342f732adfa36a0a8eccc615286bce35319b5b4890dd8412119be48a61881f2e8348540dc7722b076a4f5fb333e0b74d0c4c32779692ddc061427b8e2d80a2d9fc6babe1b9abc5ada0388d2c9377c60b013",
+      "https://job-logs.eascdn.net/production/8d9181da-99dd-473f-b32e-c38448ca8dcf/1776238279940-6ec0728c-3272-4e95-9470-d2e8a9d71950.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=09220ba391776f80b826a7571eab4fbe6685b79dd5e3465a19ab8d4090c718e52cd32645a4f668f20a08dd3e13f9ce79e2a1e080860b616d309e11a82db047e5f789d9e071f17b19507b82187ef3ed483c7256532024fb8c3d6110aad52e66a86099e9d4a6099ca3fb09beea997c2d9e0aaf635eab13a160855f156c6acc0ea8b98d03e9b88c375d94cca786ac257be140a4cb7b38710e19b3b303aa0f1eed116fe2ca187aa614e31db44acaf22867dec75dfcb7f2085d693f1d575063d4672872cedfcf161cd84c2b864395dfc883e07b24ebfd8785f42bb2011d76b1ae78992cf72c6f3a87572feb4c071246c61abcdd1b915e258664ee8689bc44e0e7e7c2",
+      "https://job-logs.eascdn.net/production/8d9181da-99dd-473f-b32e-c38448ca8dcf/1776238280197-12aae339-431c-43e1-82f7-a1cb2aa327a2.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=9a46e032a41f3d568938324320c5798a81471abe7feece084781afa1af04225f0a3c465a1e70dd6530f5fd5665af7631be0ece04bdd46aaa8da9f0305c305a8fa82d0873853b4a6151d49171f6ffc688aae2b381e8da50d511cb126b8cdf30bccd960770dd997c479c30ad7adfec2ca41fdfb29f82ed9667c90fbeac47cb54178d3a95a75e2b1867828963a91d1922d22b42ea6c24c72b72030e4d181c5d89adf8f5f26a83f0dcc4d9c42f37bd1e84c5dff5d9cb46a652e5d24c5463375efee5356c5ba71c1a5041a3f102b11ffe863bab387aaaf32c45d9c7931c3e2894d324f4cacbac1e553bcbb60b6680d2448e8cc79194e32954d5f260ac491e758abb60",
+      "https://job-logs.eascdn.net/production/8d9181da-99dd-473f-b32e-c38448ca8dcf/1776238280404-6ecc43e8-f269-4f43-8555-fcb6b0e744ec.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=ce0e28ee18e4abdcc89ecc0f16a7413cccbdd4ceced64d49195a991f0638d0e132f48c865859ae4dee72052d081cd645caadae28a86c82665cc43a464d390374650139440efbe260e2468191ee9ff60bec6308b5ee1dcce4d57e61f9e8a69b4cb16cc27d3b7793854fdea36d11e01457218d5626b150b86a5f95ee0f974f66f6982482d08d37c20f25fbac1627c9258d7df313109e0bf9bb0932194fd123335d5384cddd4027594220d6bd388c61a6d7a14716beb7574fb7886ab2f0ee4ba6f02498c41794dcc09510b0a27aa70180b53d432ef01bc4a0e54259935712bdd1524e624209336f416f36120803ad4430211ef94a62d80c422094f3a0b1a2980499"
+    ],
+    "project": {
+      "id": "67cebb38-a773-4143-a639-e2b99efbb441",
+      "name": "gita",
+      "slug": "gita",
+      "ownerAccount": {
+        "id": "498a5c82-8840-4882-81f1-abddc3bf2a07",
+        "name": "alphawolf3382"
+      }
+    },
+    "distribution": "INTERNAL",
+    "buildProfile": "preview",
+    "sdkVersion": "55.0.0",
+    "appVersion": "1.0.0",
+    "appBuildVersion": "3",
+    "gitCommitHash": "fc18c18da95a997180002edcaf24ef496c276e0c",
+    "gitCommitMessage": "feat: implement cloud audio caching and project updates",
+    "priority": "HIGH",
+    "createdAt": "2026-04-15T07:31:13.352Z",
+    "updatedAt": "2026-04-15T11:00:43.388Z",
+    "completedAt": "2026-04-15T07:47:26.462Z",
+    "expirationDate": "2026-07-14T07:31:13.384Z",
+    "isForIosSimulator": false,
+    "metrics": {
+      "buildWaitTime": 117,
+      "buildQueueTime": 51854,
+      "buildDuration": 920094
+    }
+  },
+  {
+    "id": "d322e543-9372-4882-b313-7f2efd44040f",
+    "status": "ERRORED",
+    "platform": "ANDROID",
+    "error": {
+      "errorCode": "EAS_BUILD_UNKNOWN_GRADLE_ERROR",
+      "message": "Gradle build failed with unknown error. See logs for the \"Run gradlew\" phase for more information."
+    },
+    "artifacts": {},
+    "fingerprint": {
+      "id": "019d8ff2-911e-7dd5-be0b-c1ed7da3bbd0",
+      "hash": "be05bcc671bc417aadfd771c7e1d91dda277029c"
+    },
+    "initiatingActor": {
+      "id": "cd56efd3-e077-4c6a-b0b7-2b6435bedd84",
+      "displayName": "alphawolf3382"
+    },
+    "logFiles": [
+      "https://job-logs.eascdn.net/production/d322e543-9372-4882-b313-7f2efd44040f/1776236532211-6fb07264-962d-4985-954b-d832cc7ea9bf.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=ca746699c7449a9d0ab0e110ebad7302b546a9ea57ca9e23cb1a84ebbd2e00a2047569caf906e5040a4448ec7cdc8bd5b1420c4d1519cfb7d195a9e64b9605a51b5da0e495f2ba878dd467d086c6f56be353677b9af5c83494d15bd45b807df7275fc23381eb60fe2bf5abf48f026e9b2bed4e74e2d17a5191822bdf6161e4a71bf9e312484dd48eaa9bf79ccd067499473a5ad5ab487334169d486c600d8adb5e37ab6b2d86ff2775bb35dffec391aa1bcc5860010d88e8fff71ccad91f94759be8143ef1c9fd229bef9624a9a597adcc87f500545ca45a0757d4613eb4153a37d24e22658bc279e41f6218e895ccfac620e16271dbef9920e20876f91b1a21",
+      "https://job-logs.eascdn.net/production/d322e543-9372-4882-b313-7f2efd44040f/1776236534617-0f9859c0-761e-4be6-9b5b-864684d3c45d.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=5b19bd284c840e581889121af39923a4930b0f89cd0896ce642f4cc40fc773f1fcff23c1d60f29481706a79ff14c682d909a0e68490f64920c389bce6c919e2c2318cfadeb926d22a292a5b348943a07aeae3ef150c74a2776605a33e4357c6b9a6f7cf4c78d86b786eb5b6197ae5be5cab2c10af9245b48a1e2d23ea72af02d348ecc0392addcb7e37e697a40116447d776882ecc5705932594df7980d46f0dc36d924eeaf7d550b4e22719d568b7a747be8b1ad458ef8506e13af4f1146acdeb77847acd477073c3a3a850827d82547b64a65533c6460d0c2269a71e9640af01004ab2c7777f401e600d36fcd115eba9265ea1a8efff3dcd5806665b37f1e5",
+      "https://job-logs.eascdn.net/production/d322e543-9372-4882-b313-7f2efd44040f/1776236534869-934e02a4-db58-4962-9e9a-2bddf80c027b.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=9ab2f28d6e79a6bdf4f176091825bc45b35f6f5703d836bd2f495ba7638f4cf7c967793959a5965823ba0b0718c9c97ae364bf0090ffae4bcbbc8da7d10e29721a7c6f2eb9d5c3bbf21eed60fbd4345cb51206804cee078d04184160453e3e6893bde830fc0c9630165304c92a5e64ded1d3049bd378196b347b6e61e7e17d32b159d98e0829dba41e512322178e36ad6de8fbf4fc8c8019d544598e5443e49476b23065589ff13e24392e789aa85352ba127c01a5c2917af7833083bde3e2e4a66f24793210364ef0c09e0dd8a4c7e721875807f6ddaebe27fe12a0d40866ed33e5dec16d9caed5522222909cda895279913abf878ae67895eabc4973e3da8a",
+      "https://job-logs.eascdn.net/production/d322e543-9372-4882-b313-7f2efd44040f/1776236535055-8948fba8-566e-4df3-907c-0e2dea9ade7f.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=43fee1aedb78a1a8ec06525154411c3a4776248597d5d70ccbc3c0ed8d063819001babe2ccd694854c99842a92e7fb7b4983deae5abc18b0303120d514606976d62d19fcea439776c07b5195d6dd5913b0649ac7bd47f59abc3a48448fd0ba9c4f69f751e46184c950f22261db91e70234074082422d0c5e9b425b856551714f1a6eb328d784c6b9ecb31527f346c2a8ae2b6e51a91dedff1362accdf5c3854341b4acea16e6cf5edb41ce89e176d2170ac210c1fcd7c5152ae2a4f94c454819760834f982de7261670025956a07cacff8fd5be87a9c888f052cbaf047ce5506633e3245e72eb259f5db951a8231ae793f1cadecd000197a35582faca7659f0a"
+    ],
+    "project": {
+      "id": "67cebb38-a773-4143-a639-e2b99efbb441",
+      "name": "gita",
+      "slug": "gita",
+      "ownerAccount": {
+        "id": "498a5c82-8840-4882-81f1-abddc3bf2a07",
+        "name": "alphawolf3382"
+      }
+    },
+    "distribution": "INTERNAL",
+    "buildProfile": "preview",
+    "sdkVersion": "55.0.0",
+    "appVersion": "1.0.1",
+    "appBuildVersion": "9",
+    "gitCommitHash": "fc18c18da95a997180002edcaf24ef496c276e0c",
+    "gitCommitMessage": "feat: implement cloud audio caching and project updates",
+    "priority": "HIGH",
+    "createdAt": "2026-04-15T07:02:11.924Z",
+    "updatedAt": "2026-04-15T11:00:14.749Z",
+    "completedAt": "2026-04-15T07:12:25.130Z",
+    "expirationDate": "2026-07-14T07:02:11.991Z",
+    "isForIosSimulator": false,
+    "metrics": {
+      "buildWaitTime": 201,
+      "buildQueueTime": 41157,
+      "buildDuration": 570905
+    }
+  },
+  {
+    "id": "ebd9f4c0-cedb-4cf6-b6fc-1c41d458d361",
+    "status": "ERRORED",
+    "platform": "ANDROID",
+    "error": {
+      "errorCode": "EAS_BUILD_UNKNOWN_GRADLE_ERROR",
+      "message": "Gradle build failed with unknown error. See logs for the \"Run gradlew\" phase for more information."
+    },
+    "artifacts": {},
+    "fingerprint": {
+      "id": "019d8f9f-1403-74eb-9d50-c068819ed3ba",
+      "hash": "ab680f8b2b49560471bd70bca126f7eed3ce31bc"
+    },
+    "initiatingActor": {
+      "id": "cd56efd3-e077-4c6a-b0b7-2b6435bedd84",
+      "displayName": "alphawolf3382"
+    },
+    "logFiles": [
+      "https://job-logs.eascdn.net/production/ebd9f4c0-cedb-4cf6-b6fc-1c41d458d361/1776231060700-e94ea986-4067-479a-b6d0-301b769225e5.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=953eefa6e344441e28b2f22bba89df17b7f3b364fbe6c799709d01e3732816c943bb75f07af0308db9a39a5505feba2a1ba07993546b6243cb7c3ad6594250c1c402905c0c793edcd5ab56091f6aba1a2e7e1b73b858356675a59e7e8faeefd2c2096d0ac9dad4e136f9c23bdceaf422284fc90dbef189233c5d82d41fc6f786a29b0932f6890173ff14141c3422de507a8f3f0e397c070b81da0595733d427116ba40333c6ac71885a561e6210d624ae7c253f6c9625d38eaa74a546094e8bcdfcfbf298b238eb357bfa9f2c95e672f10f2397992250f953d3c8b4ab65b0ce874301f20d3ed6e767c49bf957b227a73193b7097d7bd9268e9befaf1543565c8",
+      "https://job-logs.eascdn.net/production/ebd9f4c0-cedb-4cf6-b6fc-1c41d458d361/1776231066692-c24865b6-e0fc-44ee-8699-0bb999ada675.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=8980c5f3728e06e806a9b667ee8963df5559a7204485cfd43ea57768b8f6180d703eeab1375db1e142785af1b0f4bbcf99b156bf9c40abfa6298e37029d388bed2e4360b29e5f82ac07ca74da3e5c86e7e9f7afcf76636fa63bf04055b15f2e9e5b6e2650ce66a8237f829ec8e37a39642d62b143a4e9789d3ee3d701e25b7d59dedc79bb724cbbdc1b8f9d609aeb3fca036d8fbe5c44883292419a903b5c681b5daa2a3d4c28dd7525469e00e913952af5e15927acdd2276c1b29aa9245949896497b75c69b78c43c3c3f4f270430099bd99b92895ba7b256e671e730843bd5485b7375e8db709c6873993ec7c34db331cf4512f5fb6714c6f8d8a86eb443eb",
+      "https://job-logs.eascdn.net/production/ebd9f4c0-cedb-4cf6-b6fc-1c41d458d361/1776231066973-fb20410e-5287-4f82-bea4-fb27273e79a8.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=520907fe81912b1ed1dcd55f38ed513569adb3832b5cb9c295a2084ab9b8eac348e15ab67e93415fdbff7da9c384ada19faccf6d42a4549636a5fe42614ad7180362f64c17117dcf9f4f39e467330d1c436f576007d73c5304615c10976d2be5aa6328f9a187a7d83ce688421cd64d05db28956f01b964c0deadecffa0aec90760d76d63607c150ff507243172eb0f769092f02767f44851fd12d6cf3af664bdcc318c27863cb10e013ad22421b236226960e5dfb972da2f0e0d91d92c97b171ba83906c6e0d3a3dcfd0fdfec559fb271e35d036ca47b1c4c85957147956326c3cab209c640c13d8207cb465b55512c1d75fdc056cc2affd622d48967193fac0",
+      "https://job-logs.eascdn.net/production/ebd9f4c0-cedb-4cf6-b6fc-1c41d458d361/1776231067190-16878c97-3616-484f-a4b1-df9a99ca9695.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=14ea248e8f66a53899594ee09da7af7df0854c4dcc373dd44427bdaa555b360355bddab7027b11eaff5daac81dfa058631ee7f5eca9127d71448f0832d34b8297eacfee5334577274b53d3473e8e89d0b743b11bd1d89542b1987f42651444718c40ae3714746fa55764349b558cc766f2983c6f1b0c3be7d162702f5e95f70d050f1ff7d3c6923249285945069749a0227bdd3f2d9bce5be58637486f1492ce574091555bb51eb70a9f5c7ac439711e8842552ee71d715ab8992589a27b79ad646cf20e1ff7bc142f635ce608b1e4f2e16ffcf4d4a3be1f73473be8dafbe92513e82a1294e19560a6d4adff43a79b585fd5373a9d426171ee834c909d1765b5"
+    ],
+    "project": {
+      "id": "67cebb38-a773-4143-a639-e2b99efbb441",
+      "name": "gita",
+      "slug": "gita",
+      "ownerAccount": {
+        "id": "498a5c82-8840-4882-81f1-abddc3bf2a07",
+        "name": "alphawolf3382"
+      }
+    },
+    "distribution": "STORE",
+    "buildProfile": "production",
+    "sdkVersion": "55.0.0",
+    "appVersion": "1.0.1",
+    "appBuildVersion": "9",
+    "gitCommitHash": "fc18c18da95a997180002edcaf24ef496c276e0c",
+    "gitCommitMessage": "feat: implement cloud audio caching and project updates",
+    "priority": "HIGH",
+    "createdAt": "2026-04-15T05:31:00.371Z",
+    "updatedAt": "2026-04-15T09:00:34.814Z",
+    "completedAt": "2026-04-15T05:36:07.214Z",
+    "expirationDate": "2026-05-15T05:31:00.426Z",
+    "isForIosSimulator": false,
+    "metrics": {
+      "buildWaitTime": 208,
+      "buildQueueTime": 51042,
+      "buildDuration": 254892
+    }
+  },
+  {
+    "id": "a8f13051-a8f1-4b69-873f-dc41d11a215a",
+    "status": "ERRORED",
+    "platform": "ANDROID",
+    "error": {
+      "errorCode": "UNKNOWN_ERROR",
+      "message": "Unknown error. See logs of the Install dependencies build phase for more information."
+    },
+    "artifacts": {},
+    "fingerprint": {
+      "id": "019d8f95-3f51-7745-b7d8-b1a0fd5e6c36",
+      "hash": "811db1e5ffed293503271085f9b41f67d475d632"
+    },
+    "initiatingActor": {
+      "id": "cd56efd3-e077-4c6a-b0b7-2b6435bedd84",
+      "displayName": "alphawolf3382"
+    },
+    "logFiles": [
+      "https://job-logs.eascdn.net/production/a8f13051-a8f1-4b69-873f-dc41d11a215a/1776230416368-a149d43d-7504-4456-9098-b2f3d1d3a1de.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=cc804932e96b7faedfd28a1ef09fbff58a68b9d783758efed7619197e79aba608e1459f5abd345a0b16db340874f65715063e86735dc6925ff5df15a3e00db64eda75b376a90d33ee4edcb184e037faf9ecf913f703814c359a5a44f9d1175d41264a169662e9101d4847568391f1eae21be61f1c2e0de621891d78498354957fece579dacd8e47dc97fa1c50f13e8f547ed8179363d3d70ac90afbb89d54b187cac54880e393b6bc02c78a53f9c3f5eb954b105ecbaf9ab444c40fa8723b17ede5b454001e7d3e53d9032c89940ef25e00448ad2c10d25e62fad26433e2f742ae22b4a041f1a90315fae88bb2582712314ad551263aea05196f688307309423",
+      "https://job-logs.eascdn.net/production/a8f13051-a8f1-4b69-873f-dc41d11a215a/1776230420825-f438fe37-88bc-4483-83a5-e7b59fd6963f.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=2bf7228dff3465cdeff6cc722f12f6b55046235e034f81d843835ecc1ec356eba92093db537b1cf49b583965ee223364b8d35eefbabc9b2b421441fe044e19f710f0f4cde2319b4d30a5c300c26b82da3b1370751ce992bee1c8f02cbba6932c8108fe468471cd4db3b1fe895997daf6f9211b47c72b3cb19c1c52c64d3013b98f6e39c82eb1f0949a48c68ad88197f2d3b7f57705b88a8127c8820b83f1449828e6bd4f72ca7a4ab7cc691e0f497d033748743972a2ac84781c3f8f10a08f29ae41537f8ea37383cbc47359c99fd746fedc7e6ccbe5b92f577a23463781d3f2670785b5fe09bfb63287d8c43f36bb02b01d6dc433ef16343e7d5301126d3b3b",
+      "https://job-logs.eascdn.net/production/a8f13051-a8f1-4b69-873f-dc41d11a215a/1776230421054-af7cf530-009b-4ccb-b63f-4639392a965c.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=aa4c29bb9819379b42a304398f6181eb2fa24cd85327c6e707c76a896ac8a15d8021992da785dd0ab8dbfec28bf886a9bd75e488126c59e4ca49430abf7982e1e11fe40dd246ffbdb7e1b2acc42cc92f14ebdd830f9c771a0612925bf0a3106e3eecaf463a4242b63da569eefe3f5403242a34f3a4960fe78d7e0fc62ef5728530e2fc453711707f15a29267b154eef9db14d021ab966c8a0d8aeb234bc53812028619d1ead4d709f31508699488f0dd24ee2eaa6c8a99987d22eb5a1ed3bdd05f6bfd7b039d82496fd2e0417e97ead9afe92c1344e06f4bab1108e988eb7bdee1946c716bd137302d6c3719f9adff893983b98b03b24a465300963b0f027f9c",
+      "https://job-logs.eascdn.net/production/a8f13051-a8f1-4b69-873f-dc41d11a215a/1776230421263-81a79f0c-d958-4096-9eb2-21484eb33102.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=c30ab187f75c6ef50d2aa9e97ba8b06de04657849ea956d2210d7e571f1d50ba984bb716a447192ede6eabbd064f44ad8fa62f44571729c3e42b1eebd80d2a1b93774a0d011150cce1dc765bf10b4f5b081211f7d87c700aec511a3bc9215934245986cb6fbc7793a1da33a3701edf2611deea425b640e010f5bfe7e8a6045b04ed0f84388423cb5d8eccb9b229b145882f1d780ff2c4913a3c25d8e2a5bcc6fd4791f858a4f65dc0bb640ec209d35e2dd27ca4ccfb271f5912e3405be45b85d67301ebff03c47e6dd60600d124cc7dc515514cfa7fd925b5f4c8f1e02a02d2315a6c49a78e1d708c5c36215c78d1f9d96a1f57bcb56f7e835efce0a8306d0f1"
+    ],
+    "project": {
+      "id": "67cebb38-a773-4143-a639-e2b99efbb441",
+      "name": "gita",
+      "slug": "gita",
+      "ownerAccount": {
+        "id": "498a5c82-8840-4882-81f1-abddc3bf2a07",
+        "name": "alphawolf3382"
+      }
+    },
+    "distribution": "STORE",
+    "buildProfile": "production",
+    "sdkVersion": "55.0.0",
+    "appVersion": "1.0.1",
+    "appBuildVersion": "8",
+    "gitCommitHash": "fc18c18da95a997180002edcaf24ef496c276e0c",
+    "gitCommitMessage": "feat: implement cloud audio caching and project updates",
+    "priority": "HIGH",
+    "createdAt": "2026-04-15T05:20:16.165Z",
+    "updatedAt": "2026-04-15T09:00:23.882Z",
+    "completedAt": "2026-04-15T05:21:13.488Z",
+    "expirationDate": "2026-05-15T05:20:16.198Z",
+    "isForIosSimulator": false,
+    "metrics": {
+      "buildWaitTime": 109,
+      "buildQueueTime": 43121,
+      "buildDuration": 13505
+    }
+  },
+  {
+    "id": "86bd4d9e-1e59-4095-b809-a2111d3aa940",
+    "status": "ERRORED",
+    "platform": "ANDROID",
+    "error": {
+      "errorCode": "UNKNOWN_ERROR",
+      "message": "Unknown error. See logs of the Install dependencies build phase for more information."
+    },
+    "artifacts": {},
+    "fingerprint": {
+      "id": "019d8f46-b7ca-7e3b-b76b-693d72c37bd2",
+      "hash": "9fc23156b84790edb0c56ee2eb1768c96830676c"
+    },
+    "initiatingActor": {
+      "id": "cd56efd3-e077-4c6a-b0b7-2b6435bedd84",
+      "displayName": "alphawolf3382"
+    },
+    "logFiles": [
+      "https://job-logs.eascdn.net/production/86bd4d9e-1e59-4095-b809-a2111d3aa940/1776225269837-74eddd6b-2edc-492b-9bf8-c447704c0858.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=40a6f7a4396ce71fdc8cc3554a5e628722a9e0872976196f95b645504d6b5ce64fa3c75a5553fcc74404a07b719c813c60100a8186db1a5d7d2466d7ef0930d3953445dab685004f0df44f91ea758cd11f3cd741704c5d34b6478f46c5bb8a87c1ab35c877d55f18b4c96d86301c42db9bf0ccc0960fcd4df1bef22173de33c1b0e77da646f67b6a78566c50a518cfbc3f4fcd29297fc32bebbfca4e813b8d1bb4966a881ec63e1d7092868c5e0918d25052f686e07d11b2c5ae22dc9008946a68192bc795e66e123311f9e42449f53938fc3e546876024b7735b7c6caac4d759a70cd75b0bac2c5e77aaa863c0fa6d2e2ea3229fc3946641e45ad9bb08f5366",
+      "https://job-logs.eascdn.net/production/86bd4d9e-1e59-4095-b809-a2111d3aa940/1776225271820-24ccc0d8-73f0-4178-8259-d7f716456abf.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=717378c89c916a3709ce4643b1132d7fcd5bf7ca1715fcc816d41882a199f7fa856cf9d3bfd18fece73b22280e47789003096af05acfcc800a696c89b67adbaf8f300463d911ae355d3a4005646829fb95487ed08d7e53c21048b49dfdcf8a228e333dca0c8ee2ddcd3bffd6618ecf6c642cc047ab668dd3634f724dcf6d989dfa229f808273009fc60eb94e6318ea77f761441277546c3f2c829a1d1831c4d40847235282c54c32d4fd31bf46596dfde8809b8020f6c853866d768734a984a44072f4b3dfd51a774e4400545925bc791cd4a77939f9b6c08243262aecb7aef055ec5ab4b9251cee038ca43300fb02a1d17e8eeedf580c3f252c3c5cfcca30c4",
+      "https://job-logs.eascdn.net/production/86bd4d9e-1e59-4095-b809-a2111d3aa940/1776225272234-8413d4d0-f6fb-4f76-9daa-b9707f05e0c2.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=7108141b9ea2fa4c2c223090ed9b079c0b0fd068a98c00f62551a24692db9c67435cc3ecf61356064f9503362f4b13f05093f34da508c8aede124150f4577c7f6ca710e7c63ae061d389d4864e1a2418c4fecea3e0cf2d934bf728ab4248cef677ebdd01747ef8965edb96ec732343640faad81b9072a7df4638de9e361e3618934139492babcac32153358982b2b7a4d2a091e95bbb3e9309bea3e6d732e16b2b239f13df619caf4dd7b67989a57723c4187f9c12e68ba0569877219bf1ad044a7d396d9e26b8eef125dc05b82b437030f82ec225844cc941b34f425495be50da39341dc083b5d2d7f173657294b0334c7aa896e8b92b3f20d6c70e965db02a",
+      "https://job-logs.eascdn.net/production/86bd4d9e-1e59-4095-b809-a2111d3aa940/1776225272461-07010212-f655-4df3-b391-936eaf1094b7.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=717dc1339f4530f2bc5d5c8bdbd8198bbd1ccd957426060a8353c2e9fdeabeee9d2b7e389adf130fca0fad49428af197dba0e952622a3f0268767bff60ec089e70510c8a111abb438aebafb1e7a46146aacb1a4f46652cd81e580d043de4c7f0a5c789d51d9137d82a7fd1d1d30bb685028cf5ea36f5bcfaeae74654c79a9649c035ac250983ad4a7e60ce70fe5f6774716f55d2f41681a37fc1d0851ae4083b2c587b8a785e1f4c59a913d98ff40ec83b50ea816ae7cae000e84b9ae5ddf0700ecc57662516f24dbdd9f4b4f91e8acff491e3532ce1c156597aecfd1d2d4cb9182c3dcf4473b3dc6d56eec412adb40db8f6fa46302d7208ac44d02ff3cf17a5"
+    ],
+    "project": {
+      "id": "67cebb38-a773-4143-a639-e2b99efbb441",
+      "name": "gita",
+      "slug": "gita",
+      "ownerAccount": {
+        "id": "498a5c82-8840-4882-81f1-abddc3bf2a07",
+        "name": "alphawolf3382"
+      }
+    },
+    "distribution": "STORE",
+    "buildProfile": "production",
+    "sdkVersion": "55.0.0",
+    "appVersion": "1.0.1",
+    "appBuildVersion": "7",
+    "gitCommitHash": "fc18c18da95a997180002edcaf24ef496c276e0c",
+    "gitCommitMessage": "feat: implement cloud audio caching and project updates",
+    "priority": "HIGH",
+    "createdAt": "2026-04-15T03:54:29.678Z",
+    "updatedAt": "2026-04-15T07:01:46.076Z",
+    "completedAt": "2026-04-15T03:55:36.118Z",
+    "expirationDate": "2026-05-15T03:54:29.698Z",
+    "isForIosSimulator": false,
+    "metrics": {
+      "buildWaitTime": 77,
+      "buildQueueTime": 52379,
+      "buildDuration": 13666
+    }
+  },
+  {
+    "id": "37ddd90e-e4e7-4bff-b27b-074dacf80d05",
+    "status": "FINISHED",
+    "platform": "ANDROID",
+    "artifacts": {
+      "buildUrl": "https://expo.dev/artifacts/eas/7U83rPo7o6pvoTYH4asKaP.apk",
+      "applicationArchiveUrl": "https://expo.dev/artifacts/eas/7U83rPo7o6pvoTYH4asKaP.apk"
+    },
+    "fingerprint": {
+      "id": "019d77d7-e1c4-71c8-a05f-7963ca25e959",
+      "hash": "6f47f4ab5090823e23890efba4029224eeb505d3"
+    },
+    "initiatingActor": {
+      "id": "cd56efd3-e077-4c6a-b0b7-2b6435bedd84",
+      "displayName": "alphawolf3382"
+    },
+    "logFiles": [
+      "https://job-logs.eascdn.net/production/37ddd90e-e4e7-4bff-b27b-074dacf80d05/1775832130265-44d3c208-44ab-4351-b2ba-efee9140abab.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=c3d57f03f8334175a32ae17fc7205c8e1fdca51ca30756efa69ae1594fa3e792dc16d53e5b12f5828686821513d1550c81b3d1725e0eb3b7af9d47bef6ae5837b9c44c2672bf6c24337b902f9e78094bdfb93466eeac9f4a100563bfd73af6f726c8772c457bdca2800ac1b4f30dee9520c81b228b1d7045522db86d99899451fa621fab147d7332ae069fb65ad80d49b9f02bc14376be74b2a6c7183c30d5c8ed0554af298b5d5338922d5109f38512498ad6d23739be706c7b08cd0e9ac25bab9e85833f76b3ed8b9b764bac2d78332209041ee4853c54472c4c9bd2c6ad53bd124dce566467a73f4fda7505f0d3fd7463d0b51cdc966a17e4b66fef10b4bb",
+      "https://job-logs.eascdn.net/production/37ddd90e-e4e7-4bff-b27b-074dacf80d05/1775836766930-e13c90bf-a134-42e7-9fb2-156cea0fd29e.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=bcd9d9852d4c3c83f96b16f13e38a2d14cbc8524cee91c265a00e505f77af68fcc481c29209449556281ffc9c7fe16fcd54302253255dd58722498234ab8a7499f0e8b9f4139faf90a877b94ba491eb3bce00706372f859742a4e15e042184864ad2a0054965ac430e15861a727d135ea8dfc8560bd79fe8f98dcfa6eecaffc760eabbce0b926e9b963b7a50ae89a0f248cf139f6998d0fcdcaaf35eb5373e3326d9edd8f60fe62eac19f7352dbd9a5cbe0488cc17c101b64795e8ca767c2a7484563f68214de319c1356c6cad8dfed9f1289c3bea65f460cd15a32d285b90b0924fef0bd61c31bab8ea209923f5f7dcedbced13f391c2eac96a89e262ecb335",
+      "https://job-logs.eascdn.net/production/37ddd90e-e4e7-4bff-b27b-074dacf80d05/1775836767148-5f0279b1-9fd9-49af-8382-316a1ab7ce4e.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=3d7eab494e984f9210a1eb3ee1e5a95a8e30148aec41f249cd68ebd34b6f01b276f46fbcb9d4f27e9e61ecd8146c10729a492f8900da8073e60ce5c900e2c0fc996200f4f5d21a002602fc6938007aa8c59c47ea4c3c757624bf6fe9f1c4d44883976ec20358790a906b34eafd883c29d954e08db66f388d6b600c30d883ec6f84ae1514d61eeb0ed5829df2d3a8c9405348b8b71f4ca6c3d437eccc4006d1321661e973445fecd86439114c9a1209f292cbc35d5612c9d4bcf59ef5a29570d5db63d2213f2a886d3a2db2283827e65a8dc4a92d621c39100071acb54a71fe6b191a38ab9f26752acbdd820421e87b9d64024e08520ada89bdd64b63ad703896",
+      "https://job-logs.eascdn.net/production/37ddd90e-e4e7-4bff-b27b-074dacf80d05/1775836767339-df6dc4ac-9425-41e1-a57f-57adfe70612a.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260415%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260415T160411Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=c43f2d42ea8d1c02a1a90d398d0d741d9f818944a9b499d19d418691530e74160e319a1d003eb02286cd8d09aec0813cf4726d6ad4ec3ba18b8b145ac2db2214fa92b57effd927512052e8e0a3a95b1b40735183d1a091269607420f755cab113da62d1a0d9811139c9b53d158a3743bc157a1e3f51e11006b000643ba2297579c1fd7e3890a8d68da2278555343826252da544fec954ff74f4622213e24d0b933131a9f2f0132005b9f9ac8c76db8568dbc451c906ebce3c8e77796b775f288c2cde05b328fd9bbca0e1e930c8e6c6ff8b89caf9c66c6814905cb3252497122a01eace8a54715fe82db8d3dceb039d4682bbcef8525df34fed6c80115b2957a"
+    ],
+    "project": {
+      "id": "67cebb38-a773-4143-a639-e2b99efbb441",
+      "name": "gita",
+      "slug": "gita",
+      "ownerAccount": {
+        "id": "498a5c82-8840-4882-81f1-abddc3bf2a07",
+        "name": "alphawolf3382"
+      }
+    },
+    "distribution": "INTERNAL",
+    "buildProfile": "preview",
+    "sdkVersion": "54.0.0",
+    "appVersion": "1.0.0",
+    "appBuildVersion": "1",
+    "gitCommitHash": "e7c8b719a32e0855510175f3391ca600fc81ce2c",
+    "gitCommitMessage": "feat: Dark premium UX for sloka reader, strip all author attributions from data",
+    "priority": "NORMAL",
+    "createdAt": "2026-04-10T14:42:09.885Z",
+    "updatedAt": "2026-04-10T20:00:11.392Z",
+    "completedAt": "2026-04-10T16:09:46.613Z",
+    "expirationDate": "2026-04-24T14:42:09.966Z",
+    "isForIosSimulator": false,
+    "metrics": {
+      "buildWaitTime": 270,
+      "buildQueueTime": 4681324,
+      "buildDuration": 572675
+    }
+  }
+]

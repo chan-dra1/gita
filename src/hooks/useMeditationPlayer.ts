@@ -302,11 +302,19 @@ export function useMeditationPlayer() {
     updateState({ status: 'idle', queue: [], currentIndex: 0, progress: 0 });
   }, []);
 
+  const skipTo = useCallback(async (index: number) => {
+    const { queue, repeatCount, listeningMode } = stateRef.current;
+    if (index < 0 || index >= queue.length) return;
+    await stopAudio();
+    playNextStage(index, 'playing_sanskrit', queue, 1, repeatCount, listeningMode);
+  }, [playNextStage]);
+
   return {
     ...state,
     startSession,
     pause,
     resume,
-    stop
+    stop,
+    skipTo,
   };
 }

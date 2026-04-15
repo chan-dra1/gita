@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, ImageBackground, StyleSheet, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 
 interface VerseCardProps {
   sanskrit: string;
@@ -55,6 +56,11 @@ export const VerseCard: React.FC<VerseCardProps> = ({ sanskrit, translation, cha
 
         {/* Digital Signature Branding (Subtle) */}
         <View style={s.signatureContainer}>
+          <View style={s.storeBadges}>
+            <Ionicons name="logo-apple" size={16} color="#FFFFFF" opacity={0.7} />
+            <Ionicons name="logo-google-playstore" size={16} color="#FFFFFF" opacity={0.7} />
+          </View>
+          <View style={s.signatureDot} />
           <Text style={s.signatureLabel}>THY GITA</Text>
           <View style={s.signatureDot} />
           <Text style={s.signatureApp}>THE GITA APP</Text>
@@ -109,7 +115,7 @@ const s = StyleSheet.create({
     marginBottom: 50,
   },
   sanskritText: {
-    color: '#FFFFFF',
+    color: '#D4A44C',
     fontSize: 42,
     lineHeight: 70,
     textAlign: 'center',
@@ -126,7 +132,7 @@ const s = StyleSheet.create({
     marginBottom: 80,
   },
   translationText: {
-    color: '#D4D4D4',
+    color: '#FFFFFF',
     fontSize: 28,
     lineHeight: 46,
     textAlign: 'center',
@@ -151,8 +157,13 @@ const s = StyleSheet.create({
     right: 50,
     flexDirection: 'row',
     alignItems: 'center',
-    opacity: 0.35,
+    opacity: 0.5,
     gap: 8,
+  },
+  storeBadges: {
+    flexDirection: 'row',
+    gap: 6,
+    marginRight: 4,
   },
   signatureLabel: {
     color: '#D4A44C',

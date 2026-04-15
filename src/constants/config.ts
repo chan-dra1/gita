@@ -8,15 +8,15 @@ import { TTSProviderName } from '../types';
  */
 export const Config = {
     // ─── Gemini AI ─────────────────────────────────────────────
-    GEMINI_API_KEY: process.env.EXPO_PUBLIC_GEMINI_API_KEY || 'AIzaSyA8Sk8Z5eF1OjwzrzxPHjTXEpnmKwR6N3E',
+    GEMINI_API_KEY: process.env.EXPO_PUBLIC_GEMINI_API_KEY || '',
     GEMINI_MODEL: 'gemini-2.0-flash', // fast + cheap
 
     // ─── TTS Provider ─────────────────────────────────────────
     TTS_PROVIDER: 'google' as TTSProviderName,
-    TTS_API_KEY: process.env.EXPO_PUBLIC_TTS_API_KEY || 'AIzaSyAidgMX7t1VryZFNKbG-8Mw8hfbCDb9jG8',
+    TTS_API_KEY: process.env.EXPO_PUBLIC_TTS_API_KEY || '',
 
     // ElevenLabs-specific (only if TTS_PROVIDER === 'elevenlabs')
-    ELEVENLABS_VOICE_ID: process.env.EXPO_PUBLIC_ELEVENLABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM', // 'Rachel' - default
+    ELEVENLABS_VOICE_ID: process.env.EXPO_PUBLIC_ELEVENLABS_VOICE_ID || '',
 
     // ─── Audio CDN (pre-generated static assets) ──────────────
     AUDIO_CDN_URL: 'https://gita-rouge-tau.vercel.app/audio',

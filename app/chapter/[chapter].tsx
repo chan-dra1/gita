@@ -71,8 +71,7 @@ export default function ChapterDetailScreen() {
       chapterId,
       verseTexts,
       'english',
-      apiKey,
-      (done, total) => setAudioProgress({ done, total })
+      (done: number, total: number) => setAudioProgress({ done, total })
     ).then(() => {
       setAudioProgress(prev => prev ? { ...prev, done: prev.total } : null);
     }).catch(() => {});

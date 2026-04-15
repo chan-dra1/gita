@@ -62,4 +62,6 @@ The app operates on a **Hard Paywall** model with a 15-day complimentary trial f
 - [x] **Hard Paywall**: Mandatory gateway implemented.
 - [x] **UI Polish**: Settings merged, Tabs removed for Vertical Scroll.
 - [x] **Web Deployment**: LIVE.
-- [ ] **Android Production**: Build-Ready (Pending final EAS cloud run).
+- [x] **Web QA automation**: Playwright smoke tests (`npm run test:e2e:ci`) against static `dist/` export.
+- [x] **EAS secrets hygiene**: Production API keys removed from `eas.json`; use Expo project secrets / `.env.example` for `EXPO_PUBLIC_*`.
+- [ ] **Android Production**: EAS `preview` APK — run `eas build --platform android --profile preview` after fixes (Gradle: removed macOS-only `nodeExecutableAndArgs` from `android/gradle.properties` so Linux EAS agents can run Metro).

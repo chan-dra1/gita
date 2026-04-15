@@ -17,13 +17,17 @@ export default function OnboardingStep1() {
       <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" translucent />
       <SafeAreaView style={styles.safeArea}>
         
-        {/* Header */}
-        <View style={styles.header}>
+        {/* Progress dots */}
+        <View style={styles.progressContainer}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#D4A44C" />
+            <Ionicons name="arrow-back" size={22} color="#D4A44C" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Onboarding</Text>
-          <View style={{ width: 40 }} />
+          <View style={styles.dotsRow}>
+            {[0,1,2,3,4,5,6,7].map(i => (
+              <View key={i} style={[styles.dot, i === 0 && styles.dotActive]} />
+            ))}
+          </View>
+          <View style={{ width: 38 }} />
         </View>
 
         {/* Scrollable Content */}
@@ -107,16 +111,14 @@ export default function OnboardingStep1() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0D0D0D' },
   safeArea: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 8,
+  backButton: { padding: 8 },
+  progressContainer: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8,
   },
-  backButton: { padding: 8, marginLeft: -8 },
-  headerTitle: { fontSize: 16, fontWeight: '600', color: '#D4A44C', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  dotsRow: { flexDirection: 'row', gap: 6 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.25)' },
+  dotActive: { width: 18, backgroundColor: '#D4A44C' },
   titleContainer: { marginTop: 32, marginBottom: 32 },
   mainTitle: { fontSize: 32, fontWeight: '800', color: '#D4A44C', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', lineHeight: 40, marginBottom: 12 },
   subtitle: { fontSize: 15, color: '#E0D5C5', lineHeight: 24 },

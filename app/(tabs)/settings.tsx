@@ -86,10 +86,6 @@ export default function SettingsScreen() {
   // Global Community
   const [globalSankalpa, setGlobalSankalpa] = useState(0);
 
-  // AI Integration
-  const [claudeKey, setClaudeKey] = useState('');
-  const [showAiModal, setShowAiModal] = useState(false);
-  const [editAiKey, setEditAiKey] = useState('');
 
   const loadStats = useCallback(async () => {
     try {
@@ -142,10 +138,6 @@ export default function SettingsScreen() {
       setGlobalSankalpa(count);
     });
 
-    // Load AI Key
-    AsyncStorage.getItem('claude_api_key').then(key => {
-      if (key) setClaudeKey(key);
-    });
 
     return () => unsubscribe();
   }, [loadStats]);
@@ -153,12 +145,9 @@ export default function SettingsScreen() {
   const handleThemeToggle = () => {
     Alert.alert(
       "Theme Mode",
-      "Select your preferred appearance",
+      "Dark Mode is the current default.\nLight Mode is coming soon in a future update!",
       [
-        { text: "Light Mode", onPress: () => setMode('light') },
-        { text: "Dark Mode", onPress: () => setMode('dark') },
-        { text: "System Default", onPress: () => setMode('system') },
-        { text: "Cancel", style: "cancel" }
+        { text: "OK", style: "cancel" }
       ]
     );
   };
@@ -176,11 +165,6 @@ export default function SettingsScreen() {
     setShowNameModal(false);
   };
 
-  const handleSaveAiKey = async () => {
-    await AsyncStorage.setItem('claude_api_key', editAiKey.trim());
-    setClaudeKey(editAiKey.trim());
-    setShowAiModal(false);
-  };
 
   const handleDharmaModeToggle = async (value: boolean) => {
     if (value && blockedApps.length === 0) {
@@ -433,17 +417,6 @@ export default function SettingsScreen() {
               desc="Verses read worldwide by the community"
               iconColor="#10B981"
               value={globalSankalpa > 0 ? globalSankalpa.toLocaleString() : '...'}
-            />
-            <SettingRow 
-              icon="key" 
-              label="Claude API Key" 
-              desc="Attach your own Anthropic key for deep AI Insights"
-              iconColor="#E8751A"
-              value={claudeKey ? "Added" : "None"}
-              onPress={() => {
-                setEditAiKey(claudeKey);
-                setShowAiModal(true);
-              }}
               isLast
             />
           </View>
@@ -484,7 +457,7 @@ export default function SettingsScreen() {
             <SettingRow 
               icon="color-palette" 
               label="App Theme" 
-              value={mode === 'light' ? 'Light' : mode === 'dark' ? 'Dark' : 'System'}
+              value="Dark (Coming Soon: Light)"
               iconColor="#8B5CF6"
               onPress={handleThemeToggle} 
             />
@@ -647,55 +620,73 @@ export default function SettingsScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitleLarge}>{t('howGitaWorks', language)}</Text>
               <TouchableOpacity onPress={() => setShowHowItWorks(false)} style={styles.modalClose}>
-                <Ionicons name="close" size={24} color="#1A1A1A" />
+                <Ionicons name="close" size={24} color="#FFF" />
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
-              <Text style={styles.modalSectionTitle}>Your Privacy</Text>
+              
+              <Text style={styles.modalSectionTitle}>📖 Reading Verses</Text>
               <Text style={styles.modalText}>
-                No account or sign-up is required. All your progress, saved verses, and stats are saved securely on your device. We do not track your personal information.
+                Open the Library tab to see all 18 chapters of the Bhagavad Gita. Tap any chapter to see its verses. Each verse shows the original Sanskrit, transliteration, English translation, and an extended commentary to help you understand the deeper meaning.
               </Text>
               
-              <Text style={styles.modalSectionTitle}>AI & Audio Technology</Text>
+              <Text style={styles.modalSectionTitle}>💾 Saving Your Favorites</Text>
               <Text style={styles.modalText}>
-                Gita uses advanced Artificial Intelligence to provide personalized answers based on ancient scriptures. The voice you hear is generated securely, mimicking human devotion, and the audio files are cached on your phone to save data and work offline.
+                When you find a verse that speaks to your heart, tap the bookmark icon (🔖) at the top of the verse page. It will be saved to your personal collection. You can view all saved verses anytime from Settings → Saved Slokas.
               </Text>
 
+              <Text style={styles.modalSectionTitle}>📤 Sharing Wisdom</Text>
+              <Text style={styles.modalText}>
+                Share any verse with friends and family by tapping the share button on the verse page. The verse will be shared as a beautiful card that can be posted on social media or sent via any messaging app.
+              </Text>
+
+              <Text style={styles.modalSectionTitle}>🔔 Daily Reminders</Text>
+              <Text style={styles.modalText}>
+                Set a daily reminder to read your committed verses. Go to Settings → Daily Reminder, toggle it on, and pick your preferred time. You will receive a gentle notification each day at that time reminding you to read the Gita.
+              </Text>
+
+              <Text style={styles.modalSectionTitle}>🎵 Meditation Mode</Text>
+              <Text style={styles.modalText}>
+                Listen to sacred Sanskrit chanting while you meditate. Choose from three modes: "Chant Only" (just the Sanskrit), "Chant + Meaning" (verse followed by translation), or "Deep Study" (chant with full commentary). You can also set the number of repetitions — from 1 to the sacred count of 108.
+              </Text>
+
+              <Text style={styles.modalSectionTitle}>🧘 Ask the Scholar</Text>
+              <Text style={styles.modalText}>
+                Have a question about life, dharma, or spirituality? Open "Ask the Scholar" from Settings and type your question. Our AI-powered scholar will provide wisdom based on the teachings of the Gita. It is like having a personal spiritual guide in your pocket.
+              </Text>
+
+              <Text style={styles.modalSectionTitle}>🛡️ Dharma Blocker</Text>
+              <Text style={styles.modalText}>
+                This feature helps you stay focused during your reading time by temporarily blocking distracting apps on your phone. You choose which apps to block, and they are only paused while you complete your daily verses. Available on Android only.
+              </Text>
+
+              <Text style={styles.modalSectionTitle}>🔥 Sadhana Streak</Text>
+              <Text style={styles.modalText}>
+                Track your daily reading consistency with the Sadhana Streak calendar. Every day you read your committed number of verses, your streak grows. This is a beautiful visual reminder of your spiritual dedication.
+              </Text>
+
+              <Text style={styles.modalSectionTitle}>🌙 Daily Intent</Text>
+              <Text style={styles.modalText}>
+                Tell the app how you are feeling today, and it will recommend a verse from the Gita that matches your mood. Whether you feel anxious, grateful, lost, or peaceful — the Gita has wisdom for every emotion.
+              </Text>
+
+              <Text style={styles.modalSectionTitle}>🔒 Your Privacy</Text>
+              <Text style={styles.modalText}>
+                All your progress, saved verses, and reading history are stored securely on your device. We do not track your personal information or sell your data. Your spiritual journey is yours alone.
+              </Text>
+
+              <Text style={styles.modalSectionTitle}>📚 Credits & Sources</Text>
+              <Text style={styles.modalText}>
+                The Sanskrit verses and translations in this app are sourced from publicly available texts including the IIT Kanpur Gitasupersite and traditional Gita commentaries. Extended commentaries are inspired by the works of Adi Shankaracharya, Ramanujacharya, and other revered acharyas. AI-generated content is reviewed for accuracy and faithfulness to the original teachings.
+              </Text>
+
+              <View style={{ height: 40 }} />
             </ScrollView>
           </View>
         </View>
       </Modal>
 
-      {/* AI Key Modal */}
-      <Modal visible={showAiModal} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Set Claude API Key</Text>
-            <Text style={{color: colors.textSecondary, fontSize: 13, textAlign: 'center', marginBottom: 20}}>
-              Provide your own Anthropic key to unlock deep spiritual guidance in the "Ask Scholar" feature. Costs are billed directly to your Anthropic account.
-            </Text>
-            <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
-              <TextInput
-                style={[styles.textInput, { color: colors.text }]}
-                value={editAiKey}
-                onChangeText={setEditAiKey}
-                placeholder="sk-ant-api03-..."
-                autoFocus
-                placeholderTextColor={colors.textSecondary}
-                autoCapitalize="none"
-              />
-            </View>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity onPress={() => setShowAiModal(false)} style={styles.modalButton}>
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleSaveAiKey} style={[styles.modalButton, styles.modalButtonPrimary, { backgroundColor: colors.primary }]}>
-                <Text style={styles.modalButtonPrimaryText}>Save</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+
 
       {/* App Selector Modal */}
       <AppSelectorModal

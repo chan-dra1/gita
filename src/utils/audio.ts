@@ -1,6 +1,7 @@
 import * as Speech from 'expo-speech';
 import { Audio } from 'expo-av';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
+import { Platform } from 'react-native';
 import type { AudioLanguage } from '../types';
 import { Config } from '../constants/config';
 
@@ -14,6 +15,7 @@ const getLocalAudioDir = () => `${FileSystem.cacheDirectory}${Config.AUDIO_CACHE
  * Ensures the audio cache directory exists.
  */
 async function ensureDirExists(): Promise<void> {
+  if (Platform.OS === 'web') return;
   const dirInfo = await FileSystem.getInfoAsync(getLocalAudioDir());
   if (!dirInfo.exists) {
     await FileSystem.makeDirectoryAsync(getLocalAudioDir(), { intermediates: true });
@@ -80,6 +82,10 @@ export async function cacheAndPlayAudio(
 ): Promise<any> {
   await stopAudio();
   
+  if (Platform.OS === 'web') {
+    return playTTS(text, language, onFinish, onError);
+  }
+
   try {
     await ensureDirExists();
     const { remoteUri, localUri } = getAudioPaths(chapter, verse, language);
@@ -94,8 +100,6 @@ export async function cacheAndPlayAudio(
             const { uri } = await FileSystem.downloadAsync(remoteUri, localUri);
             finalUri = uri;
         } catch (downloadErr) {
-            console.warn(`[Audio] Cloud fetch failed, falling back to TTS:`, downloadErr);
-            // Fall back to TTS below
             return playTTS(text, language, onFinish, onError);
         }
     }
@@ -204,6 +208,8 @@ export async function preDownloadChapterAudio(
   language: AudioLanguage = 'english',
   onProgress?: (downloaded: number, total: number) => void
 ): Promise<void> {
+  if (Platform.OS === 'web') return;
+  
   await ensureDirExists();
   const total = verseTexts.length;
   
@@ -227,3 +233,20 @@ export function cancelPreDownload(chapter: number): void {
   // Simple implementation doesn't support cancellation yet
 }
 
+/**
+ * Checks if audio for a specific verse + language is already cached locally.
+ */
+export async function hasCachedAudio(
+  chapter: number,
+  verse: number,
+  language: AudioLanguage
+): Promise<boolean> {
+  if (Platform.OS === 'web') return false;
+  try {
+    const { localUri } = getAudioPaths(chapter, verse, language);
+    const info = await FileSystem.getInfoAsync(localUri);
+    return info.exists;
+  } catch {
+    return false;
+  }
+}

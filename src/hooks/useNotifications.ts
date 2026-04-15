@@ -58,14 +58,14 @@ export function useNotifications(): UseNotificationsReturn {
             setIsPermissionGranted(false);
             return;
         }
-        const { status } = await Notifications.getPermissionsAsync();
-        setIsPermissionGranted(status === 'granted');
+        const permResult = await Notifications.getPermissionsAsync();
+        setIsPermissionGranted(!!(permResult as any).granted);
     };
 
     const requestPermission = useCallback(async (): Promise<boolean> => {
         if (!Notifications) return false;
-        const { status } = await Notifications.requestPermissionsAsync();
-        const granted = status === 'granted';
+        const permResult2 = await Notifications.requestPermissionsAsync();
+        const granted = !!(permResult2 as any).granted;
         setIsPermissionGranted(granted);
         return granted;
     }, []);

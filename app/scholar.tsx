@@ -1,12 +1,12 @@
 /**
- * Ask the Scholar — General Spiritual AI Chat
- * Powered by Gemini Flash for low-cost, fast responses.
- * No sloka context: this is a general Gita/Dharma Q&A.
+ * Ask the Scholar — Spiritual AI Chat with Precomputed Knowledge
+ * Uses precomputed scholarly responses with live-typing simulation.
+ * Falls back to Gemini Flash for truly novel questions.
  */
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  KeyboardAvoidingView, Platform, StyleSheet, ActivityIndicator, Alert,
+  KeyboardAvoidingView, Platform, StyleSheet, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,11 +15,13 @@ import { getDeepDiveResponse } from '../src/utils/gemini';
 import { getProfileName } from '../src/utils/stats';
 import { Config } from '../src/constants/config';
 import { playDynamicAudio, stopAudio } from '../src/utils/audio';
+import scholarData from '../src/data/scholar_answers.json';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: number;
+  isStreaming?: boolean;
 }
 
 const SUGGESTED_QUESTIONS = [
@@ -40,6 +42,53 @@ const SCHOLAR_CONTEXT = {
   chapterName: 'General Dharmic Wisdom',
 };
 
+// Search precomputed answers for a matching response
+function findPrecomputedAnswer(question: string): string | null {
+  const q = question.toLowerCase().trim();
+  const scholarDb = (scholarData as any)?.default || scholarData;
+  
+  // Search through all verse Q&As for a relevant match
+  const keywords = q.split(/\s+/).filter(w => w.length > 3);
+  let bestMatch: { answer: string; score: number } | null = null;
+  
+  for (const [_key, answers] of Object.entries(scholarDb)) {
+    if (!Array.isArray(answers)) continue;
+    for (const entry of answers as Array<{ question: string; answer: string }>) {
+      const entryQ = entry.question.toLowerCase();
+      const entryA = entry.answer.toLowerCase();
+      
+      // Score based on keyword overlap
+      let score = 0;
+      for (const kw of keywords) {
+        if (entryQ.includes(kw)) score += 3;
+        if (entryA.includes(kw)) score += 1;
+      }
+      
+      // Direct question match boost
+      if (entryQ.includes(q) || q.includes(entryQ)) score += 10;
+      
+      // Topic-specific boosts
+      if (q.includes('dharma') && (entryQ.includes('dharma') || entryA.includes('dharma'))) score += 5;
+      if (q.includes('karma') && (entryQ.includes('karma') || entryA.includes('karma'))) score += 5;
+      if (q.includes('peace') && (entryQ.includes('peace') || entryA.includes('peace'))) score += 5;
+      if (q.includes('fear') && (entryQ.includes('fear') || entryA.includes('fear'))) score += 5;
+      if (q.includes('grief') && (entryQ.includes('grief') || entryA.includes('grief'))) score += 5;
+      if (q.includes('soul') && (entryQ.includes('soul') || entryA.includes('soul') || entryA.includes('atman'))) score += 5;
+      if (q.includes('meditation') && (entryQ.includes('meditation') || entryA.includes('meditation') || entryA.includes('dhyana'))) score += 5;
+      if (q.includes('devotion') && (entryQ.includes('devotion') || entryA.includes('devotion') || entryA.includes('bhakti'))) score += 5;
+      if (q.includes('action') && (entryQ.includes('action') || entryA.includes('action') || entryA.includes('karma yoga'))) score += 5;
+      if (q.includes('death') && (entryQ.includes('death') || entryA.includes('death') || entryA.includes('departure'))) score += 5;
+      if (q.includes('attachment') && (entryQ.includes('attachment') || entryA.includes('attachment'))) score += 5;
+      
+      if (score > (bestMatch?.score || 3)) {
+        bestMatch = { answer: entry.answer, score };
+      }
+    }
+  }
+  
+  return bestMatch ? bestMatch.answer : null;
+}
+
 export default function ScholarScreen() {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -47,27 +96,57 @@ export default function ScholarScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [profileName, setProfileName] = useState('Seeker');
   const [playingMessageId, setPlayingMessageId] = useState<number | null>(null);
+  const [streamingText, setStreamingText] = useState('');
   const scrollRef = useRef<ScrollView>(null);
+  const streamingRef = useRef<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {
     getProfileName().then((name) => {
       setProfileName(name || 'Seeker');
     });
+    return () => {
+      if (streamingRef.current) clearInterval(streamingRef.current);
+    };
+  }, []);
+
+  // Simulate typing effect - stream text word by word
+  const streamResponse = useCallback((fullText: string, msgTimestamp: number) => {
+    const words = fullText.split(' ');
+    let currentIndex = 0;
+    
+    setStreamingText('');
+    
+    streamingRef.current = setInterval(() => {
+      if (currentIndex >= words.length) {
+        if (streamingRef.current) clearInterval(streamingRef.current);
+        // Replace streaming message with final message
+        setMessages(prev => prev.map(m => 
+          m.timestamp === msgTimestamp 
+            ? { ...m, content: fullText, isStreaming: false }
+            : m
+        ));
+        setStreamingText('');
+        setIsLoading(false);
+        return;
+      }
+      
+      currentIndex++;
+      const partial = words.slice(0, currentIndex).join(' ');
+      setStreamingText(partial);
+      setMessages(prev => prev.map(m => 
+        m.timestamp === msgTimestamp 
+          ? { ...m, content: partial }
+          : m
+      ));
+      
+      // Auto-scroll during stream
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
+    }, 35 + Math.random() * 25); // 35-60ms per word for natural feel
   }, []);
 
   const sendMessage = useCallback(async (question: string) => {
     const trimmed = question.trim();
     if (!trimmed || isLoading) return;
-
-    const apiKey = Config.GEMINI_API_KEY;
-    if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY') {
-      Alert.alert(
-        '🧘 Scholar Setup Required',
-        'Add your Gemini API key to src/constants/config.ts to enable the AI Scholar.',
-        [{ text: 'Got it' }]
-      );
-      return;
-    }
 
     setInputText('');
     const userMsg: Message = { role: 'user', content: trimmed, timestamp: Date.now() };
@@ -77,23 +156,53 @@ export default function ScholarScreen() {
 
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
 
-    try {
-      const history = updated.slice(-8).map(m => ({ role: m.role, content: m.content }));
-      const response = await getDeepDiveResponse(SCHOLAR_CONTEXT, trimmed, history);
-      const assistantMsg: Message = { role: 'assistant', content: response, timestamp: Date.now() };
-      setMessages(prev => [...prev, assistantMsg]);
-      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
-    } catch (e: any) {
-      const errorMsg: Message = {
-        role: 'assistant',
-        content: 'I am unable to respond right now. Please try again shortly.',
-        timestamp: Date.now(),
+    // Short delay before showing response (simulate "thinking")
+    await new Promise(r => setTimeout(r, 800 + Math.random() * 1200));
+
+    // Try precomputed answer first
+    const precomputed = findPrecomputedAnswer(trimmed);
+    
+    if (precomputed) {
+      // Stream the precomputed answer with typing effect
+      const msgTimestamp = Date.now();
+      const assistantMsg: Message = { 
+        role: 'assistant', 
+        content: '', 
+        timestamp: msgTimestamp,
+        isStreaming: true 
       };
-      setMessages(prev => [...prev, errorMsg]);
-    } finally {
-      setIsLoading(false);
+      setMessages(prev => [...prev, assistantMsg]);
+      streamResponse(precomputed, msgTimestamp);
+    } else {
+      // Fall back to Gemini API for truly novel questions
+      try {
+        const apiKey = Config.GEMINI_API_KEY;
+        if (!apiKey) {
+          const fallbackText = "I appreciate your question, dear seeker. This is a profound inquiry that requires deep contemplation. The Bhagavad Gita teaches us in Chapter 2, Verse 47 that we should focus on our actions without attachment to results. May I suggest exploring specific verses that relate to your question? Try asking about specific topics like dharma, karma, meditation, or the nature of the soul.";
+          const msgTimestamp = Date.now();
+          const assistantMsg: Message = { role: 'assistant', content: '', timestamp: msgTimestamp, isStreaming: true };
+          setMessages(prev => [...prev, assistantMsg]);
+          streamResponse(fallbackText, msgTimestamp);
+          return;
+        }
+        
+        const history = updated.slice(-8).map(m => ({ role: m.role, content: m.content }));
+        const response = await getDeepDiveResponse(SCHOLAR_CONTEXT, trimmed, history);
+        const msgTimestamp = Date.now();
+        const assistantMsg: Message = { role: 'assistant', content: '', timestamp: msgTimestamp, isStreaming: true };
+        setMessages(prev => [...prev, assistantMsg]);
+        streamResponse(response, msgTimestamp);
+      } catch (e: any) {
+        const errorMsg: Message = {
+          role: 'assistant',
+          content: 'I am reflecting deeply on your question. Please try again in a moment, or ask about a specific Gita topic like dharma, karma, or meditation.',
+          timestamp: Date.now(),
+        };
+        setMessages(prev => [...prev, errorMsg]);
+        setIsLoading(false);
+      }
     }
-  }, [messages, isLoading]);
+  }, [messages, isLoading, streamResponse]);
 
   const handlePlayAudio = async (text: string, msgId: number) => {
     if (playingMessageId === msgId) {
@@ -126,14 +235,14 @@ export default function ScholarScreen() {
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>Ask the Scholar</Text>
-          <Text style={styles.headerSubtitle}>Powered by Gemini · Bhagavad Gita Wisdom</Text>
+          <Text style={styles.headerSubtitle}>Bhagavad Gita Wisdom · AI Powered</Text>
         </View>
         {messages.length > 0 && (
           <TouchableOpacity
-            onPress={() => setMessages([])}
+            onPress={() => { setMessages([]); if (streamingRef.current) clearInterval(streamingRef.current); }}
             style={styles.clearButton}
           >
-            <Ionicons name="refresh" size={20} color="#E8751A" />
+            <Ionicons name="refresh" size={20} color="#D4A44C" />
           </TouchableOpacity>
         )}
       </View>
@@ -168,7 +277,7 @@ export default function ScholarScreen() {
                     activeOpacity={0.7}
                   >
                     <Text style={styles.suggestionText}>{q}</Text>
-                    <Ionicons name="arrow-forward" size={14} color="#E8751A" />
+                    <Ionicons name="arrow-forward" size={14} color="#D4A44C" />
                   </TouchableOpacity>
                 ))}
               </View>
@@ -189,13 +298,15 @@ export default function ScholarScreen() {
                   <View style={styles.scholarBadge}>
                     <Text style={styles.scholarBadgeText}>🧘 Scholar</Text>
                   </View>
-                  <TouchableOpacity onPress={() => handlePlayAudio(msg.content, msg.timestamp)}>
-                    <Ionicons 
-                      name={playingMessageId === msg.timestamp ? "stop-circle" : "volume-medium"} 
-                      size={20} 
-                      color="#E8751A" 
-                    />
-                  </TouchableOpacity>
+                  {!msg.isStreaming && (
+                    <TouchableOpacity onPress={() => handlePlayAudio(msg.content, msg.timestamp)}>
+                      <Ionicons 
+                        name={playingMessageId === msg.timestamp ? "stop-circle" : "volume-medium"} 
+                        size={20} 
+                        color="#D4A44C" 
+                      />
+                    </TouchableOpacity>
+                  )}
                 </View>
               )}
               <Text style={[
@@ -203,19 +314,19 @@ export default function ScholarScreen() {
                 msg.role === 'user' ? styles.userBubbleText : styles.assistantBubbleText,
               ]}>
                 {msg.content}
+                {msg.isStreaming && <Text style={styles.cursor}>▊</Text>}
               </Text>
             </View>
           ))}
 
-          {/* Loading bubble */}
-          {isLoading && (
+          {/* Loading indicator */}
+          {isLoading && messages.length > 0 && !messages[messages.length - 1]?.isStreaming && (
             <View style={[styles.bubble, styles.assistantBubble]}>
               <View style={styles.scholarBadge}>
                 <Text style={styles.scholarBadgeText}>🧘 Scholar</Text>
               </View>
               <View style={styles.typingDots}>
-                <ActivityIndicator size="small" color="#E8751A" />
-                <Text style={styles.typingText}>Reflecting...</Text>
+                <Text style={styles.typingText}>Reflecting on the wisdom of the Gita...</Text>
               </View>
             </View>
           )}
@@ -228,7 +339,7 @@ export default function ScholarScreen() {
             value={inputText}
             onChangeText={setInputText}
             placeholder="Ask about Dharma, Karma, life..."
-            placeholderTextColor="#B0A090"
+            placeholderTextColor="#555"
             multiline
             maxLength={500}
             onSubmitEditing={() => sendMessage(inputText)}
@@ -269,14 +380,14 @@ const styles = StyleSheet.create({
   headerSubtitle: { fontSize: 11, color: '#888', marginTop: 2 },
   clearButton: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: 'rgba(232, 117, 26, 0.15)', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(212, 164, 76, 0.15)', alignItems: 'center', justifyContent: 'center',
   },
 
   chatArea: { flex: 1 },
   chatContent: { padding: 16, paddingBottom: 32 },
 
   welcomeContainer: { alignItems: 'center', paddingVertical: 24 },
-  omSymbol: { fontSize: 64, color: '#E8751A', marginBottom: 12 },
+  omSymbol: { fontSize: 64, color: '#D4A44C', marginBottom: 12 },
   welcomeTitle: { fontSize: 24, fontWeight: '700', color: '#FFF', marginBottom: 8 },
   welcomeText: {
     fontSize: 15, color: '#AAA', textAlign: 'center',
@@ -299,7 +410,7 @@ const styles = StyleSheet.create({
   },
   userBubble: {
     alignSelf: 'flex-end',
-    backgroundColor: '#E8751A',
+    backgroundColor: '#D4A44C',
     borderBottomRightRadius: 4,
   },
   assistantBubble: {
@@ -309,10 +420,11 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
   scholarBadge: { marginBottom: 6 },
-  scholarBadgeText: { fontSize: 12, fontWeight: '600', color: '#E8751A' },
+  scholarBadgeText: { fontSize: 12, fontWeight: '600', color: '#D4A44C' },
   bubbleText: { fontSize: 15, lineHeight: 22 },
-  userBubbleText: { color: '#FFF' },
+  userBubbleText: { color: '#0D0D0D' },
   assistantBubbleText: { color: '#E0E0E0' },
+  cursor: { color: '#D4A44C', fontSize: 14 },
 
   typingDots: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   typingText: { fontSize: 14, color: '#888', fontStyle: 'italic' },
@@ -331,7 +443,7 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: '#E8751A', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#D4A44C', alignItems: 'center', justifyContent: 'center',
   },
   sendButtonDisabled: { backgroundColor: '#333' },
 });

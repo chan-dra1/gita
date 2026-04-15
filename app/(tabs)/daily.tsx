@@ -8,6 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSloka } from '../../src/hooks/useSloka';
@@ -44,7 +45,7 @@ export default function DailyScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF7ED' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#0D0D0D' }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
@@ -52,94 +53,72 @@ export default function DailyScreen() {
         {/* Header */}
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: 20,
-            paddingTop: 8,
-            paddingBottom: 8,
+            paddingHorizontal: 24,
+            paddingTop: 12,
+            paddingBottom: 20,
           }}
         >
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{ padding: 4 }}
-          >
-            <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
-          </TouchableOpacity>
           <Text
             style={{
-              flex: 1,
-              textAlign: 'center',
-              fontSize: 17,
-              fontWeight: '600',
-              color: '#1A1A1A',
+              fontSize: 11,
+              fontWeight: '700',
+              color: '#D4A44C',
+              letterSpacing: 1,
             }}
           >
-            Daily Intent
+            DAILY INTENT
           </Text>
-          <View style={{ width: 32 }} />
-        </View>
-
-        {/* Decorative circle */}
-        <View
-          style={{
-            position: 'absolute',
-            top: 60,
-            right: -40,
-            width: 160,
-            height: 160,
-            borderRadius: 80,
-            backgroundColor: '#FFE8D0',
-            opacity: 0.5,
-          }}
-        />
-
-        {/* Main Question */}
-        <View style={{ paddingHorizontal: 24, marginTop: 24 }}>
           <Text
             style={{
               fontSize: 28,
-              fontWeight: '700',
-              color: '#1A1A1A',
-              lineHeight: 38,
+              fontWeight: '800',
+              color: '#FFFFFF',
+              marginTop: 4,
+              fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
             }}
           >
-            How do you feel today,{'\n'}or what are you{'\n'}seeking?
+            How do you feel today?
           </Text>
         </View>
 
+        {/* Decorative accent line */}
+        <View
+          style={{
+            marginHorizontal: 24,
+            height: 1,
+            backgroundColor: 'rgba(212, 164, 76, 0.2)',
+            marginBottom: 24,
+          }}
+        />
+
         {/* Text Input Card */}
-        <View style={{ paddingHorizontal: 24, marginTop: 28 }}>
+        <View style={{ paddingHorizontal: 24 }}>
           <View
             style={{
-              backgroundColor: '#FFF',
+              backgroundColor: '#1A1A1A',
               borderRadius: 20,
-              borderWidth: 1.5,
-              borderColor: '#F0E0CC',
+              borderWidth: 1,
+              borderColor: 'rgba(212, 164, 76, 0.15)',
               padding: 20,
               minHeight: 160,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.04,
-              shadowRadius: 8,
-              elevation: 2,
             }}
           >
             <TextInput
               style={{
                 fontSize: 16,
-                color: '#333',
+                color: '#E0D5C5',
                 lineHeight: 24,
                 flex: 1,
                 textAlignVertical: 'top',
               }}
               placeholder="Type your feelings or intentions here... e.g., 'I am feeling overwhelmed with work and need peace.'"
-              placeholderTextColor="#C0B0A0"
+              placeholderTextColor="#555555"
               multiline
               value={mood}
               onChangeText={setMood}
             />
             <View style={{ alignItems: 'flex-end', marginTop: 8 }}>
-              <Text style={{ fontSize: 18, color: '#F5C518' }}>✨</Text>
+              <Text style={{ fontSize: 18, color: '#D4A44C' }}>✨</Text>
             </View>
           </View>
         </View>
@@ -148,15 +127,14 @@ export default function DailyScreen() {
         <View style={{ paddingHorizontal: 24, marginTop: 28 }}>
           <Text
             style={{
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: '700',
-              color: '#999',
-              letterSpacing: 2,
-              textTransform: 'uppercase',
+              color: '#D4A44C',
+              letterSpacing: 1.5,
               marginBottom: 14,
             }}
           >
-            Quick-Select Moods
+            QUICK-SELECT MOODS
           </Text>
           <View
             style={{
@@ -174,17 +152,17 @@ export default function DailyScreen() {
                   paddingHorizontal: 18,
                   paddingVertical: 10,
                   borderRadius: 24,
-                  borderWidth: 1.5,
-                  borderColor: '#F0D0B0',
-                  backgroundColor: mood === m ? '#FFF3E8' : '#FFF',
+                  borderWidth: 1,
+                  borderColor: mood === m ? '#D4A44C' : 'rgba(255,255,255,0.1)',
+                  backgroundColor: mood === m ? 'rgba(212, 164, 76, 0.1)' : '#1A1A1A',
                   opacity: isLoading ? 0.6 : 1,
                 }}
               >
                 <Text
                   style={{
                     fontSize: 14,
-                    fontWeight: '500',
-                    color: '#E8751A',
+                    fontWeight: '600',
+                    color: mood === m ? '#D4A44C' : '#9CA3AF',
                   }}
                 >
                   {m}
@@ -202,12 +180,12 @@ export default function DailyScreen() {
               marginTop: 16,
               padding: 14,
               borderRadius: 12,
-              backgroundColor: '#FFF0F0',
+              backgroundColor: 'rgba(220, 50, 50, 0.1)',
               borderWidth: 1,
-              borderColor: '#FFD0D0',
+              borderColor: 'rgba(220, 50, 50, 0.3)',
             }}
           >
-            <Text style={{ fontSize: 14, color: '#CC3333' }}>{error}</Text>
+            <Text style={{ fontSize: 14, color: '#FF6B6B' }}>{error}</Text>
           </View>
         )}
 
@@ -217,14 +195,14 @@ export default function DailyScreen() {
             onPress={handleFindSloka}
             disabled={isLoading || !mood.trim()}
             style={{
-              backgroundColor: isLoading || !mood.trim() ? '#E0D0C0' : '#E8751A',
+              backgroundColor: isLoading || !mood.trim() ? '#333333' : '#D4A44C',
               paddingVertical: 18,
-              borderRadius: 20,
+              borderRadius: 12,
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 10,
-              shadowColor: '#E8751A',
+              shadowColor: '#D4A44C',
               shadowOffset: { width: 0, height: 6 },
               shadowOpacity: isLoading || !mood.trim() ? 0 : 0.3,
               shadowRadius: 16,
@@ -237,17 +215,36 @@ export default function DailyScreen() {
               <>
                 <Text
                   style={{
-                    color: '#FFF',
+                    color: isLoading || !mood.trim() ? '#666' : '#0D0D0D',
                     fontSize: 17,
                     fontWeight: '700',
                   }}
                 >
                   Find My Sloka
                 </Text>
-                <Ionicons name="book" size={20} color="#FFF" />
+                <Ionicons name="book" size={20} color={isLoading || !mood.trim() ? '#666' : '#0D0D0D'} />
               </>
             )}
           </TouchableOpacity>
+        </View>
+
+        {/* Gita Quote */}
+        <View style={{ paddingHorizontal: 24, marginTop: 40, alignItems: 'center' }}>
+          <Text
+            style={{
+              fontSize: 14,
+              fontStyle: 'italic',
+              color: '#555',
+              fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+              lineHeight: 22,
+              textAlign: 'center',
+            }}
+          >
+            "You have the right to work, but never to the fruit of work."
+          </Text>
+          <Text style={{ fontSize: 10, color: '#444', fontWeight: '700', letterSpacing: 1, marginTop: 8 }}>
+            BHAGAVAD GITA 2.47
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>

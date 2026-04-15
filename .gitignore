@@ -37,6 +37,16 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# Playwright
+test-results/
+playwright-report/
+
+# Local Gradle logs
+gradle-apk-build.log
+
+# Local Gradle user home (see scripts/android-release-apk.sh)
+.gradle-user-home/
+
 app-example
 
 # generated native folders

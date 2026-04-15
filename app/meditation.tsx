@@ -420,18 +420,56 @@ export default function MeditationScreen() {
           )}
         </View>
 
-        {/* Controls */}
+        {/* Verse label */}
+        {currentItem && (
+          <View style={s.verseNavLabel}>
+            <Text style={s.verseNavText}>
+              Ch. {currentItem.chapter} · Verse {currentItem.verse}  ·  {player.currentIndex + 1} of {player.queue.length}
+            </Text>
+          </View>
+        )}
+
+        {/* Controls — Prev | Play/Pause | Next */}
         <View style={s.controlsContainer}>
+          {/* Previous verse */}
+          <TouchableOpacity
+            onPress={() => player.skipTo(Math.max(0, player.currentIndex - 1))}
+            style={s.sideControlBtn}
+            activeOpacity={0.7}
+            disabled={player.currentIndex === 0}
+          >
+            <Ionicons
+              name="play-skip-back"
+              size={26}
+              color={player.currentIndex === 0 ? '#333' : '#CCC'}
+            />
+          </TouchableOpacity>
+
+          {/* Play / Pause */}
           <TouchableOpacity
             onPress={player.status === 'paused' ? player.resume : player.pause}
             style={s.mainControlBtn}
             activeOpacity={0.8}
           >
-            <Ionicons 
-              name={player.status === 'paused' ? "play" : "pause"} 
-              size={32} 
-              color="#0D0D0D" 
+            <Ionicons
+              name={player.status === 'paused' ? "play" : "pause"}
+              size={32}
+              color="#0D0D0D"
               style={player.status === 'paused' ? { marginLeft: 4 } : {}}
+            />
+          </TouchableOpacity>
+
+          {/* Next verse */}
+          <TouchableOpacity
+            onPress={() => player.skipTo(Math.min(player.queue.length - 1, player.currentIndex + 1))}
+            style={s.sideControlBtn}
+            activeOpacity={0.7}
+            disabled={player.currentIndex >= player.queue.length - 1}
+          >
+            <Ionicons
+              name="play-skip-forward"
+              size={26}
+              color={player.currentIndex >= player.queue.length - 1 ? '#333' : '#CCC'}
             />
           </TouchableOpacity>
         </View>
@@ -561,10 +599,31 @@ const s = StyleSheet.create({
   statusDot: { width: 6, height: 6, borderRadius: 3 },
   statusPillText: { fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' },
 
-  controlsContainer: { paddingBottom: 50, alignItems: 'center' },
+  controlsContainer: { 
+    paddingBottom: 50, 
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 32,
+  },
   mainControlBtn: { 
     width: 72, height: 72, borderRadius: 36, backgroundColor: '#D4A44C', 
     alignItems: 'center', justifyContent: 'center',
     shadowColor: '#D4A44C', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12,
+  },
+  sideControlBtn: {
+    width: 52, height: 52, borderRadius: 26,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+  },
+  verseNavLabel: {
+    alignItems: 'center',
+    paddingBottom: 16,
+    paddingHorizontal: 24,
+  },
+  verseNavText: {
+    fontSize: 12, color: '#666', fontWeight: '600',
+    letterSpacing: 0.5, textAlign: 'center',
   },
 });

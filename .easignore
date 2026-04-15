@@ -1,0 +1,15 @@
+# Keep EAS upload small; exclude generated native trees and local caches.
+modules/dharma-blocker/android/build/
+modules/dharma-blocker/android/.gradle/
+**/android/build/
+**/.gradle/
+android/app/build/
+android/build/
+android/.gradle/
+ios/Pods/
+ios/build/
+*.xcworkspace/xcuserdata/
+dist/
+web-build/
+.expo/
+node_modules/

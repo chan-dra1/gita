@@ -7,10 +7,12 @@ import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { Config } from '../../src/constants/config';
 import { saveOnboardingStep } from '../../src/utils/stats';
 
+const TRIAL_DESCRIPTION = 'Includes 14-day free trial';
+
 const FALLBACK_TIERS = [
-  { id: 'lifetime', name: 'Lifetime', description: 'One-time payment', price: '$99.99', period: '', popular: false, icon: 'infinite-outline' as const },
-  { id: 'yearly', name: 'Yearly', description: 'Includes 15-day free trial', price: '$35.88', period: 'Just $2.99/mo', popular: true, badge: 'BEST VALUE', icon: 'refresh-outline' as const },
-  { id: 'monthly', name: 'Monthly', description: 'Standard access', price: '$4.99', period: '', popular: false, icon: 'calendar-outline' as const },
+  { id: 'lifetime', name: 'Lifetime', description: TRIAL_DESCRIPTION, price: '$99.99', period: '', popular: false, icon: 'infinite-outline' as const },
+  { id: 'yearly', name: 'Yearly', description: TRIAL_DESCRIPTION, price: '$35.88', period: 'Just $2.99/mo', popular: true, badge: 'BEST VALUE', icon: 'refresh-outline' as const },
+  { id: 'monthly', name: 'Monthly', description: TRIAL_DESCRIPTION, price: '$4.99', period: '', popular: false, icon: 'calendar-outline' as const },
 ];
 
 const FEATURES = [
@@ -103,7 +105,7 @@ export default function PaywallScreen() {
       return packages.map(p => ({
         id: p.identifier,
         name: p.packageType === 'ANNUAL' ? 'Yearly' : p.packageType === 'MONTHLY' ? 'Monthly' : p.packageType === 'LIFETIME' ? 'Lifetime' : p.identifier,
-        description: p.packageType === 'ANNUAL' ? 'Includes 15-day free trial' : p.packageType === 'MONTHLY' ? 'Standard access' : 'One-time payment',
+        description: TRIAL_DESCRIPTION,
         price: p.product.priceString,
         period: p.packageType === 'ANNUAL' ? `Just ${(p.product.price / 12).toFixed(2)}/mo` : '',
         popular: p.packageType === 'ANNUAL',
@@ -225,7 +227,7 @@ export default function PaywallScreen() {
                 <Text style={styles.ctaButtonText}>BEGIN MY JOURNEY</Text>
               )}
             </TouchableOpacity>
-            <Text style={styles.cancelText}>START YOUR 15-DAY FREE TRIAL. CANCEL ANYTIME.</Text>
+            <Text style={styles.cancelText}>START YOUR 14-DAY FREE TRIAL. CANCEL ANYTIME.</Text>
           </Animated.View>
 
           {/* Footer Links */}

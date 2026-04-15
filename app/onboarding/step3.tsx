@@ -7,23 +7,23 @@ import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 const FEATURES = [
   {
     icon: 'notifications-off' as const,
-    title: 'Focus Mode During Study',
-    desc: 'When you open a verse, Dharma Blocker silences notifications and blocks distracting apps so you can read, reflect, and absorb without interruption.',
+    title: 'No Distractions While Reading',
+    desc: 'When you start reading, your phone stays quiet. No messages or alerts will disturb you until you finish your verses.',
   },
   {
     icon: 'time' as const,
-    title: 'Daily Sacred Hours',
-    desc: 'Set a fixed window each day (e.g. 6–7 AM) where your phone becomes a dedicated Gita reader. Social media, games, and news are paused until your session ends.',
+    title: 'Set Your Study Time',
+    desc: 'Pick a time each day for your Gita reading. During that time, distracting apps like social media will be paused.',
   },
   {
     icon: 'shield-checkmark' as const,
-    title: 'Gentle Redirection',
-    desc: "If you try to open a blocked app, instead of a harsh lock screen you'll see a calming verse from the Gita \u2014 turning temptation into a moment of wisdom.",
+    title: 'Gentle Reminders',
+    desc: "If you try to open a blocked app, you will see a calming verse from the Gita instead. It's a gentle nudge to stay focused.",
   },
   {
     icon: 'flame' as const,
-    title: 'Protects Your Streak',
-    desc: 'By removing digital distractions during study time, Dharma Blocker helps you stay consistent and maintain your daily reading streak.',
+    title: 'Keep Your Reading Streak',
+    desc: 'By removing distractions, this feature helps you read every day without missing a single day.',
   },
 ];
 
@@ -39,13 +39,17 @@ export default function OnboardingStep3() {
       <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" translucent />
       <SafeAreaView style={styles.safeArea}>
         
-        {/* Header */}
-        <View style={styles.header}>
+        {/* Progress dots */}
+        <View style={styles.progressContainer}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#D4A44C" />
+            <Ionicons name="arrow-back" size={22} color="#D4A44C" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Onboarding</Text>
-          <View style={{ width: 40 }} />
+          <View style={styles.dotsRow}>
+            {[0,1,2,3,4,5,6,7].map(i => (
+              <View key={i} style={[styles.dot, i === 2 && styles.dotActive]} />
+            ))}
+          </View>
+          <View style={{ width: 38 }} />
         </View>
 
         {/* Scrollable Content */}
@@ -55,20 +59,20 @@ export default function OnboardingStep3() {
           showsVerticalScrollIndicator={false}
         >
           <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.titleSection}>
-            <Text style={styles.eyebrowTitle}>THE DIGITAL SANCTUARY</Text>
+            <Text style={styles.eyebrowTitle}>STAY FOCUSED</Text>
             <Text style={styles.mainTitle}>Meet the</Text>
             <Text style={[styles.mainTitle, styles.italic]}>Dharma Blocker</Text>
             <Text style={styles.subtitle}>
-              Your phone is the biggest obstacle to consistent spiritual practice. The Dharma Blocker transforms your device from a distraction machine into a dedicated tool for Gita study.
+              Your phone can be distracting. The Dharma Blocker helps you stay focused by pausing other apps while you read the Gita. You choose which apps to pause.
             </Text>
           </Animated.View>
 
           {/* How It Works */}
           <Animated.View entering={FadeInDown.duration(500).delay(200)} style={styles.howItWorksCard}>
             <Text style={styles.howItWorksEyebrow}>HOW IT WORKS</Text>
-            <Text style={styles.howItWorksTitle}>Your phone, your rules</Text>
+            <Text style={styles.howItWorksTitle}>Simple and easy</Text>
             <Text style={styles.howItWorksDesc}>
-              Choose which apps to block during your reading time. When it's time to study, Dharma Blocker activates automatically — no willpower needed. You read your committed verses in peace, and then your apps come back.
+              Pick the apps you want to pause during study time. When it is time to read, those apps will wait. After you finish your verses, everything goes back to normal. That is it!
             </Text>
           </Animated.View>
 
@@ -106,16 +110,14 @@ export default function OnboardingStep3() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0D0D0D' },
   safeArea: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 8,
+  backButton: { padding: 8 },
+  progressContainer: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8,
   },
-  backButton: { padding: 8, marginLeft: -8 },
-  headerTitle: { fontSize: 16, fontWeight: '600', color: '#D4A44C', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  dotsRow: { flexDirection: 'row', gap: 6 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.25)' },
+  dotActive: { width: 18, backgroundColor: '#D4A44C' },
   
   scrollView: { flex: 1 },
   scrollContent: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 120 },

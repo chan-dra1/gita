@@ -7,8 +7,8 @@ import type { GitaData } from '../types';
 export async function scheduleSmartNotifications(baseTime: Date | string, slokasPerDayStr: string) {
   if (Platform.OS === 'web') return;
 
-  const { status } = await Notifications.requestPermissionsAsync();
-  if (status !== 'granted') {
+  const permResult = await Notifications.requestPermissionsAsync();
+  if (!(permResult as any).granted) {
     console.warn('Notification permission not granted');
     return;
   }
@@ -20,9 +20,14 @@ export async function scheduleSmartNotifications(baseTime: Date | string, slokas
   const maxNotifications = 60; // iOS limit is 64 per app
   const daysToSchedule = Math.floor(maxNotifications / slokasPerDay);
 
+  // Use robust data access (Native vs Web)
+  const gitaRaw: any = gitaData;
+  const data: GitaData | null = gitaRaw?.chapters ? gitaRaw : gitaRaw?.default;
+  if (!data || !data.chapters) return;
+
   // Flatten all slokas into a single array
   const allSlokas: any[] = [];
-  (gitaData as GitaData).chapters.forEach(c => {
+  data.chapters.forEach(c => {
     c.verses.forEach(v => {
       allSlokas.push({ ...v, chapter: c.chapter, chapterName: c.name });
     });
@@ -99,8 +104,8 @@ export async function scheduleSmartNotifications(baseTime: Date | string, slokas
 export async function scheduleStreakReminder() {
   if (Platform.OS === 'web') return;
   
-  const { status } = await Notifications.getPermissionsAsync();
-  if (status !== 'granted') return;
+  const permResult2 = await Notifications.getPermissionsAsync();
+  if (!(permResult2 as any).granted) return;
 
   // Schedule a smart reminder for 7 PM today if they haven't opened yet to save their streak
   const now = new Date();
@@ -161,8 +166,8 @@ const RETENTION_MESSAGES = [
 export async function scheduleRetentionNotifications() {
   if (Platform.OS === 'web') return;
   
-  const { status } = await Notifications.getPermissionsAsync();
-  if (status !== 'granted') return;
+  const permResult3 = await Notifications.getPermissionsAsync();
+  if (!(permResult3 as any).granted) return false;
 
   // Cancel any existing retention notifications first
   await cancelRetentionNotifications();

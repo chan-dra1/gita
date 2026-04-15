@@ -59,8 +59,8 @@ export default function OnboardingStep5() {
       console.error('Error in handleComplete:', error);
     } finally {
       setIsLoading(false);
-      // Navigate to paywall regardless of notification success
-      router.replace('/onboarding/paywall' as any);
+      // Navigate to next step (share showcase) instead of paywall directly
+      router.replace('/onboarding/step6' as any);
     }
   };
 
@@ -78,13 +78,17 @@ export default function OnboardingStep5() {
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
         
-        {/* Header */}
+        {/* Progress dots */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#D1D5DB" />
+            <Ionicons name="arrow-back" size={22} color="#D1D5DB" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Personalization</Text>
-          <View style={{ width: 40 }} />
+          <View style={styles.dotsRow}>
+            {[0,1,2,3,4,5,6,7].map(i => (
+              <View key={i} style={[styles.topDot, i === 4 && styles.topDotActive]} />
+            ))}
+          </View>
+          <View style={{ width: 38 }} />
         </View>
 
         {/* Scrollable Content */}
@@ -208,20 +212,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 8,
   },
-  backButton: {
-    padding: 8,
-    marginLeft: -8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#E5E7EB',
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-  },
+  backButton: { padding: 8 },
+  dotsRow: { flexDirection: 'row', gap: 6 },
+  topDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.3)' },
+  topDotActive: { width: 18, backgroundColor: '#D4A44C' },
   progressContainer: {
     marginTop: 8,
   },

@@ -26,11 +26,10 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // Card margins: 20 each side = 40. Inner padding: 28 each side = 56. 
 const CARD_INNER_WIDTH = SCREEN_WIDTH - 40 - 56;
 import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system';
-import { captureRef } from 'react-native-view-shot';
 import { VerseCard } from '../../../src/components/VerseCard';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { askScholar, type ChatMessage } from '../../../src/utils/ai';
+// Dynamic import for AI to avoid web crash on top-level Anthropic-SDK load
+import type { ChatMessage } from '../../../src/utils/ai';
 import { getChapter, getSloka, getLocalizedTranslation } from '../../../src/utils/sloka';
 import { getCommentary, getGenericCommentary, type Commentary } from '../../../src/utils/commentary';
 import { addSlokaRead, isSlokaSaved, saveSloka, unsaveSloka, getOnboardingData, getTodaysSlokasReadCount } from '../../../src/utils/stats';
@@ -83,12 +82,14 @@ export default function SlokaScreen() {
     verse: string;
   }>();
   const router = useRouter();
-  const chapter = parseInt(chapterStr, 10);
-  const verse = parseInt(verseStr, 10);
+  const chapter = parseInt(chapterStr || '', 10);
+  const verse = parseInt(verseStr || '', 10);
   const { language } = useLanguage();
-  const sloka = getSloka(chapter, verse);
-  const chapterData = getChapter(chapter);
-  const slokaImage = getSlokaImage(chapter, verse);
+
+  const paramsValid = Number.isFinite(chapter) && Number.isFinite(verse);
+  const sloka = paramsValid ? getSloka(chapter, verse) : undefined;
+  const chapterData = paramsValid ? getChapter(chapter) : undefined;
+  const slokaImage = paramsValid ? getSlokaImage(chapter, verse) : undefined;
 
   // Audio state
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -124,14 +125,23 @@ export default function SlokaScreen() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [isAudioCached, setIsAudioCached] = useState(false);
+  const [isExplanationCached, setIsExplanationCached] = useState(false);
 
-  const purportDb = language === 'hi' ? purportsHiData : purportsData;
-  let rawPurport = (purportDb as Record<string, string>)[`${chapter}:${verse}`];
+  // Handle JSON structure variance across bundlers (Native vs Web)
+  const purportDbRaw: any = language === 'hi' ? purportsHiData : purportsData;
+  const purportDb = purportDbRaw?.default || purportDbRaw;
+  
+  const scholarAnswersRaw: any = scholarAnswersData;
+  const scholarAnswers = scholarAnswersRaw?.default || scholarAnswersRaw;
+
+  let rawPurport = sloka ? (purportDb as Record<string, string>)[`${chapter}:${verse}`] : null;
   const purport = rawPurport ? stripAttribution(rawPurport) : null;
-  const precomputedQuestions = (scholarAnswersData as Record<string, any[]>)[`${chapter}:${verse}`] || [];
+  const precomputedQuestions = sloka ? (scholarAnswers as Record<string, any[]>)[`${chapter}:${verse}`] || [] : [];
 
   // Track sloka view on mount and load saved status
   useEffect(() => {
+    if (isNaN(chapter) || isNaN(verse)) return;
     const loadData = async () => {
       // Track that this sloka was read
       await addSlokaRead(chapter, verse);
@@ -198,8 +208,13 @@ export default function SlokaScreen() {
     }
 
     // For Native, generate beautiful Verse Card
+    if ((Platform.OS as string) === 'web') return; // Handled above
+
     setIsCapturing(true);
     try {
+      // Dynamic require to avoid web crash
+      const { captureRef } = require('react-native-view-shot');
+      
       // Capture the off-screen VerseCard component
       const uri = await captureRef(cardRef, {
         format: 'png',
@@ -207,8 +222,6 @@ export default function SlokaScreen() {
       });
 
       const shareUrl = `https://gita-rouge-tau.vercel.app/download`;
-      // Note: Some apps handle both image + text well, others prefer just image.
-      // We share the image as the primary payload.
       await Sharing.shareAsync(uri, {
         mimeType: 'image/png',
         dialogTitle: `Share Bhagavad Gita ${chapter}.${verse}`,
@@ -260,13 +273,11 @@ export default function SlokaScreen() {
     }
   };
 
-  const [isAudioCached, setIsAudioCached] = useState(false);
-  const [isExplanationCached, setIsExplanationCached] = useState(false);
-
   useEffect(() => {
+    if (!paramsValid) return;
     hasCachedAudio(chapter, verse, 'sanskrit').then(setIsAudioCached);
     hasCachedAudio(chapter, verse, 'english').then(setIsExplanationCached);
-  }, [chapter, verse]);
+  }, [chapter, verse, paramsValid]);
 
   // Check if premium TTS (Google Cloud) is available
   const hasTTSKey = Config.TTS_API_KEY && Config.TTS_API_KEY !== 'YOUR_TTS_API_KEY' && Config.TTS_API_KEY.length > 5;
@@ -358,6 +369,14 @@ export default function SlokaScreen() {
     }
   }, [sloka, chapter, verse, isSpeaking, audioLanguage, hasTTSKey]);
 
+  if (!paramsValid) {
+    return (
+      <SafeAreaView style={s.loadingContainer}>
+        <ActivityIndicator size="large" color="#D4A44C" />
+      </SafeAreaView>
+    );
+  }
+
   if (!sloka) {
     return (
       <SafeAreaView style={s.loadingContainer}>
@@ -386,6 +405,7 @@ export default function SlokaScreen() {
     setAiError(null);
 
     try {
+      const { askScholar } = require('../../../src/utils/ai');
       const response = await askScholar([...messages, userMsg], slokaContext);
       setMessages(prev => [...prev, { role: 'assistant', content: response }]);
     } catch (e: any) {
@@ -631,8 +651,8 @@ export default function SlokaScreen() {
             </View>
           </ScrollView>
 
-          {/* ─── Hidden View for Image Capture ─── */}
-          {sloka && (
+          {/* ─── Hidden View for Image Capture (Native Only) ─── */}
+          {sloka && Platform.OS !== 'web' && (
             <View 
               collapsable={false}
               ref={cardRef} 
