@@ -54,14 +54,24 @@ const CHAPTER_1_IMAGES: Record<string, any> = {
 };
 
 const FALLBACK_IMAGES = [
-  require('../../assets/images/contextual/battlefield.webp'),
-  require('../../assets/images/contextual/meditation.webp'),
-  require('../../assets/images/contextual/cosmic.webp'),
-  require('../../assets/images/contextual/duty.webp'),
+  require('../../assets/images/contextual/chapters/ch1_battlefield.png'),
+  require('../../assets/images/contextual/chapters/ch2_knowledge.png'),
+  require('../../assets/images/contextual/chapters/ch3_karma_yoga.png'),
+  require('../../assets/images/contextual/chapters/ch4_divine_knowledge.png'),
+  require('../../assets/images/contextual/chapters/ch5_renunciation.png'),
+  require('../../assets/images/contextual/chapters/ch6_meditation.png'),
+  require('../../assets/images/contextual/chapters/ch7_divine_cosmic.png'),
+  require('../../assets/images/contextual/chapters/ch8_imperishable.png'),
+  require('../../assets/images/contextual/chapters/ch9_royal_secret.png'),
+  require('../../assets/images/contextual/chapters/ch10_divine_glories.png'),
+  require('../../assets/images/contextual/chapters/ch11_universal_form.png'),
+  require('../../assets/images/contextual/chapters/ch12_devotion.png'),
+  require('../../assets/images/contextual/chapters/ch13_field_knower.png'),
+  require('../../assets/images/contextual/chapters/ch14_three_gunas.png'),
+  require('../../assets/images/contextual/chapters/ch15_supreme_person.png'),
+  require('../../assets/images/contextual/chapters/ch16_divine_demonic.png'),
+  require('../../assets/images/contextual/chapters/ch17_faith.png'),
   require('../../assets/images/contextual/peace.webp'),
-  require('../../assets/images/contextual/soul.png'),
-  require('../../assets/images/contextual/karma.png'),
-  require('../../assets/images/contextual/cosmic2.png'),
 ];
 
 export const SLOKA_IMAGES: Record<string, any> = {
@@ -79,8 +89,7 @@ export const getSlokaImage = (chapter: number, verse: number) => {
     return specificImage;
   }
   
-  // Deterministic fallback based on chapter and verse
-  const seed = chapter * 1000 + verse;
-  const index = seed % FALLBACK_IMAGES.length;
-  return FALLBACK_IMAGES[index];
+  // Use the chapter's own image as fallback (chapters 1-18 map to indices 0-17)
+  const chapterIndex = Math.max(0, Math.min(chapter - 1, FALLBACK_IMAGES.length - 1));
+  return FALLBACK_IMAGES[chapterIndex];
 };

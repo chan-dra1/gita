@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 
 interface DharmaBlockerInterface {
   requestPermissions(): Promise<boolean>;
+  hasUsagePermission(): boolean;
   startBlocking(appBundleIds: string[]): void;
   stopBlocking(): void;
   getInstalledApps(): Promise<{packageName: string, label: string}[]>;
@@ -9,6 +10,7 @@ interface DharmaBlockerInterface {
 
 const STUB: DharmaBlockerInterface = {
   requestPermissions: async () => { console.warn("DharmaBlocker: native module not available"); return false; },
+  hasUsagePermission: () => { console.warn("DharmaBlocker: native module not available"); return false; },
   startBlocking: (_apps: string[]) => console.warn("DharmaBlocker: native module not available"),
   stopBlocking: () => console.warn("DharmaBlocker: native module not available"),
   getInstalledApps: async () => { console.warn("DharmaBlocker: native module not available"); return []; },

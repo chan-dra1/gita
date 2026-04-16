@@ -8,7 +8,10 @@ export async function scheduleSmartNotifications(baseTime: Date | string, slokas
   if (Platform.OS === 'web') return;
 
   const { status } = await Notifications.requestPermissionsAsync();
-  if (status !== 'granted') return;
+  if (status !== 'granted') {
+    console.warn('Notification permission not granted');
+    return;
+  }
 
   await Notifications.cancelAllScheduledNotificationsAsync();
 
@@ -42,49 +45,55 @@ export async function scheduleSmartNotifications(baseTime: Date | string, slokas
   }
 
   const now = new Date();
+  let scheduledCount = 0;
 
   for (let day = 0; day < daysToSchedule; day++) {
     for (let i = 0; i < slokasPerDay; i++) {
         if (nextSlokaIndex >= allSlokas.length) break;
         
         const sloka = allSlokas[nextSlokaIndex];
-        const deliveryDate = new Date(time);
+        const deliveryDate = new Date(now);
         
-        // Schedule for 'day' days from now
+        // Set the base time (hour/minute from user selection)
+        deliveryDate.setHours(time.getHours(), time.getMinutes(), 0, 0);
+        
         // Determine whether the base time today has already passed
-        // If it has passed, day 0 should actually start tomorrow
-        const timeHasPassedToday = (time.getHours() < now.getHours()) || (time.getHours() === now.getHours() && time.getMinutes() <= now.getMinutes());
+        const timeHasPassedToday = deliveryDate.getTime() <= now.getTime();
         const startOffset = timeHasPassedToday ? 1 : 0;
         
         deliveryDate.setDate(now.getDate() + day + startOffset);
         
-        // Spread notifications vertically across the day if multiple
-        // e.g. 2 hours apart
+        // Spread notifications across the day if multiple per day
         deliveryDate.setHours(deliveryDate.getHours() + (i * 3));
         
         const cleanTranslation = sloka.translation.replace(/Chapter \d+, Verse \d+[.,]?\s*/i, '').trim();
-        // Limit body length just in case it's huge
-        const truncatedBody = cleanTranslation.length > 150 ? cleanTranslation.substring(0, 147) + '...' : cleanTranslation;
+        const fullBody = `${sloka.sanskrit}\n\n${cleanTranslation}`;
 
         try {
           await Notifications.scheduleNotificationAsync({
               content: {
-                  title: `Chapter ${sloka.chapter}, Verse ${sloka.verse}`,
-                  body: truncatedBody,
+                  title: `🪷 Chapter ${sloka.chapter}, Verse ${sloka.verse}`,
+                  body: fullBody,
                   data: { chapter: sloka.chapter, verse: sloka.verse },
-                  sound: true
+                  sound: true,
+                  ...(Platform.OS === 'android' && { channelId: 'default' }),
               },
               trigger: {
+                  type: Notifications.SchedulableTriggerInputTypes.DATE,
                   date: deliveryDate,
-              } as any, // use as any to satisfy type constraint on TS
+                  channelId: Platform.OS === 'android' ? 'default' : undefined,
+              },
           });
+          scheduledCount++;
         } catch (e) {
-          console.warn("Could not schedule notification", e);
+          console.warn("Could not schedule notification for", deliveryDate.toISOString(), e);
         }
         
         nextSlokaIndex++;
     }
   }
+
+  console.log(`✅ Scheduled ${scheduledCount} smart notifications starting from ${time.toLocaleTimeString()}`);
 }
 
 export async function scheduleStreakReminder() {
@@ -104,21 +113,29 @@ export async function scheduleStreakReminder() {
   }
 
   try {
-    // Note: We use a specific identifier so we can cancel just the streak reminder
-    await Notifications.cancelScheduledNotificationAsync('streak_reminder');
+    // Cancel existing streak reminder if any
+    try {
+      await Notifications.cancelScheduledNotificationAsync('streak_reminder');
+    } catch (_) {
+      // May not exist — that's fine
+    }
     
     await Notifications.scheduleNotificationAsync({
       identifier: 'streak_reminder',
       content: {
-        title: '🙏 Preserve Your Spiritual Streak',
+        title: '🔥 Preserve Your Spiritual Streak',
         body: "Take 5 minutes to read your daily verses. Don't break your Sadhana chain today.",
         sound: true,
+        ...(Platform.OS === 'android' && { channelId: 'default' }),
       },
       trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DEFAULT, // ensure correct enum
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
         date: trigger,
-      } as any,
+        channelId: Platform.OS === 'android' ? 'default' : undefined,
+      },
     });
+
+    console.log(`🔔 Streak reminder scheduled for ${trigger.toLocaleTimeString()}`);
   } catch (e) {
     console.warn("Could not schedule streak reminder", e);
   }
@@ -130,5 +147,66 @@ export async function cancelStreakReminder() {
     await Notifications.cancelScheduledNotificationAsync('streak_reminder');
   } catch (e) {
     // Ignore if not scheduled
+  }
+}
+
+const RETENTION_MESSAGES = [
+  "Lord Krishna's wisdom awaits you.",
+  "Take a moment of peace today. Keep your spiritual connection strong.",
+  "Your Daily Sadhana is incomplete. Take a deep breath and read a verse.",
+  "Reconnect with your inner self through the Bhagavad Gita.",
+  "Even a few minutes with the Gita can change your entire day."
+];
+
+export async function scheduleRetentionNotifications() {
+  if (Platform.OS === 'web') return;
+  
+  const { status } = await Notifications.getPermissionsAsync();
+  if (status !== 'granted') return;
+
+  // Cancel any existing retention notifications first
+  await cancelRetentionNotifications();
+
+  // Schedule for +2 days, +5 days, and +7 days
+  const delaysInDays = [2, 5, 7];
+  
+  for (const days of delaysInDays) {
+    const trigger = new Date();
+    trigger.setDate(trigger.getDate() + days);
+    // Prefer morning time for retention 9:00 AM
+    trigger.setHours(9, 0, 0, 0);
+
+    const randomMsg = RETENTION_MESSAGES[Math.floor(Math.random() * RETENTION_MESSAGES.length)];
+
+    try {
+      await Notifications.scheduleNotificationAsync({
+        identifier: `retention_reminder_${days}`,
+        content: {
+          title: '🪷 Time for Spiritual Growth',
+          body: randomMsg,
+          sound: true,
+          ...(Platform.OS === 'android' && { channelId: 'default' }),
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: trigger,
+          channelId: Platform.OS === 'android' ? 'default' : undefined,
+        },
+      });
+    } catch (e) {
+      console.warn("Could not schedule retention reminder", e);
+    }
+  }
+}
+
+export async function cancelRetentionNotifications() {
+  if (Platform.OS === 'web') return;
+  const delaysInDays = [2, 5, 7];
+  for (const days of delaysInDays) {
+    try {
+      await Notifications.cancelScheduledNotificationAsync(`retention_reminder_${days}`);
+    } catch (e) {
+      // Ignore
+    }
   }
 }

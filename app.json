@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "gita",
+    "name": "Daily Bhagavad Gita",
     "slug": "gita",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,7 +10,12 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.alphawolf.gita"
+      "bundleIdentifier": "com.alphawolf.gita",
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.com.alphawolf.gita"
+        ]
+      }
     },
     "android": {
       "package": "com.alphawolf.gita",
@@ -21,7 +26,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "versionCode": 3
     },
     "web": {
       "output": "single",
@@ -43,7 +49,8 @@
         }
       ],
       "expo-font",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "./src/plugins/withGitaWidgets.plugin.js"
     ],
     "experiments": {
       "typedRoutes": true,

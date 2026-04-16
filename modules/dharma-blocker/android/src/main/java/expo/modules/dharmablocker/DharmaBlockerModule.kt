@@ -1,7 +1,9 @@
 package expo.modules.dharmablocker
 
+import android.app.AppOpsManager
 import android.content.Context
 import android.content.Intent
+import android.os.Process
 import android.provider.Settings
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
@@ -10,53 +12,97 @@ class DharmaBlockerModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("DharmaBlocker")
 
-    AsyncFunction("requestPermissions") { promise: expo.modules.kotlin.Promise ->
+    // Check if Usage Access permission is actually granted
+    Function("hasUsagePermission") {
+      val context = appContext.reactContext ?: return@Function false
+      val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+      val mode = appOps.checkOpNoThrow(
+        AppOpsManager.OPSTR_GET_USAGE_STATS,
+        Process.myUid(),
+        context.packageName
+      )
+      mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    AsyncFunction("requestPermissions") {
       val context = appContext.reactContext
-      if (context == null) {
-          promise.reject("ERR", "Context is null", null)
-          return@AsyncFunction
+        ?: throw Exception("Context is null")
+
+      val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+      val usageGranted = appOps.checkOpNoThrow(
+        AppOpsManager.OPSTR_GET_USAGE_STATS,
+        Process.myUid(),
+        context.packageName
+      ) == AppOpsManager.MODE_ALLOWED
+
+      // Only open settings if not already granted
+      if (!usageGranted) {
+        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
       }
-      // Request Usage Access
-      val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      context.startActivity(intent)
       
-      // Request Draw Overlay
+      // Check overlay permission
       if (!Settings.canDrawOverlays(context)) {
-          val overlayIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-          overlayIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-          context.startActivity(overlayIntent)
+        val overlayIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+        overlayIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(overlayIntent)
       }
-      promise.resolve(true)
+
+      // Return actual status
+      usageGranted && Settings.canDrawOverlays(context)
     }
 
     Function("startBlocking") { apps: List<String> ->
       val context = appContext.reactContext
       if (context != null) {
-        val intent = Intent(context, DharmaForegroundService::class.java)
-        intent.putStringArrayListExtra("blockedApps", ArrayList(apps))
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            context.startForegroundService(intent)
-        } else {
-            context.startService(intent)
+        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        val usageGranted = appOps.checkOpNoThrow(
+          AppOpsManager.OPSTR_GET_USAGE_STATS,
+          Process.myUid(),
+          context.packageName
+        ) == AppOpsManager.MODE_ALLOWED
+
+        if (usageGranted) {
+          val intent = Intent(context, DharmaForegroundService::class.java)
+          intent.putStringArrayListExtra("blockedApps", ArrayList(apps))
+          if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+              context.startForegroundService(intent)
+          } else {
+              context.startService(intent)
+          }
         }
       }
     }
 
-    AsyncFunction("getInstalledApps") { promise: expo.modules.kotlin.Promise ->
+    AsyncFunction("getInstalledApps") {
       val context = appContext.reactContext
-      if (context == null) {
-          promise.reject("ERR", "Context is null", null)
-          return@AsyncFunction
-      }
+        ?: throw Exception("Context is null")
+
       val pm = context.packageManager
       val packages = pm.getInstalledPackages(0)
       val appList = mutableListOf<Map<String, String>>()
       
+      val commonDistractions = setOf(
+          "com.instagram.android",
+          "com.zhiliaoapp.musically",
+          "com.google.android.youtube",
+          "com.facebook.katana",
+          "com.twitter.android",
+          "com.reddit.frontpage",
+          "com.snapchat.android",
+          "com.whatsapp",
+          "com.discord",
+          "com.pinterest",
+          "com.linkedin.android",
+          "com.android.chrome",
+          "org.telegram.messenger"
+      )
+
       for (pkg in packages) {
-          // Filter out system apps that shouldn't be blocked, but keep user apps
           val isSystem = (pkg.applicationInfo?.flags ?: 0) and android.content.pm.ApplicationInfo.FLAG_SYSTEM != 0
-          if (!isSystem || pkg.packageName == "com.android.chrome" || pkg.packageName == "com.google.android.youtube") {
+          val isDistraction = commonDistractions.contains(pkg.packageName)
+          if (!isSystem || isDistraction) {
               val appMap = mapOf(
                   "packageName" to pkg.packageName,
                   "label" to (pkg.applicationInfo?.loadLabel(pm)?.toString() ?: pkg.packageName)
@@ -64,7 +110,7 @@ class DharmaBlockerModule : Module() {
               appList.add(appMap)
           }
       }
-      promise.resolve(appList)
+      appList
     }
 
     Function("stopBlocking") {

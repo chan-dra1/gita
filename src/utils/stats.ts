@@ -44,6 +44,12 @@ export async function addSlokaRead(chapter: number, verse: number): Promise<void
 
     // Update streak when user reads a sloka
     await updateStreak();
+    
+    // Increment global community count (Option B: Global Sankalpa)
+    import('./karma').then(m => m.incrementGlobalSankalpa()).catch(() => {});
+    
+    // Passively sync to cloud if user is logged in
+    import('./cloudSync').then(m => m.syncIfLoggedIn()).catch(() => {});
   } catch {
     // Silent fail
   }
@@ -58,6 +64,14 @@ export async function getUniqueSlokasReadCount(): Promise<number> {
   const slokas = await getSlokasRead();
   const unique = new Set(slokas.map(s => `${s.chapter}:${s.verse}`));
   return unique.size;
+}
+
+export async function getLastReadSloka(): Promise<SlokaReadEntry | null> {
+  const slokas = await getSlokasRead();
+  if (slokas.length === 0) return null;
+  // Sort by timestamp descending
+  slokas.sort((a, b) => b.timestamp - a.timestamp);
+  return slokas[0];
 }
 
 export async function getTodaysSlokasReadCount(): Promise<number> {
@@ -102,6 +116,8 @@ export async function saveSloka(chapter: number, verse: number): Promise<void> {
         STORAGE_KEYS.SAVED_SLOKAS,
         JSON.stringify([...existing, newEntry])
       );
+      // Passively sync to cloud
+      import('./cloudSync').then(m => m.syncIfLoggedIn()).catch(() => {});
     }
   } catch {
     // Silent fail
@@ -275,9 +291,9 @@ export async function saveBlockedApps(apps: string[]): Promise<void> {
 export async function getProfileName(): Promise<string> {
   try {
     const name = await AsyncStorage.getItem(STORAGE_KEYS.PROFILE_NAME);
-    return name || 'Scholar';
+    return name || 'Seeker';
   } catch {
-    return 'Scholar';
+    return 'Seeker';
   }
 }
 
@@ -307,4 +323,35 @@ export async function getAllStats(): Promise<{
     dayStreak: streakData.currentStreak,
     saved: savedCount,
   };
+}
+
+export async function getNextUnreadVerses(limit: number): Promise<{chapter: number, verse: number}[]> {
+  const readSlokas = await getSlokasRead();
+  const readSet = new Set(readSlokas.map(s => `${s.chapter}:${s.verse}`));
+  
+  const { getAllChapters } = require('./sloka');
+  const chapters = getAllChapters() as any[];
+  
+  const toPlay: {chapter: number, verse: number}[] = [];
+  
+  for (const chapter of chapters) {
+    for (let verse = 1; verse <= chapter.verses_count; verse++) {
+      if (!readSet.has(`${chapter.chapter}:${verse}`)) {
+        toPlay.push({ chapter: chapter.chapter, verse });
+        if (toPlay.length >= limit) {
+          return toPlay;
+        }
+      }
+    }
+  }
+  
+  // If user has read all 700 verses, loop back to chapter 1, verse 1
+  if (toPlay.length === 0 && limit > 0 && chapters.length > 0) {
+    const targetVerses = Math.min(limit, chapters[0].verses_count);
+    for (let verse = 1; verse <= targetVerses; verse++) {
+      toPlay.push({ chapter: 1, verse });
+    }
+  }
+  
+  return toPlay;
 }

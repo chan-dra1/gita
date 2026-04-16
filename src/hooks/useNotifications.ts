@@ -19,15 +19,6 @@ let Notifications: typeof import('expo-notifications') | null = null;
 
 if (Platform.OS !== 'web') {
     Notifications = require('expo-notifications');
-    Notifications!.setNotificationHandler({
-        handleNotification: async () => ({
-            shouldShowAlert: true,
-            shouldPlaySound: true,
-            shouldSetBadge: false,
-            shouldShowBanner: true,
-            shouldShowList: true,
-        }),
-    });
 }
 
 interface UseNotificationsReturn {
@@ -91,12 +82,14 @@ export function useNotifications(): UseNotificationsReturn {
                     title: '🙏 Daily Sloka Reminder',
                     body: "Take a moment to read today's Bhagavad Gita verse and find inner peace.",
                     data: { type: 'daily-sloka' },
-                    sound: 'default',
+                    sound: true,
+                    ...(Platform.OS === 'android' && { channelId: 'default' }),
                 },
                 trigger: {
                     type: Notifications.SchedulableTriggerInputTypes.DAILY,
                     hour,
                     minute,
+                    channelId: Platform.OS === 'android' ? 'default' : undefined,
                 },
                 identifier: NOTIFICATION_ID,
             });

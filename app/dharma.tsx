@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Switch, ScrollView, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Switch, ScrollView, Platform, Alert, ActivityIndicator, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import DharmaBlocker from '../modules/dharma-blocker';
@@ -74,100 +74,120 @@ export default function DharmaModeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#F48B29" />
+    <SafeAreaView style={s.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" />
+      <View style={s.header}>
+        <TouchableOpacity onPress={() => router.back()} style={s.backButton}>
+          <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Dharma Mode</Text>
+        <Text style={s.headerTitle}>Dharma Mode</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 40 }}>
+      <ScrollView style={s.content} contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
         {/* Info Card */}
-        <View style={styles.infoCard}>
-          <Ionicons name="shield-checkmark" size={40} color="#F48B29" style={{ marginBottom: 12 }} />
-          <Text style={styles.infoTitle}>Cultivate Focus</Text>
-          <Text style={styles.infoDesc}>
+        <View style={s.infoCard}>
+          <View style={s.iconGlow}>
+            <Ionicons name="shield-checkmark" size={40} color="#D4A44C" />
+          </View>
+          <Text style={s.infoTitle}>Cultivate Focus</Text>
+          <Text style={s.infoDesc}>
             Restrict access to distracting social media and apps of your choice until you complete your daily reading.
           </Text>
-          <View style={styles.goalRow}>
-            <Text style={styles.goalText}>Daily Progress: {stats.slokasRead} Slokas Read</Text>
+          <View style={s.statusBadge}>
+            <Text style={s.statusText}>Progress: {stats.slokasRead} Slokas Read Today</Text>
           </View>
         </View>
 
         {/* Master Toggle */}
-        <View style={styles.masterToggleCard}>
+        <View style={s.masterCard}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.masterTitle}>Activate Restriction</Text>
-            <Text style={styles.masterSub}>{isActive ? "Mode is ACTIVE" : "Blocks selected apps"}</Text>
+            <Text style={s.masterTitle}>Activate Restriction</Text>
+            <Text style={[s.masterSub, isActive && { color: '#D4A44C' }]}>
+              {isActive ? "Mode is ACTIVE" : "Blocks selected apps"}
+            </Text>
           </View>
           <Switch
             value={isActive}
             onValueChange={handleToggleDharmaMode}
-            trackColor={{ false: 'rgba(255,255,255,0.1)', true: 'rgba(244, 139, 41, 0.5)' }}
-            thumbColor={isActive ? '#F48B29' : '#B8A99A'}
+            trackColor={{ false: 'rgba(255,255,255,0.05)', true: 'rgba(212, 164, 76, 0.4)' }}
+            thumbColor={isActive ? '#D4A44C' : '#444'}
+            ios_backgroundColor="rgba(255,255,255,0.05)"
           />
         </View>
 
         {/* App Selection List */}
-        <Text style={styles.sectionTitle}>Select Apps to Restrict</Text>
+        <View style={s.sectionHeaderRow}>
+          <Text style={s.sectionTitle}>Select Apps to Restrict</Text>
+          <Text style={s.selectionCount}>{selectedApps.size} apps</Text>
+        </View>
+
         {isLoading ? (
-          <Text style={{ color: '#B8A99A', textAlign: 'center', marginTop: 20 }}>Loading installed apps...</Text>
+          <ActivityIndicator color="#D4A44C" style={{ marginTop: 40 }} />
         ) : (
-          <View style={styles.appList}>
-            {installedApps.map(app => (
-              <View key={app.packageName} style={styles.appRow}>
-                <View style={styles.appIconBg}>
-                  <Ionicons name="apps-outline" size={20} color="#B8A99A" />
+          <View style={s.appList}>
+            {installedApps.map((app, index) => (
+              <TouchableOpacity 
+                key={app.packageName} 
+                activeOpacity={isActive ? 1 : 0.7}
+                onPress={() => !isActive && toggleApp(app.packageName)}
+                style={[s.appRow, index === installedApps.length - 1 && { borderBottomWidth: 0 }]}
+              >
+                <View style={s.appIconBox}>
+                  <Ionicons name="apps-outline" size={18} color="#D4A44C" />
                 </View>
-                <Text style={styles.appName} numberOfLines={1}>{app.label}</Text>
+                <Text style={s.appName} numberOfLines={1}>{app.label}</Text>
                 <Switch
                   value={selectedApps.has(app.packageName)}
                   onValueChange={() => toggleApp(app.packageName)}
                   disabled={isActive}
-                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: 'rgba(244, 139, 41, 0.5)' }}
-                  thumbColor={selectedApps.has(app.packageName) ? '#F48B29' : '#B8A99A'}
+                  trackColor={{ false: 'rgba(255,255,255,0.05)', true: 'rgba(212, 164, 76, 0.4)' }}
+                  thumbColor={selectedApps.has(app.packageName) ? '#D4A44C' : '#444'}
                 />
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         )}
 
         {Platform.OS === 'ios' && (
-          <Text style={styles.iosWarning}>
-            Note: On iOS, app blocking requires specific Apple Family Controls entitlements which are not available in standard development builds.
-          </Text>
+          <View style={s.iosWarningBox}>
+             <Ionicons name="information-circle-outline" size={16} color="#D4A44C" />
+             <Text style={s.iosWarning}>
+                iOS blocking requires specific system entitlements not available in dev builds.
+             </Text>
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#3D2817',
+    backgroundColor: '#0D0D0D',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? 40 : 10,
+    paddingTop: 12,
     paddingBottom: 20,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '800',
     color: '#FFFFFF',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
@@ -176,99 +196,138 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   infoCard: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 20,
-    padding: 24,
+    backgroundColor: '#141414',
+    borderRadius: 28,
+    padding: 32,
     alignItems: 'center',
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: 'rgba(244, 139, 41, 0.2)',
+    borderColor: 'rgba(212, 164, 76, 0.15)',
+  },
+  iconGlow: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(212, 164, 76, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 164, 76, 0.2)',
   },
   infoTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '800',
     color: '#FFFFFF',
-    marginBottom: 8,
+    marginBottom: 10,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   infoDesc: {
     fontSize: 14,
-    color: '#B8A99A',
+    color: '#888',
     textAlign: 'center',
     lineHeight: 22,
-    marginBottom: 20,
+    marginBottom: 24,
   },
-  goalRow: {
-    backgroundColor: 'rgba(244, 139, 41, 0.15)',
+  statusBadge: {
+    backgroundColor: 'rgba(212, 164, 76, 0.1)',
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 164, 76, 0.2)',
   },
-  goalText: {
-    color: '#F48B29',
-    fontWeight: '600',
-    fontSize: 14,
+  statusText: {
+    color: '#D4A44C',
+    fontWeight: '700',
+    fontSize: 13,
   },
-  masterToggleCard: {
+  masterCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    padding: 20,
-    borderRadius: 16,
+    backgroundColor: '#1A1A1A',
+    padding: 24,
+    borderRadius: 24,
     marginBottom: 32,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
   },
   masterTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '800',
     color: '#FFFFFF',
     marginBottom: 4,
   },
   masterSub: {
     fontSize: 13,
-    color: '#B8A99A',
+    color: '#555',
+    fontWeight: '600',
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 8,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#8B7355',
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#D4A44C',
     textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 16,
-    marginLeft: 8,
+    letterSpacing: 1.5,
+  },
+  selectionCount: {
+    fontSize: 12,
+    color: '#555',
+    fontWeight: '700',
   },
   appList: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 16,
+    backgroundColor: '#111',
+    borderRadius: 24,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
   },
   appRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: 18,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: 'rgba(255,255,255,0.03)',
   },
-  appIconBg: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+  appIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(212, 164, 76, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 164, 76, 0.1)',
   },
   appName: {
     flex: 1,
     fontSize: 16,
-    color: '#FFFFFF',
-    fontWeight: '500',
+    color: '#E0D5C5',
+    fontWeight: '700',
+  },
+  iosWarningBox: {
+    marginTop: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(212, 164, 76, 0.05)',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 164, 76, 0.1)',
   },
   iosWarning: {
-    marginTop: 24,
+    flex: 1,
     fontSize: 12,
-    color: '#F48B29',
-    textAlign: 'center',
+    color: '#888',
     fontStyle: 'italic',
-    paddingHorizontal: 20,
   }
 });

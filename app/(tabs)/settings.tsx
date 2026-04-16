@@ -45,8 +45,11 @@ import {
   type OnboardingData, 
   type SlokaReadEntry 
 } from '../../src/utils/stats';
+import { subscribeToGlobalSankalpa } from '../../src/utils/karma';
 import { t } from '../../src/utils/i18n';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../../src/context/LanguageContext';
+import { useTheme, ThemeMode } from '../../src/context/ThemeContext';
 import { scheduleSmartNotifications } from '../../src/utils/notifications';
 import { AppSelectorModal } from '../../src/components/AppSelectorModal';
 
@@ -63,9 +66,10 @@ export default function SettingsScreen() {
   const [recentSlokas, setRecentSlokas] = useState<SlokaReadEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const { language, setLanguage } = useLanguage();
+  const { mode, setMode, colors } = useTheme();
 
   // New Features
-  const [profileName, setProfileName] = useState('Scholar');
+  const [profileName, setProfileName] = useState('Seeker');
   const [showNameModal, setShowNameModal] = useState(false);
   const [editNameValue, setEditNameValue] = useState('');
   const [showHowItWorks, setShowHowItWorks] = useState(false);
@@ -78,6 +82,14 @@ export default function SettingsScreen() {
   const [showAppSelector, setShowAppSelector] = useState(false);
   const [blockedApps, setBlockedApps] = useState<string[]>([]);
   const [isPremium, setIsPremium] = useState(false);
+
+  // Global Community
+  const [globalSankalpa, setGlobalSankalpa] = useState(0);
+
+  // AI Integration
+  const [claudeKey, setClaudeKey] = useState('');
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [editAiKey, setEditAiKey] = useState('');
 
   const loadStats = useCallback(async () => {
     try {
@@ -124,7 +136,32 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     loadStats();
+
+    // Subscribe to Global Sankalpa
+    const unsubscribe = subscribeToGlobalSankalpa((count) => {
+      setGlobalSankalpa(count);
+    });
+
+    // Load AI Key
+    AsyncStorage.getItem('claude_api_key').then(key => {
+      if (key) setClaudeKey(key);
+    });
+
+    return () => unsubscribe();
   }, [loadStats]);
+
+  const handleThemeToggle = () => {
+    Alert.alert(
+      "Theme Mode",
+      "Select your preferred appearance",
+      [
+        { text: "Light Mode", onPress: () => setMode('light') },
+        { text: "Dark Mode", onPress: () => setMode('dark') },
+        { text: "System Default", onPress: () => setMode('system') },
+        { text: "Cancel", style: "cancel" }
+      ]
+    );
+  };
 
   const handleLanguageToggle = async () => {
     const newLang = language === 'en' ? 'hi' : 'en';
@@ -139,6 +176,12 @@ export default function SettingsScreen() {
     setShowNameModal(false);
   };
 
+  const handleSaveAiKey = async () => {
+    await AsyncStorage.setItem('claude_api_key', editAiKey.trim());
+    setClaudeKey(editAiKey.trim());
+    setShowAiModal(false);
+  };
+
   const handleDharmaModeToggle = async (value: boolean) => {
     if (value && blockedApps.length === 0) {
       setShowAppSelector(true);
@@ -150,17 +193,45 @@ export default function SettingsScreen() {
     if (value) {
       if (Platform.OS === 'android') {
         try {
-          const granted = await DharmaBlocker.requestPermissions();
-          if (granted) {
-            DharmaBlocker.startBlocking(blockedApps);
-            Alert.alert("Dharma Mode Active", `${blockedApps.length} apps are now restricted.`);
-          } else {
-            setDharmaMode(false);
-            await saveOnboardingStep('dharmaMode', false);
+          // First check if permissions are already granted
+          let hasPermission = false;
+          try {
+            hasPermission = DharmaBlocker.hasUsagePermission();
+          } catch (_) {}
+
+          if (!hasPermission) {
+            // Guide user through permission flow
+            Alert.alert(
+              "Permission Required",
+              "Dharma Mode needs 'Usage Access' permission to detect which apps you're using.\n\nYou'll be taken to Android Settings — find 'Gita' in the list and enable access.\n\nAfter granting, come back and toggle Dharma Mode again.",
+              [
+                { text: "Cancel", style: "cancel", onPress: () => {
+                  setDharmaMode(false);
+                  saveOnboardingStep('dharmaMode', false);
+                }},
+                { text: "Open Settings", onPress: async () => {
+                  try {
+                    await DharmaBlocker.requestPermissions();
+                  } catch (e) {
+                    console.warn("Permission request error:", e);
+                  }
+                  // Reset toggle — user needs to come back and re-enable
+                  setDharmaMode(false);
+                  await saveOnboardingStep('dharmaMode', false);
+                }}
+              ]
+            );
+            return;
           }
+
+          // Permission is granted — start blocking
+          DharmaBlocker.startBlocking(blockedApps);
+          Alert.alert("🛡️ Dharma Mode Active", `${blockedApps.length} apps are now restricted. Complete your daily reading to unlock them.`);
         } catch (e) {
           console.warn("DharmaBlocker error:", e);
-          Alert.alert("Dharma Mode", "Focus mode enabled. Install on device to block apps.");
+          Alert.alert("Dharma Mode", "Could not start app blocking. Please ensure permissions are granted in Settings.");
+          setDharmaMode(false);
+          await saveOnboardingStep('dharmaMode', false);
         }
       } else {
         Alert.alert("Dharma Mode Active", "Focus mode enabled. Distractions minimized.");
@@ -281,14 +352,14 @@ export default function SettingsScreen() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#E8751A" />
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Settings Header */}
       <View style={styles.header}>
         <View>
@@ -347,14 +418,33 @@ export default function SettingsScreen() {
               desc="Renew access from App Store"
               iconColor="#8B5CF6"
               onPress={handleRestorePurchases} 
+              isLast
+            />
+          </View>
+        </View>
+
+        {/* AI & COMMUNITY */}
+        <View style={styles.section}>
+          <SectionHeader title="COMMUNITY & AI" />
+          <View style={styles.sectionBody}>
+            <SettingRow 
+              icon="people" 
+              label="Global Sankalpa" 
+              desc="Verses read worldwide by the community"
+              iconColor="#10B981"
+              value={globalSankalpa > 0 ? globalSankalpa.toLocaleString() : '...'}
             />
             <SettingRow 
-              icon="sync" 
-              label={t('backupRestore', language)} 
-              desc="Move progress to a new device"
-              iconColor="#10B981"
-              onPress={() => router.push('/backup')} 
-              isLast 
+              icon="key" 
+              label="Claude API Key" 
+              desc="Attach your own Anthropic key for deep AI Insights"
+              iconColor="#E8751A"
+              value={claudeKey ? "Added" : "None"}
+              onPress={() => {
+                setEditAiKey(claudeKey);
+                setShowAiModal(true);
+              }}
+              isLast
             />
           </View>
         </View>
@@ -363,6 +453,13 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <SectionHeader title={t('studyPractice', language)} />
           <View style={styles.sectionBody}>
+            <SettingRow 
+              icon="flame" 
+              label="Sadhana Streak" 
+              desc="View your devotion calendar"
+              iconColor="#D4A44C"
+              onPress={() => router.push('/streak' as any)} 
+            />
             <SettingRow 
               icon="bookmark" 
               label={t('savedSlokas', language)} 
@@ -383,6 +480,13 @@ export default function SettingsScreen() {
               value={t('currentLanguage', language)}
               iconColor="#06B6D4"
               onPress={handleLanguageToggle} 
+            />
+            <SettingRow 
+              icon="color-palette" 
+              label="App Theme" 
+              value={mode === 'light' ? 'Light' : mode === 'dark' ? 'Dark' : 'System'}
+              iconColor="#8B5CF6"
+              onPress={handleThemeToggle} 
             />
             <SettingRow 
               icon="information-circle" 
@@ -504,7 +608,7 @@ export default function SettingsScreen() {
         {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>App Version 1.0.0</Text>
-          <Text style={styles.footerText}>Made with devotion · Gita for Scholar</Text>
+          <Text style={styles.footerText}>Made with devotion · The Gita Editorial</Text>
         </View>
 
       </ScrollView>
@@ -557,11 +661,38 @@ export default function SettingsScreen() {
                 Gita uses advanced Artificial Intelligence to provide personalized answers based on ancient scriptures. The voice you hear is generated securely, mimicking human devotion, and the audio files are cached on your phone to save data and work offline.
               </Text>
 
-              <Text style={styles.modalSectionTitle}>Data Backup</Text>
-              <Text style={styles.modalText}>
-                Because your data is strictly on your device, you are given a "Backup Code" in the Backup & Restore section. This long text code contains all your progress. You can copy it and paste it into a new phone to restore everything.
-              </Text>
             </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* AI Key Modal */}
+      <Modal visible={showAiModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Set Claude API Key</Text>
+            <Text style={{color: colors.textSecondary, fontSize: 13, textAlign: 'center', marginBottom: 20}}>
+              Provide your own Anthropic key to unlock deep spiritual guidance in the "Ask Scholar" feature. Costs are billed directly to your Anthropic account.
+            </Text>
+            <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
+              <TextInput
+                style={[styles.textInput, { color: colors.text }]}
+                value={editAiKey}
+                onChangeText={setEditAiKey}
+                placeholder="sk-ant-api03-..."
+                autoFocus
+                placeholderTextColor={colors.textSecondary}
+                autoCapitalize="none"
+              />
+            </View>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity onPress={() => setShowAiModal(false)} style={styles.modalButton}>
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleSaveAiKey} style={[styles.modalButton, styles.modalButtonPrimary, { backgroundColor: colors.primary }]}>
+                <Text style={styles.modalButtonPrimaryText}>Save</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

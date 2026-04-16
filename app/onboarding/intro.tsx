@@ -1,23 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeIn, Easing, ZoomIn } from 'react-native-reanimated';
 
-import { OnboardingBackground } from '../../src/components/OnboardingBackground';
-
-const { width } = Dimensions.get('window');
-
 export default function IntroScreen() {
   const router = useRouter();
 
   return (
-    <OnboardingBackground 
-      image={require('../../assets/images/onboarding_1.png')}
-      overlayOpacity={0.6}
-    >
-      <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" translucent />
+      <SafeAreaView style={styles.safeArea}>
         <View style={styles.centerContent}>
           <View style={styles.heroContent}>
             <Animated.Text 
@@ -51,18 +45,21 @@ export default function IntroScreen() {
             activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>Begin Journey</Text>
-            <Ionicons name="arrow-forward" size={20} color="#0A1128" />
+            <Ionicons name="arrow-forward" size={20} color="#0D0D0D" />
           </TouchableOpacity>
         </Animated.View>
       </SafeAreaView>
-    </OnboardingBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: '#0D0D0D',
+  },
+  safeArea: {
+    flex: 1,
     justifyContent: 'space-between',
   },
   centerContent: {
@@ -76,11 +73,11 @@ const styles = StyleSheet.create({
   },
   omSymbol: {
     fontSize: 140,
-    color: '#F48B29', // Vibrant Saffron
+    color: '#D4A44C',
     marginBottom: 24,
     fontWeight: '300',
     includeFontPadding: false,
-    textShadowColor: 'rgba(244, 139, 41, 0.4)', // Glowing effect
+    textShadowColor: 'rgba(212, 164, 76, 0.4)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 30,
   },
@@ -91,10 +88,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     letterSpacing: 0.5,
     textAlign: 'center',
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   subtitle: {
     fontSize: 18,
-    color: '#D1D5DB', // Soft Silver
+    color: '#E0D5C5',
     fontStyle: 'italic',
     letterSpacing: 0.5,
     textAlign: 'center',
@@ -105,23 +103,18 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
   },
   button: {
-    backgroundColor: '#F48B29',
+    backgroundColor: '#D4A44C',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 18,
-    borderRadius: 16,
+    borderRadius: 8,
     gap: 12,
-    shadowColor: '#F48B29',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
   },
   buttonText: {
-    color: '#0A1128',
+    color: '#0D0D0D',
     fontSize: 18,
     fontWeight: '700',
     letterSpacing: 0.5,
-  }
+  },
 });

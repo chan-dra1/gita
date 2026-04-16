@@ -1,115 +1,73 @@
-/**
- * Audio Utility — Local Caching + Playback
- */
-
+import * as Speech from 'expo-speech';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
-import { Config } from '../constants/config';
 import type { AudioLanguage } from '../types';
-import { generateTTSAudio } from './tts';
+import { Config } from '../constants/config';
 
-const AUDIO_CACHE_DIR = `${(FileSystem as any).documentDirectory}${Config.AUDIO_CACHE_DIR}`;
+let currentSound: Audio.Sound | null = null;
+
+// ─── Path Helpers ───────────────────────────────────────────────
+
+const getLocalAudioDir = () => `${FileSystem.cacheDirectory}${Config.AUDIO_CACHE_DIR}`;
 
 /**
- * Ensure the cache directory exists.
+ * Ensures the audio cache directory exists.
  */
-async function ensureDirExists() {
-  const dirInfo = await FileSystem.getInfoAsync(AUDIO_CACHE_DIR);
+async function ensureDirExists(): Promise<void> {
+  const dirInfo = await FileSystem.getInfoAsync(getLocalAudioDir());
   if (!dirInfo.exists) {
-    await FileSystem.makeDirectoryAsync(AUDIO_CACHE_DIR, { intermediates: true });
+    await FileSystem.makeDirectoryAsync(getLocalAudioDir(), { intermediates: true });
   }
 }
 
 /**
- * Build a deterministic file path for a sloka's audio.
+ * Generates the remote and local paths for a specific verse.
  */
-export function getCachedAudioPath(
-  chapter: number,
-  verse: number,
-  language: AudioLanguage
-): string {
-  return `${AUDIO_CACHE_DIR}${chapter}_${verse}_${language}.mp3`;
-}
-
-/**
- * Check if audio for a specific sloka + language is already cached.
- */
-export async function hasCachedAudio(
-  chapter: number,
-  verse: number,
-  language: AudioLanguage
-): Promise<boolean> {
-  const path = getCachedAudioPath(chapter, verse, language);
-  const fileInfo = await FileSystem.getInfoAsync(path);
-  return fileInfo.exists;
-}
-
-/**
- * Save base64-encoded audio data to local storage.
- */
-async function saveAudioToCache(
-  chapter: number,
-  verse: number,
-  language: AudioLanguage,
-  base64Audio: string
-): Promise<string> {
-  await ensureDirExists();
-  const path = getCachedAudioPath(chapter, verse, language);
-  await FileSystem.writeAsStringAsync(path, base64Audio, {
-    encoding: (FileSystem as any).EncodingType.Base64,
-  });
-  return path;
+function getAudioPaths(chapter: number, verse: number, language: AudioLanguage) {
+  const fileName = `${chapter}_${verse}.mp3`;
+  const remoteUri = `${Config.AUDIO_CDN_URL}/${language}/${fileName}`;
+  const localUri = `${getLocalAudioDir()}${language}_${fileName}`;
+  return { remoteUri, localUri };
 }
 
 // ─── Playback ───────────────────────────────────────────────────
 
-let currentSound: Audio.Sound | null = null;
-
 export async function stopAudio(): Promise<void> {
+  Speech.stop();
   if (currentSound) {
     try {
       await currentSound.stopAsync();
       await currentSound.unloadAsync();
-    } catch (e) {
-      // Sound may already be unloaded
-    }
+    } catch (e) {}
     currentSound = null;
   }
 }
 
-export async function playAudioFromUri(
-  uri: string,
-  onFinish?: () => void,
-  onError?: (error: string) => void
-): Promise<Audio.Sound> {
-  await stopAudio();
+function cleanTextForSpeech(text: string): string {
+  return text
+    .replace(/^(chapter|verse|sloka)\s+\d+[,.]?\s*/gi, '')
+    .replace(/Chapter \d+, Verse \d+[.,]?\s*/gi, '')
+    .replace(/;/g, ',')
+    .replace(/(\\||॥)[^\\|॥]*(\\||॥)/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
 
-  await Audio.setAudioModeAsync({
-    playsInSilentModeIOS: true,
-    staysActiveInBackground: false,
-    shouldDuckAndroid: true,
-  });
-
-  try {
-    const { sound } = await Audio.Sound.createAsync(
-      { uri },
-      { shouldPlay: true },
-      (status) => {
-        if (status.isLoaded && status.didJustFinish) {
-          sound.unloadAsync();
-          if (currentSound === sound) currentSound = null;
-          onFinish?.();
-        }
-      }
-    );
-
-    currentSound = sound;
-    return sound;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Playback failed';
-    onError?.(message);
-    throw error;
+async function getVoiceForLanguage(language: string) {
+  const voices = await Speech.getAvailableVoicesAsync();
+  
+  if (language === 'sanskrit' || language === 'hindi') {
+    const hindiVoices = voices.filter(v => v.language.includes('hi'));
+    const premium = hindiVoices.find(v => v.quality === Speech.VoiceQuality.Enhanced);
+    return premium?.identifier || hindiVoices[0]?.identifier;
   }
+  
+  const engVoices = voices.filter(v => v.language.startsWith('en'));
+  const premium = engVoices.find(v => 
+    v.quality === Speech.VoiceQuality.Enhanced && 
+    (v.name.includes('Siri') || v.identifier.includes('network') || v.identifier.includes('premium'))
+  );
+  return premium?.identifier || (engVoices.length > 0 ? engVoices[0].identifier : undefined);
 }
 
 export async function cacheAndPlayAudio(
@@ -119,170 +77,153 @@ export async function cacheAndPlayAudio(
   language: AudioLanguage,
   onFinish?: () => void,
   onError?: (error: string) => void
-): Promise<Audio.Sound> {
-  const path = getCachedAudioPath(chapter, verse, language);
-  const fileInfo = await FileSystem.getInfoAsync(path);
-
-  if (fileInfo.exists) {
-    return playAudioFromUri(path, onFinish, onError);
-  }
-
+): Promise<any> {
+  await stopAudio();
+  
   try {
-    const base64Audio = await generateTTSAudio(
-      text,
-      language,
-      Config.TTS_PROVIDER,
-      Config.TTS_API_KEY,
-      Config.TTS_PROVIDER === 'elevenlabs' ? Config.ELEVENLABS_VOICE_ID : undefined
-    );
+    await ensureDirExists();
+    const { remoteUri, localUri } = getAudioPaths(chapter, verse, language);
+    
+    // Check if cached
+    const fileInfo = await FileSystem.getInfoAsync(localUri);
+    let finalUri = localUri;
 
-    const savedPath = await saveAudioToCache(chapter, verse, language, base64Audio);
-    return playAudioFromUri(savedPath, onFinish, onError);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'TTS generation failed';
-    onError?.(message);
-    throw error;
+    if (!fileInfo.exists) {
+        console.log(`[Audio] Fetching ${language}_${chapter}_${verse} from cloud...`);
+        try {
+            const { uri } = await FileSystem.downloadAsync(remoteUri, localUri);
+            finalUri = uri;
+        } catch (downloadErr) {
+            console.warn(`[Audio] Cloud fetch failed, falling back to TTS:`, downloadErr);
+            // Fall back to TTS below
+            return playTTS(text, language, onFinish, onError);
+        }
+    }
+
+    // Play from cache
+    return new Promise<void>(async (resolve) => {
+      try {
+        const { sound } = await Audio.Sound.createAsync({ uri: finalUri });
+        currentSound = sound;
+        sound.setOnPlaybackStatusUpdate((status) => {
+          if (status.isLoaded && status.didJustFinish) {
+            onFinish?.();
+            resolve();
+          }
+        });
+        await sound.playAsync();
+      } catch (err: any) {
+        console.error(`[Audio] Playback failed:`, err);
+        // Fall back to TTS on playback error too
+        playTTS(text, language, onFinish, onError).then(resolve);
+      }
+    });
+
+  } catch (err: any) {
+    return playTTS(text, language, onFinish, onError);
   }
 }
 
 /**
- * Generate and play audio for dynamic content (like Scholar responses)
- * Saves to temporary cache directory so it doesn't inflate app storage permanently.
+ * Fallback TTS implementation
  */
+async function playTTS(
+    text: string, 
+    language: AudioLanguage, 
+    onFinish?: () => void, 
+    onError?: (error: string) => void
+): Promise<void> {
+    const cleanStr = cleanTextForSpeech(text);
+    const voiceId = await getVoiceForLanguage(language);
+
+    return new Promise<void>((resolve) => {
+        Speech.speak(cleanStr, {
+            voice: voiceId,
+            rate: language === 'sanskrit' ? 0.8 : 0.9,
+            pitch: language === 'sanskrit' ? 0.95 : 1.0,
+            onDone: () => {
+                onFinish?.();
+                resolve();
+            },
+            onError: (err) => {
+                onError?.(err instanceof Error ? err.message : String(err));
+                resolve();
+            }
+        });
+    });
+}
+
 export async function playDynamicAudio(
   text: string,
   language: AudioLanguage,
   onFinish?: () => void,
   onError?: (error: string) => void
-): Promise<Audio.Sound> {
-  try {
-    const base64Audio = await generateTTSAudio(
-      text,
-      language,
-      Config.TTS_PROVIDER,
-      Config.TTS_API_KEY,
-      Config.TTS_PROVIDER === 'elevenlabs' ? Config.ELEVENLABS_VOICE_ID : undefined
-    );
-    
-    // Use temporary cache directory for dynamic responses
-    const tempPath = `${(FileSystem as any).cacheDirectory}temp_scholar_audio_${Date.now()}.mp3`;
-    await FileSystem.writeAsStringAsync(tempPath, base64Audio, {
-      encoding: (FileSystem as any).EncodingType.Base64,
-    });
-    
-    return playAudioFromUri(tempPath, onFinish, onError);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'TTS generation failed';
-    onError?.(message);
-    throw error;
-  }
+): Promise<any> {
+    return playTTS(text, language, onFinish, onError);
 }
+
+// ─── Cache Management ──────────────────────────────────────────────────────
 
 export async function getCacheSize(): Promise<number> {
   try {
-    const dirInfo = await FileSystem.getInfoAsync(AUDIO_CACHE_DIR);
+    const dirInfo = await FileSystem.getInfoAsync(getLocalAudioDir());
     if (!dirInfo.exists) return 0;
-    // Note: getInfoAsync on directory doesn't return total size of contents in standard expo-file-system
-    // This is a limitation, but we can return 0 or implement a recursive size check if needed.
-    return 0;
+    
+    const files = await FileSystem.readDirectoryAsync(getLocalAudioDir());
+    let totalSize = 0;
+    for (const file of files) {
+      const info = await FileSystem.getInfoAsync(`${getLocalAudioDir()}${file}`);
+      if (info.exists) {
+        totalSize += (info as any).size || 0;
+      }
+    }
+    return totalSize;
   } catch {
     return 0;
   }
 }
 
 export function formatCacheSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes === 0) return "0 MB";
+  const mb = bytes / (1024 * 1024);
+  return `${mb.toFixed(1)} MB`;
 }
 
 export async function clearAudioCache(): Promise<void> {
   try {
-    const dirInfo = await FileSystem.getInfoAsync(AUDIO_CACHE_DIR);
-    if (dirInfo.exists) {
-      await FileSystem.deleteAsync(AUDIO_CACHE_DIR, { idempotent: true });
-    }
-  } catch {
-    console.warn('Could not clear audio cache');
+    await FileSystem.deleteAsync(getLocalAudioDir(), { idempotent: true });
+    await ensureDirExists();
+  } catch (e) {
+    console.error('Failed to clear audio cache:', e);
   }
 }
 
-// ─── Background Pre-download ─────────────────────────────────────
-
-/**
- * A map of chapter → abort flag so we can cancel a running pre-download
- * when the user leaves the chapter screen before it completes.
- */
-const preDownloadAbortFlags: Map<number, boolean> = new Map();
-
-/**
- * Silently pre-downloads and caches audio for every verse in a chapter.
- * - Skips verses that are already cached (no API cost).
- * - Downloads one verse at a time to respect API rate limits.
- * - Automatically cancelled if the user leaves the chapter screen.
- *
- * @param chapter      - The chapter number
- * @param verseTexts   - Array of { verse: number, text: string } for each verse
- * @param language     - Audio language to generate
- * @param onProgress   - Optional callback with (downloaded, total) progress
- */
 export async function preDownloadChapterAudio(
   chapter: number,
   verseTexts: Array<{ verse: number; text: string }>,
   language: AudioLanguage = 'english',
-  apiKey: string,
   onProgress?: (downloaded: number, total: number) => void
 ): Promise<void> {
-  // Cancel any existing pre-download for this chapter
-  preDownloadAbortFlags.set(chapter, false);
-
-  const total = verseTexts.length;
-  let downloaded = 0;
-
   await ensureDirExists();
-
-  for (const { verse, text } of verseTexts) {
-    // Check if user navigated away — abort cleanly
-    if (preDownloadAbortFlags.get(chapter) === true) {
-      console.log(`[Audio] Pre-download cancelled for chapter ${chapter}`);
-      break;
+  const total = verseTexts.length;
+  
+  for (let i = 0; i < total; i++) {
+    const { verse } = verseTexts[i];
+    const { remoteUri, localUri } = getAudioPaths(chapter, verse, language);
+    
+    const info = await FileSystem.getInfoAsync(localUri);
+    if (!info.exists) {
+      try {
+        await FileSystem.downloadAsync(remoteUri, localUri);
+      } catch (e) {
+        console.warn(`Background download failed for verse ${verse}:`, e);
+      }
     }
-
-    const path = getCachedAudioPath(chapter, verse, language);
-    const fileInfo = await FileSystem.getInfoAsync(path);
-
-    if (fileInfo.exists) {
-      // Already cached — skip, no API call
-      downloaded++;
-      onProgress?.(downloaded, total);
-      continue;
-    }
-
-    if (!apiKey || apiKey === 'YOUR_TTS_API_KEY') {
-      // No API key — skip silently instead of showing errors
-      break;
-    }
-
-    try {
-      const base64Audio = await generateTTSAudio(text, language, Config.TTS_PROVIDER, apiKey);
-      await saveAudioToCache(chapter, verse, language, base64Audio);
-      downloaded++;
-      onProgress?.(downloaded, total);
-
-      // Small delay between API calls to avoid rate limiting (250ms)
-      await new Promise((res) => setTimeout(res, 250));
-    } catch (e) {
-      // Silently continue if one verse fails — don't break the whole chapter
-      console.warn(`[Audio] Failed to pre-cache ch${chapter}v${verse}:`, e);
-    }
+    onProgress?.(i + 1, total);
   }
-
-  preDownloadAbortFlags.delete(chapter);
 }
 
-/**
- * Cancel a running pre-download for a chapter (call on screen unmount).
- */
 export function cancelPreDownload(chapter: number): void {
-  preDownloadAbortFlags.set(chapter, true);
+  // Simple implementation doesn't support cancellation yet
 }
+

@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { FlatList, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { FlatList, Text, TouchableOpacity, View, ActivityIndicator, StatusBar, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getAllChapters } from '../../src/utils/sloka';
-import { getReadSlokasByChapter, getSlokasRead } from '../../src/utils/stats';
+import { getSlokasRead } from '../../src/utils/stats';
+import { getChapterImage } from '../../src/utils/chapterImages';
 
 const chapters = getAllChapters();
 
@@ -71,14 +72,15 @@ export default function LibraryScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF7ED', justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#E8751A" />
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#0D0D0D', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#D4A44C" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF7ED' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#0D0D0D' }}>
+      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" />
       {/* Header */}
       <View
         style={{
@@ -91,7 +93,7 @@ export default function LibraryScreen() {
           style={{
             fontSize: 28,
             fontWeight: '700',
-            color: '#1A1A1A',
+            color: '#FFFFFF',
           }}
         >
           Bhagavad Gita
@@ -99,8 +101,11 @@ export default function LibraryScreen() {
         <Text
           style={{
             fontSize: 14,
-            color: '#999',
+            color: '#D4A44C',
+            fontWeight: '600',
             marginTop: 4,
+            letterSpacing: 1,
+            textTransform: 'uppercase',
           }}
         >
           18 Chapters · 700 Slokas
@@ -122,66 +127,91 @@ export default function LibraryScreen() {
             <TouchableOpacity
               onPress={() => router.push(`/chapter/${item.chapter}` as any)}
               style={{
-                marginBottom: 12,
-                borderRadius: 20,
-                backgroundColor: '#FFF',
+                marginBottom: 16,
+                borderRadius: 24,
+                backgroundColor: '#141414',
                 borderWidth: 1,
-                borderColor: isComplete ? '#22C55E' : '#F0E0CC',
-                padding: 18,
-                flexDirection: 'row',
-                alignItems: 'center',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.04,
-                shadowRadius: 8,
-                elevation: 2,
+                borderColor: isComplete ? 'rgba(34, 197, 94, 0.3)' : 'rgba(255,255,255,0.05)',
+                overflow: 'hidden',
               }}
             >
-              {/* Chapter Number */}
-              <View
+              {/* Chapter Image */}
+              <Image
+                source={getChapterImage(item.chapter)}
                 style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 14,
-                  backgroundColor: isComplete ? '#F0FDF4' : '#FFF3E8',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: 14,
-                  borderWidth: 2,
-                  borderColor: isComplete ? '#22C55E' : 'transparent',
+                  width: '100%',
+                  height: 140,
+                  borderTopLeftRadius: 24,
+                  borderTopRightRadius: 24,
                 }}
-              >
+                resizeMode="cover"
+              />
+              
+              {/* Gradient overlay on image */}
+              <View style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 140,
+                borderTopLeftRadius: 24,
+                borderTopRightRadius: 24,
+                backgroundColor: 'rgba(0,0,0,0.3)',
+              }} />
+              
+              {/* Chapter number badge on image */}
+              <View style={{
+                position: 'absolute',
+                top: 12,
+                left: 14,
+                backgroundColor: isComplete ? 'rgba(34, 197, 94, 0.85)' : 'rgba(212, 164, 76, 0.85)',
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 10,
+              }}>
                 {isComplete ? (
-                  <Ionicons name="checkmark" size={24} color="#22C55E" />
+                  <Ionicons name="checkmark-circle" size={16} color="#FFF" />
                 ) : (
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      fontWeight: '700',
-                      color: '#E8751A',
-                    }}
-                  >
-                    {item.chapter}
+                  <Text style={{
+                    fontSize: 12,
+                    fontWeight: '800',
+                    color: '#FFF',
+                    letterSpacing: 0.5,
+                  }}>
+                    CH {item.chapter}
                   </Text>
                 )}
               </View>
 
               {/* Chapter Info */}
-              <View style={{ flex: 1 }}>
+              <View style={{ padding: 16 }}>
                 <Text
                   style={{
-                    fontSize: 16,
-                    fontWeight: '600',
-                    color: '#1A1A1A',
+                    fontSize: 17,
+                    fontWeight: '700',
+                    color: '#FFFFFF',
+                    marginBottom: 2,
                   }}
                 >
                   {item.name}
                 </Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: '#888',
+                    fontWeight: '500',
+                    marginBottom: 4,
+                    fontStyle: 'italic',
+                  }}
+                >
+                  {item.name_sanskrit}
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
                   <Text
                     style={{
                       fontSize: 13,
-                      color: hasStarted ? '#E8751A' : '#999',
+                      color: hasStarted ? '#D4A44C' : '#666',
+                      fontWeight: hasStarted ? '600' : '400',
                     }}
                   >
                     {chapterProgress?.readCount || 0}/{item.verses_count} verses read
@@ -190,29 +220,14 @@ export default function LibraryScreen() {
                     <View
                       style={{
                         marginLeft: 8,
-                        backgroundColor: '#FEF3E8',
+                        backgroundColor: 'rgba(212, 164, 76, 0.1)',
                         paddingHorizontal: 6,
                         paddingVertical: 2,
                         borderRadius: 6,
                       }}
                     >
-                      <Text style={{ fontSize: 10, fontWeight: '600', color: '#E8751A' }}>
+                      <Text style={{ fontSize: 10, fontWeight: '700', color: '#D4A44C' }}>
                         {percentComplete}%
-                      </Text>
-                    </View>
-                  )}
-                  {isComplete && (
-                    <View
-                      style={{
-                        marginLeft: 8,
-                        backgroundColor: '#F0FDF4',
-                        paddingHorizontal: 6,
-                        paddingVertical: 2,
-                        borderRadius: 6,
-                      }}
-                    >
-                      <Text style={{ fontSize: 10, fontWeight: '600', color: '#22C55E' }}>
-                        Complete
                       </Text>
                     </View>
                   )}
@@ -220,11 +235,11 @@ export default function LibraryScreen() {
 
                 {/* Progress Bar */}
                 {hasStarted && (
-                  <View style={{ marginTop: 8 }}>
+                  <View style={{ marginTop: 10 }}>
                     <View
                       style={{
                         height: 4,
-                        backgroundColor: '#F0E0CC',
+                        backgroundColor: '#1A1A1A',
                         borderRadius: 2,
                         overflow: 'hidden',
                       }}
@@ -233,7 +248,7 @@ export default function LibraryScreen() {
                         style={{
                           height: '100%',
                           width: `${percentComplete}%`,
-                          backgroundColor: isComplete ? '#22C55E' : '#E8751A',
+                          backgroundColor: isComplete ? '#22C55E' : '#D4A44C',
                           borderRadius: 2,
                         }}
                       />
@@ -241,8 +256,6 @@ export default function LibraryScreen() {
                   </View>
                 )}
               </View>
-
-              <Ionicons name="chevron-forward" size={20} color="#D0C0B0" />
             </TouchableOpacity>
           );
         }}

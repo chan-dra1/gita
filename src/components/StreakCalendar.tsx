@@ -1,11 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { type StreakData } from '../types';
 
 interface Props {
   streakData: StreakData | null;
 }
+
+const { width } = Dimensions.get('window');
 
 export function StreakCalendar({ streakData }: Props) {
   if (!streakData) return null;
@@ -39,7 +41,7 @@ export function StreakCalendar({ streakData }: Props) {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.titleRow}>
-          <Ionicons name="flame" size={20} color="#E8751A" />
+          <Ionicons name="flame" size={20} color="#D4A44C" />
           <Text style={styles.title}>Sadhana Streak</Text>
         </View>
         <Text style={styles.streakCount}>{streakData.currentStreak} Days</Text>
@@ -56,18 +58,18 @@ export function StreakCalendar({ streakData }: Props) {
               day.read ? styles.dayCellRead : (day.isFuture ? styles.dayCellFuture : styles.dayCellMissed)
             ]}
           >
-            {day.read && <Ionicons name="checkmark" size={12} color="#FFF" />}
+            {day.read && <Ionicons name="checkmark" size={12} color="#0D0D0D" />}
           </View>
         ))}
       </View>
       
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendColor, { backgroundColor: '#E8751A' }]} />
+          <View style={[styles.legendColor, { backgroundColor: '#D4A44C' }]} />
           <Text style={styles.legendText}>Read</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendColor, { backgroundColor: '#F0E0CC' }]} />
+          <View style={[styles.legendColor, { backgroundColor: 'rgba(255,255,255,0.05)' }]} />
           <Text style={styles.legendText}>Missed</Text>
         </View>
       </View>
@@ -77,18 +79,13 @@ export function StreakCalendar({ streakData }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#141414',
     borderRadius: 24,
     padding: 20,
     marginTop: 24,
     marginHorizontal: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
-    shadowRadius: 12,
-    elevation: 3,
     borderWidth: 1,
-    borderColor: 'rgba(232, 117, 26, 0.08)',
+    borderColor: 'rgba(212, 164, 76, 0.15)',
   },
   header: {
     flexDirection: 'row',
@@ -104,16 +101,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1A1A1A',
+    color: '#FFFFFF',
   },
   streakCount: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#E8751A',
+    color: '#D4A44C',
   },
   subtitle: {
     fontSize: 12,
-    color: '#9A9A9A',
+    color: '#777777',
     marginBottom: 16,
   },
   grid: {
@@ -122,22 +119,25 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   dayCell: {
-    width: 18,
-    height: 18,
-    borderRadius: 4,
+    width: (width - 40 - 40 - (13 * 4)) / 14, // Responsive cell sizing
+    aspectRatio: 1,
+    borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dayCellRead: {
-    backgroundColor: '#E8751A',
+    backgroundColor: '#D4A44C',
   },
   dayCellMissed: {
-    backgroundColor: '#F0E0CC',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   dayCellFuture: {
-    backgroundColor: '#FAFAFA',
+    backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#F0E0CC',
+    borderColor: 'rgba(255,255,255,0.03)',
+    borderStyle: 'dashed',
   },
   legend: {
     flexDirection: 'row',
@@ -157,6 +157,6 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 11,
-    color: '#9A9A9A',
+    color: '#666',
   }
 });

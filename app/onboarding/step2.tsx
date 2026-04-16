@@ -2,170 +2,132 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeInRight, FadeIn, Layout, Easing } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { saveOnboardingStep } from '../../src/utils/stats';
-import { OnboardingBackground } from '../../src/components/OnboardingBackground';
-import { Dimensions } from 'react-native';
 
-const { width } = Dimensions.get('window');
-
-const OPTIONS = [
+const LEVELS = [
   {
     id: 'beginner',
     title: 'Beginner',
-    description: 'Curious to learn',
-    icon: 'book-outline',
+    description: 'I am new to the Bhagavad Gita and wish to understand its core principles from the ground up.',
+    tags: ['FOUNDATIONS', 'CONCEPTS'],
   },
   {
-    id: 'intermediate',
-    title: 'Intermediate',
-    description: 'Know some verses',
-    icon: 'book',
-  },
-  {
-    id: 'advanced',
-    title: 'Advanced',
-    description: 'Regular practitioner',
-    icon: 'flower-outline',
+    id: 'seeker',
+    title: 'Seeker',
+    description: 'I have some exposure and seek to deepen my spiritual practice and philosophical understanding.',
+    tags: ['DEEP DIVE', 'APPLICATION'],
   },
   {
     id: 'scholar',
     title: 'Scholar',
-    description: 'Deep academic study',
-    icon: 'school-outline',
+    description: 'I am familiar with the verses and commentaries, looking for advanced linguistic and metaphysical study.',
+    tags: ['SANSKRIT', 'ADVANCED'],
   },
 ];
 
 export default function OnboardingStep2() {
   const router = useRouter();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
 
   const handleContinue = async () => {
-    if (selectedId) {
-      await saveOnboardingStep('experienceLevel', selectedId);
-      router.push('/onboarding/step3');
-    }
-  };
-
-  const handleSkip = async () => {
-    await saveOnboardingStep('experienceLevel', 'beginner');
+    if (!selectedLevel) return;
+    await saveOnboardingStep('experienceLevel', selectedLevel);
     router.push('/onboarding/step3');
   };
 
   return (
-    <OnboardingBackground
-      image={require('../../assets/images/onboarding_3.png')}
-      quote="The mind is restless and difficult to restrain, but it is subdued by practice."
-      author="LORD KRISHNA"
-      overlayOpacity={0.7}
-    >
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" translucent />
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
         
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#D1D5DB" />
+            <Ionicons name="arrow-back" size={24} color="#D4A44C" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Personalization</Text>
+          <Text style={styles.headerTitle}>Onboarding</Text>
           <View style={{ width: 40 }} />
         </View>
 
-        {/* Scrollable Content */}
         <ScrollView 
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Progress */}
-          <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.progressContainer}>
-            <View style={styles.progressTextRow}>
-              <Text style={styles.progressStep}>STEP 2 OF 4</Text>
-              <Text style={styles.progressLabel}>Experience Level</Text>
-            </View>
-            <View style={styles.progressBarBg}>
-              <Animated.View layout={Layout.springify().damping(15)} style={styles.progressBarFill} />
-            </View>
-          </Animated.View>
-
           {/* Title */}
-          <Animated.View entering={FadeInDown.duration(600).delay(200)} style={styles.titleContainer}>
-            <Text style={styles.mainTitle}>
-              How familiar are you with the <Text style={styles.highlight}>Bhagavad Gita</Text>?
-            </Text>
+          <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.titleContainer}>
+            <Text style={styles.eyebrow}>PERSONALIZE YOUR JOURNEY</Text>
+            <Text style={styles.mainTitle}>What is your current depth of knowledge?</Text>
             <Text style={styles.subtitle}>
-              This helps us tailor the verses and explanations to your current level of understanding.
+              Every seeker's path is unique. Tell us where you stand so we can tailor the wisdom of the Gita to your current understanding.
             </Text>
           </Animated.View>
 
-          {/* Options */}
-          <View style={styles.optionsContainer}>
-            {OPTIONS.map((option, index) => {
-              const isSelected = selectedId === option.id;
+          {/* Level Cards */}
+          <View style={styles.cardsContainer}>
+            {LEVELS.map((level, index) => {
+              const isSelected = selectedLevel === level.id;
               return (
-                <Animated.View
-                  key={option.id}
-                  entering={FadeInRight.duration(500).delay(300 + index * 100).easing(Easing.out(Easing.cubic))}
-                >
+                <Animated.View key={level.id} entering={FadeInRight.duration(500).delay(200 + index * 100)}>
                   <TouchableOpacity
                     activeOpacity={0.8}
-                    onPress={() => setSelectedId(option.id)}
-                    style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+                    onPress={() => setSelectedLevel(level.id)}
+                    style={[styles.levelCard, isSelected && styles.levelCardSelected]}
                   >
-                    <View style={[styles.iconContainer, isSelected && styles.iconContainerSelected]}>
-                      <Ionicons 
-                        name={option.icon as any} 
-                        size={22} 
-                        color={isSelected ? '#F48B29' : '#9CA3AF'} 
-                      />
-                    </View>
-                    <View style={styles.optionTextContainer}>
-                      <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
-                        {option.title}
-                      </Text>
-                      <Text style={[styles.optionDescription, isSelected && styles.optionDescriptionSelected]}>
-                        {option.description}
-                      </Text>
-                    </View>
-
-                    <View style={[styles.radioOuter, isSelected && styles.radioOuterSelected]}>
-                      {isSelected ? <Animated.View entering={FadeIn.duration(200)} style={styles.radioInner} /> : null}
+                    <View style={styles.cardContent}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.levelTitle, isSelected && styles.levelTitleSelected]}>{level.title}</Text>
+                        <Text style={styles.levelDescription}>{level.description}</Text>
+                        <View style={styles.tagsRow}>
+                          {level.tags.map(tag => (
+                            <View key={tag} style={[styles.tag, isSelected && styles.tagSelected]}>
+                              <Text style={[styles.tagText, isSelected && styles.tagTextSelected]}>{tag}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                      <View style={[styles.radioOuter, isSelected && styles.radioOuterSelected]}>
+                        {isSelected && <View style={styles.radioInner} />}
+                      </View>
                     </View>
                   </TouchableOpacity>
                 </Animated.View>
               );
             })}
           </View>
+
+          {/* Quote */}
+          <Animated.View entering={FadeInDown.duration(600).delay(600)} style={styles.quoteSection}>
+            <Text style={styles.quoteText}>
+              "Yoga is the journey of the self, through the self, to the self."
+            </Text>
+            <Text style={styles.quoteRef}>BHAGAVAD GITA 6.20</Text>
+          </Animated.View>
         </ScrollView>
 
-        {/* Footer */}
-        <Animated.View entering={FadeInDown.duration(600).delay(700)} style={styles.footer}>
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={handleContinue}
-            disabled={!selectedId}
-            style={[styles.continueButton, selectedId ? styles.continueButtonActive : styles.continueButtonInactive]}
-          >
-            <Text style={[styles.continueText, selectedId ? styles.continueTextActive : styles.continueTextInactive]}>
-              Continue
-            </Text>
-            <Ionicons name="arrow-forward" size={20} color={selectedId ? '#0A1128' : 'rgba(244, 139, 41, 0.4)'} />
-          </TouchableOpacity>
-          
-          <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
-            <Text style={styles.skipText}>I'm not sure yet</Text>
-          </TouchableOpacity>
-        </Animated.View>
+        {/* Continue Button */}
+        {selectedLevel && (
+          <Animated.View entering={FadeInDown.duration(400)} style={styles.ctaContainer}>
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={handleContinue}
+              style={styles.ctaButton}
+            >
+              <Text style={styles.ctaText}>CONTINUE</Text>
+              <Ionicons name="chevron-forward" size={18} color="#0D0D0D" />
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+
       </SafeAreaView>
-    </OnboardingBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
+  container: { flex: 1, backgroundColor: '#0D0D0D' },
+  safeArea: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -174,190 +136,54 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 8,
   },
-  backButton: {
-    padding: 8,
-    marginLeft: -8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#E5E7EB',
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-  },
-  progressContainer: {
-    marginTop: 8,
-  },
-  progressTextRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  progressStep: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#F48B29',
-    letterSpacing: 1,
-  },
-  progressLabel: {
-    fontSize: 12,
-    color: '#9CA3AF',
-  },
-  progressBarBg: {
-    height: 6,
-    backgroundColor: '#1E293B',
-    borderRadius: 999,
-    flexDirection: 'row',
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: '#F48B29',
-    width: '50%',
-    borderRadius: 999,
-  },
-  titleContainer: {
-    marginTop: 24,
-    marginBottom: 24,
-  },
-  mainTitle: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    lineHeight: 38,
-    letterSpacing: -0.5,
-  },
-  highlight: {
-    color: '#F48B29',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#D1D5DB',
-    marginTop: 12,
-    lineHeight: 24,
-  },
-  optionsContainer: {
-    gap: 12,
-    marginBottom: 24,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 24,
-  },
-  optionCard: {
-    padding: 16,
+  backButton: { padding: 8, marginLeft: -8 },
+  headerTitle: { fontSize: 16, fontWeight: '600', color: '#D4A44C', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  scrollView: { flex: 1 },
+  scrollContent: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 120 },
+
+  titleContainer: { marginBottom: 24 },
+  eyebrow: { fontSize: 10, color: '#D4A44C', fontWeight: '800', letterSpacing: 1.5, marginBottom: 8 },
+  mainTitle: { fontSize: 28, fontWeight: '800', color: '#FFFFFF', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', lineHeight: 36, marginBottom: 12 },
+  subtitle: { fontSize: 14, color: '#9CA3AF', lineHeight: 22 },
+
+  cardsContainer: { gap: 12 },
+  levelCard: {
+    backgroundColor: '#141414',
     borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(22, 32, 58, 0.7)',
+    padding: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
-  optionCardSelected: {
-    backgroundColor: 'rgba(26, 39, 71, 0.8)',
-    borderColor: '#F48B29',
-    shadowColor: '#F48B29',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: '#1E293B',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-  },
-  iconContainerSelected: {
-    backgroundColor: 'rgba(244, 139, 41, 0.15)',
-  },
-  optionTextContainer: {
-    flex: 1,
-    marginRight: 16,
-  },
-  optionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#E5E7EB',
-    marginBottom: 4,
-  },
-  optionTitleSelected: {
-    color: '#F48B29',
-  },
-  optionDescription: {
-    fontSize: 14,
-    color: '#9CA3AF',
-  },
-  optionDescriptionSelected: {
-    color: '#D1D5DB',
-  },
-  radioOuter: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#374151',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioOuterSelected: {
-    borderColor: '#F48B29',
-  },
-  radioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#F48B29',
-  },
-  footer: {
+  levelCardSelected: { borderColor: '#D4A44C', borderWidth: 2, backgroundColor: 'rgba(212, 164, 76, 0.06)' },
+  cardContent: { flexDirection: 'row', alignItems: 'flex-start' },
+  levelTitle: { fontSize: 18, fontWeight: '700', color: '#D4A44C', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', marginBottom: 8 },
+  levelTitleSelected: { color: '#D4A44C' },
+  levelDescription: { fontSize: 13, color: '#9CA3AF', lineHeight: 20, marginBottom: 12 },
+  tagsRow: { flexDirection: 'row', gap: 8 },
+  tag: { backgroundColor: 'rgba(255,255,255,0.06)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
+  tagSelected: { backgroundColor: 'rgba(212, 164, 76, 0.15)' },
+  tagText: { fontSize: 10, fontWeight: '700', color: '#666', letterSpacing: 0.5 },
+  tagTextSelected: { color: '#D4A44C' },
+  radioOuter: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#333', marginLeft: 16, marginTop: 4, alignItems: 'center', justifyContent: 'center' },
+  radioOuterSelected: { borderColor: '#D4A44C' },
+  radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#D4A44C' },
+
+  quoteSection: { marginTop: 32, alignItems: 'center' },
+  quoteText: { fontSize: 16, fontStyle: 'italic', color: '#666', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', lineHeight: 24, textAlign: 'center', marginBottom: 8 },
+  quoteRef: { fontSize: 10, color: '#444', fontWeight: '700', letterSpacing: 1 },
+
+  ctaContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     paddingHorizontal: 24,
-    paddingBottom: 32,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 24,
     paddingTop: 16,
+    backgroundColor: '#0D0D0D',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.05)',
   },
-  continueButton: {
-    height: 56,
-    borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  continueButtonActive: {
-    backgroundColor: '#F48B29',
-    shadowColor: '#F48B29',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  continueButtonInactive: {
-    backgroundColor: '#1E293B',
-  },
-  continueText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginRight: 8,
-  },
-  continueTextActive: {
-    color: '#0A1128',
-  },
-  continueTextInactive: {
-    color: '#F48B29',
-    opacity: 0.4,
-  },
-  skipButton: {
-    marginTop: 20,
-    alignItems: 'center',
-  },
-  skipText: {
-    fontSize: 14,
-    color: '#9CA3AF',
-  },
+  ctaButton: { backgroundColor: '#D4A44C', borderRadius: 8, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  ctaText: { fontSize: 14, fontWeight: '800', color: '#0D0D0D', letterSpacing: 1 },
 });

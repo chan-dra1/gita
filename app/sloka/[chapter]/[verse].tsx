@@ -2,8 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Speech from 'expo-speech';
-import { hasCachedAudio } from '../../../src/utils/audio';
+import { hasCachedAudio, cacheAndPlayAudio, stopAudio } from '../../../src/utils/audio';
 import { Config } from '../../../src/constants/config';
+import type { AudioLanguage } from '../../../src/types';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -17,12 +18,23 @@ import {
   Image,
   StyleSheet,
   StatusBar,
+  Share,
+  Dimensions,
 } from 'react-native';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+// Card margins: 20 each side = 40. Inner padding: 28 each side = 56. 
+const CARD_INNER_WIDTH = SCREEN_WIDTH - 40 - 56;
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
+import { captureRef } from 'react-native-view-shot';
+import { VerseCard } from '../../../src/components/VerseCard';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDeepDive } from '../../../src/hooks/useDeepDive';
+import { askScholar, type ChatMessage } from '../../../src/utils/ai';
 import { getChapter, getSloka, getLocalizedTranslation } from '../../../src/utils/sloka';
 import { getCommentary, getGenericCommentary, type Commentary } from '../../../src/utils/commentary';
 import { addSlokaRead, isSlokaSaved, saveSloka, unsaveSloka, getOnboardingData, getTodaysSlokasReadCount } from '../../../src/utils/stats';
+import { incrementGlobalSankalpa } from '../../../src/utils/karma';
 import { getSlokaImage } from '../../../src/utils/slokaImages';
 import { useLanguage } from '../../../src/context/LanguageContext';
 import purportsData from '../../../src/data/purports.json';
@@ -81,6 +93,7 @@ export default function SlokaScreen() {
   // Audio state
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
+  const [audioLanguage, setAudioLanguage] = useState<AudioLanguage>('sanskrit');
   const [audioError, setAudioError] = useState<string | null>(null);
 
   // UI state
@@ -92,6 +105,9 @@ export default function SlokaScreen() {
   const [isSaved, setIsSaved] = useState(false);
   const [hasBeenRead, setHasBeenRead] = useState(false);
   const [commentary, setCommentary] = useState<Commentary | null>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [activeCardTab, setActiveCardTab] = useState(0);
+  const cardRef = useRef<View>(null);
 
   const slokaContext = sloka
     ? {
@@ -99,18 +115,15 @@ export default function SlokaScreen() {
         verse,
         sanskrit: sloka.sanskrit,
         transliteration: sloka.transliteration,
-        translation_english: sloka.translation_english,
+        english: sloka.translation_english,
         chapterName: sloka.chapterName || '',
       }
-    : null;
+    : undefined;
 
-  const {
-    messages,
-    isLoading: isAiLoading,
-    error: aiError,
-    askQuestion,
-    clearChat,
-  } = useDeepDive(slokaContext);
+  const [isAiModalVisible, setIsAiModalVisible] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const purportDb = language === 'hi' ? purportsHiData : purportsData;
   let rawPurport = (purportDb as Record<string, string>)[`${chapter}:${verse}`];
@@ -123,6 +136,7 @@ export default function SlokaScreen() {
       // Track that this sloka was read
       await addSlokaRead(chapter, verse);
       setHasBeenRead(true);
+      incrementGlobalSankalpa(1).catch(() => {});
 
       if (Platform.OS === 'android' && DharmaBlocker) {
         // Check if daily commitment is fulfilled to auto-unblock apps
@@ -164,6 +178,55 @@ export default function SlokaScreen() {
     }
   };
 
+  const handleShare = async () => {
+    if (!sloka) return;
+    
+    // For Web, provide text share
+    if (Platform.OS === 'web') {
+      try {
+        const shareUrl = `https://gita-rouge-tau.vercel.app/download`;
+        const message = `${sloka.sanskrit}\n\n"${cleanTranslation}"\n\n— Read Chapter ${chapter}, Verse ${verse} on the Gita App: ${shareUrl}`;
+        await Share.share({
+          message,
+          url: shareUrl,
+          title: `Bhagavad Gita ${chapter}.${verse}`,
+        });
+      } catch (error: any) {
+        console.warn('Error sharing sloka', error.message);
+      }
+      return;
+    }
+
+    // For Native, generate beautiful Verse Card
+    setIsCapturing(true);
+    try {
+      // Capture the off-screen VerseCard component
+      const uri = await captureRef(cardRef, {
+        format: 'png',
+        quality: 1,
+      });
+
+      const shareUrl = `https://gita-rouge-tau.vercel.app/download`;
+      // Note: Some apps handle both image + text well, others prefer just image.
+      // We share the image as the primary payload.
+      await Sharing.shareAsync(uri, {
+        mimeType: 'image/png',
+        dialogTitle: `Share Bhagavad Gita ${chapter}.${verse}`,
+        UTI: 'public.png',
+      });
+    } catch (error: any) {
+      console.error('Error sharing sloka card', error);
+      Alert.alert('Sharing Failed', 'Could not generate the verse card. Falling back to text share.');
+      
+      // Fallback to text
+      const shareUrl = `https://gita-rouge-tau.vercel.app/download`;
+      const message = `${sloka.sanskrit}\n\n"${cleanTranslation}"\n\n— Read on the Gita App: ${shareUrl}`;
+      await Share.share({ message });
+    } finally {
+      setIsCapturing(false);
+    }
+  };
+
   const getCleanAudioText = (translation: string): string => {
     return translation
       .replace(/^(chapter|verse|sloka)\s+\d+[,.]?\s*/gi, '')
@@ -198,45 +261,102 @@ export default function SlokaScreen() {
   };
 
   const [isAudioCached, setIsAudioCached] = useState(false);
+  const [isExplanationCached, setIsExplanationCached] = useState(false);
 
   useEffect(() => {
     hasCachedAudio(chapter, verse, 'sanskrit').then(setIsAudioCached);
+    hasCachedAudio(chapter, verse, 'english').then(setIsExplanationCached);
   }, [chapter, verse]);
+
+  // Check if premium TTS (Google Cloud) is available
+  const hasTTSKey = Config.TTS_API_KEY && Config.TTS_API_KEY !== 'YOUR_TTS_API_KEY' && Config.TTS_API_KEY.length > 5;
 
   const handlePlayPause = useCallback(async () => {
     if (!sloka) return;
 
     if (isSpeaking) {
+      // Stop any playing audio
       Speech.stop();
+      await stopAudio();
       setIsSpeaking(false);
       return;
     }
 
     setIsAudioLoading(true);
     setAudioError(null);
-    const cleanText = getCleanAudioText(sloka.sanskrit);
+
+    // Choose text based on audio language
+    const textForAudio = audioLanguage === 'sanskrit' 
+      ? getCleanAudioText(sloka.sanskrit)
+      : getCleanAudioText(sloka.translation_english);
 
     try {
-      setIsAudioLoading(false);
-      setIsSpeaking(true);
-      
-      Speech.speak(cleanText, {
-        language: 'en-IN',
-        pitch: 0.9,
-        rate: 0.6,
-        onDone: () => setIsSpeaking(false),
-        onStopped: () => setIsSpeaking(false),
-        onError: () => {
-          setIsSpeaking(false);
-          setAudioError("Unable to play audio. Please ensure 'Speech Services by Google' is installed.");
-        }
-      });
+      if (hasTTSKey) {
+        // Use Google Cloud TTS — calm meditation voice
+        const sound = await cacheAndPlayAudio(
+          chapter,
+          verse,
+          textForAudio,
+          audioLanguage,
+          () => {
+            setIsSpeaking(false);
+            setIsAudioLoading(false);
+          },
+          (error) => {
+            setIsSpeaking(false);
+            setIsAudioLoading(false);
+            setAudioError(error);
+          }
+        );
+        setIsSpeaking(true);
+        setIsAudioLoading(false);
+        // Update cached status
+        if (audioLanguage === 'sanskrit') setIsAudioCached(true);
+        else setIsExplanationCached(true);
+      } else {
+        // Fallback to device TTS (expo-speech) — improved settings
+        setIsSpeaking(true);
+        setIsAudioLoading(false);
+
+        const speechLang = audioLanguage === 'sanskrit' ? 'hi-IN' : 'en-US';
+        const speechRate = audioLanguage === 'sanskrit' ? 0.55 : 0.8;
+        const speechPitch = audioLanguage === 'sanskrit' ? 0.85 : 1.0;
+
+        Speech.speak(textForAudio, {
+          language: speechLang,
+          pitch: speechPitch,
+          rate: speechRate,
+          onDone: () => setIsSpeaking(false),
+          onStopped: () => setIsSpeaking(false),
+          onError: () => {
+            setIsSpeaking(false);
+            setAudioError("Unable to play audio. Please ensure 'Speech Services by Google' is installed on your device.");
+          }
+        });
+      }
     } catch (e) {
       setIsSpeaking(false);
       setIsAudioLoading(false);
-      setAudioError("Speech engine unavailable on this device.");
+      // If premium TTS fails, fall back to device speech
+      if (hasTTSKey) {
+        try {
+          setIsSpeaking(true);
+          Speech.speak(textForAudio, {
+            language: audioLanguage === 'sanskrit' ? 'hi-IN' : 'en-US',
+            pitch: audioLanguage === 'sanskrit' ? 0.85 : 1.0,
+            rate: audioLanguage === 'sanskrit' ? 0.55 : 0.8,
+            onDone: () => setIsSpeaking(false),
+            onStopped: () => setIsSpeaking(false),
+            onError: () => setIsSpeaking(false)
+          });
+        } catch (_) {
+          setAudioError("Speech engine unavailable on this device.");
+        }
+      } else {
+        setAudioError("Speech engine unavailable on this device.");
+      }
     }
-  }, [sloka, chapter, verse, isSpeaking]);
+  }, [sloka, chapter, verse, isSpeaking, audioLanguage, hasTTSKey]);
 
   if (!sloka) {
     return (
@@ -257,13 +377,26 @@ export default function SlokaScreen() {
     }
   };
 
-  const handleAskQuestion = async (question: string) => {
-    if (!question.trim()) return;
+  const handleAskScholar = async () => {
+    if (!questionText.trim()) return;
+    const userMsg: ChatMessage = { role: 'user', content: questionText.trim() };
+    setMessages(prev => [...prev, userMsg]);
     setQuestionText('');
-    await askQuestion(question);
-    setTimeout(() => {
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }, 300);
+    setIsAiLoading(true);
+    setAiError(null);
+
+    try {
+      const response = await askScholar([...messages, userMsg], slokaContext);
+      setMessages(prev => [...prev, { role: 'assistant', content: response }]);
+    } catch (e: any) {
+      setAiError(
+        e.message === 'MISSING_API_KEY'
+          ? 'Please add your Claude API Key in Settings to use the Scholar.'
+          : e.message || 'Failed to contact Scholar.'
+      );
+    } finally {
+      setIsAiLoading(false);
+    }
   };
 
   const wordPairs = sloka.word_meanings ? parseWordMeanings(sloka.word_meanings) : [];
@@ -288,13 +421,30 @@ export default function SlokaScreen() {
             <View style={{ alignItems: 'center', flex: 1 }}>
               <Text style={s.headerLabel}>CHAPTER {chapter} · VERSE {verse}</Text>
             </View>
-            <TouchableOpacity onPress={handleToggleSave} style={[s.headerBtn, isSaved && { backgroundColor: 'rgba(212, 164, 76, 0.2)' }]}>
-              <Ionicons
-                name={isSaved ? 'bookmark' : 'bookmark-outline'}
-                size={20}
-                color={isSaved ? '#D4A44C' : '#FFF'}
-              />
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TouchableOpacity 
+                onPress={handleShare} 
+                style={[s.headerBtn, isCapturing && { opacity: 0.5 }]}
+                disabled={isCapturing}
+              >
+                {isCapturing ? (
+                  <ActivityIndicator size="small" color="#D4A44C" />
+                ) : (
+                  <Ionicons
+                    name="share-outline"
+                    size={20}
+                    color="#FFF"
+                  />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleToggleSave} style={[s.headerBtn, isSaved && { backgroundColor: 'rgba(212, 164, 76, 0.2)' }]}>
+                <Ionicons
+                  name={isSaved ? 'bookmark' : 'bookmark-outline'}
+                  size={20}
+                  color={isSaved ? '#D4A44C' : '#FFF'}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
 
           <ScrollView
@@ -308,55 +458,122 @@ export default function SlokaScreen() {
               <View style={s.sanskritInner}>
                 <Text style={s.sanskritText}>{sloka.sanskrit}</Text>
                 <View style={s.divider} />
-                <Text style={s.translitText}>"{sloka.transliteration}"</Text>
+                
+                <View style={{ width: CARD_INNER_WIDTH }}>
+                  <ScrollView
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    onScroll={(e) => {
+                      const offset = e.nativeEvent.contentOffset.x;
+                      setActiveCardTab(Math.round(offset / CARD_INNER_WIDTH));
+                    }}
+                    scrollEventThrottle={16}
+                  >
+                    {/* Page 0: Transliteration */}
+                    <View style={{ width: CARD_INNER_WIDTH, alignItems: 'center' }}>
+                      <Text style={s.translitText}>"{sloka.transliteration}"</Text>
+                    </View>
+                    
+                    {/* Page 1: English Translation */}
+                    <View style={{ width: CARD_INNER_WIDTH, alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={[s.translitText, { color: '#E0D5C5', fontStyle: 'normal' }]}>
+                        "{cleanTranslation}"
+                      </Text>
+                      <Text style={{ fontSize: 10, fontWeight: '800', color: '#D4A44C', marginTop: 12, letterSpacing: 1.5 }}>
+                        CHAPTER {chapter} · VERSE {verse}
+                      </Text>
+                    </View>
+                  </ScrollView>
+
+                  {/* Swipe Indicators */}
+                  <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 16 }}>
+                    <View style={[s.indicatorDot, activeCardTab === 0 && s.indicatorDotActive]} />
+                    <View style={[s.indicatorDot, activeCardTab === 1 && s.indicatorDotActive]} />
+                  </View>
+                </View>
+
               </View>
             </View>
 
             {/* ─── Audio Player ─── */}
-            <TouchableOpacity onPress={handlePlayPause} style={s.audioRow} activeOpacity={0.7}>
-              <View style={[s.playBtn, isSpeaking && { backgroundColor: '#D4A44C' }]}>
-                {isAudioLoading ? (
-                  <ActivityIndicator size="small" color="#D4A44C" />
-                ) : (
-                  <Ionicons
-                    name={isSpeaking ? 'stop' : 'play'}
-                    size={20}
-                    color={isSpeaking ? '#0D0D0D' : '#D4A44C'}
-                    style={{ marginLeft: isSpeaking ? 0 : 2 }}
-                  />
-                )}
+            <View style={{ marginHorizontal: 20, marginTop: 16 }}>
+              {/* Language Tabs */}
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
+                <TouchableOpacity 
+                  onPress={() => { if (!isSpeaking) setAudioLanguage('sanskrit'); }}
+                  style={{
+                    flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center',
+                    backgroundColor: audioLanguage === 'sanskrit' ? 'rgba(212, 164, 76, 0.2)' : 'rgba(255,255,255,0.04)',
+                    borderWidth: 1, borderColor: audioLanguage === 'sanskrit' ? 'rgba(212, 164, 76, 0.4)' : 'rgba(255,255,255,0.06)',
+                  }}
+                >
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: audioLanguage === 'sanskrit' ? '#D4A44C' : '#777' }}>
+                    🙏 Sanskrit
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  onPress={() => { if (!isSpeaking) setAudioLanguage('english'); }}
+                  style={{
+                    flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center',
+                    backgroundColor: audioLanguage === 'english' ? 'rgba(212, 164, 76, 0.2)' : 'rgba(255,255,255,0.04)',
+                    borderWidth: 1, borderColor: audioLanguage === 'english' ? 'rgba(212, 164, 76, 0.4)' : 'rgba(255,255,255,0.06)',
+                  }}
+                >
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: audioLanguage === 'english' ? '#D4A44C' : '#777' }}>
+                    📖 Explanation
+                  </Text>
+                </TouchableOpacity>
               </View>
-              <View style={{ flex: 1, marginLeft: 14 }}>
-                <Text style={s.audioTitle}>{isSpeaking ? 'Playing...' : 'Listen to Recitation'}</Text>
-                <Text style={s.audioSub}>
-                  {isSpeaking ? 'Tap to stop' : 'Sanskrit verse audio'}
-                </Text>
-              </View>
-              {isAudioCached && !isSpeaking && (
-                <View style={s.cachedBadge}>
-                  <Text style={s.cachedText}>OFFLINE ✓</Text>
+
+              {/* Play Button */}
+              <TouchableOpacity onPress={handlePlayPause} style={s.audioRow} activeOpacity={0.7}>
+                <View style={[s.playBtn, isSpeaking && { backgroundColor: '#D4A44C' }]}>
+                  {isAudioLoading ? (
+                    <ActivityIndicator size="small" color="#D4A44C" />
+                  ) : (
+                    <Ionicons
+                      name={isSpeaking ? 'stop' : 'play'}
+                      size={20}
+                      color={isSpeaking ? '#0D0D0D' : '#D4A44C'}
+                      style={{ marginLeft: isSpeaking ? 0 : 2 }}
+                    />
+                  )}
                 </View>
+                <View style={{ flex: 1, marginLeft: 14 }}>
+                  <Text style={s.audioTitle}>
+                    {isSpeaking ? 'Playing...' : audioLanguage === 'sanskrit' ? 'Listen to Recitation' : 'Listen to Explanation'}
+                  </Text>
+                  <Text style={s.audioSub}>
+                    {isSpeaking ? 'Tap to stop' : audioLanguage === 'sanskrit' ? 'Sanskrit verse chanting' : 'English translation audio'}
+                  </Text>
+                </View>
+                {((audioLanguage === 'sanskrit' && isAudioCached) || (audioLanguage === 'english' && isExplanationCached)) && !isSpeaking && (
+                  <View style={s.cachedBadge}>
+                    <Text style={s.cachedText}>OFFLINE ✓</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              {audioError && (
+                <Text style={{ color: '#E53935', fontSize: 12, marginTop: 4 }}>{audioError}</Text>
               )}
-            </TouchableOpacity>
-            {audioError && (
-              <Text style={{ color: '#E53935', fontSize: 12, marginHorizontal: 20, marginTop: 4 }}>{audioError}</Text>
-            )}
+            </View>
 
             {/* ─── Translation ─── */}
             <View style={s.section}>
-              <Text style={s.sectionTitle}>TRANSLATION</Text>
+              <Text style={s.sectionTitle}>{language === 'hi' ? 'अनुवाद (HINDI)' : 'TRANSLATION'}</Text>
               <Text style={s.translationText}>
                 "{cleanTranslation}"
               </Text>
             </View>
 
             {/* ─── Word-by-Word Breakdown ─── */}
-            {wordPairs.length > 0 && language === 'en' && (
+            {wordPairs.length > 0 && (
               <View style={s.section}>
                 <Text style={s.sectionTitle}>WORD BY WORD BREAKDOWN</Text>
                 <View style={s.wordGrid}>
                   {wordPairs.map((pair, ix) => (
-                    <View key={ix} style={s.wordRow}>
+                    <View key={ix} style={s.wordCard}>
                       <Text style={s.wordSanskrit}>{pair.word}</Text>
                       <Text style={s.wordMeaning}>{pair.meaning}</Text>
                     </View>
@@ -383,113 +600,15 @@ export default function SlokaScreen() {
               </View>
             )}
 
-            {/* ─── Expanded Purport ─── */}
-            {purport && (
+            {/* ─── Expanded Purport (only if unique) ─── */}
+            {purport && purport !== commentary?.meaning && (
               <View style={s.section}>
                 <Text style={s.sectionTitle}>EXPANDED PURPORT</Text>
                 <Text style={s.bodyText}>{purport}</Text>
               </View>
             )}
 
-            {/* ─── Scholar Q&A ─── */}
-            <View style={s.section}>
-              <Text style={s.sectionTitle}>ASK ABOUT THIS VERSE</Text>
 
-              {/* Predefined Q&A */}
-              {precomputedQuestions.length > 0 && messages.length === 0 && (
-                <View style={{ marginBottom: 16 }}>
-                  {precomputedQuestions.map((q: any, i: number) => (
-                    <View key={i} style={s.qaCard}>
-                      <View style={s.qaQuestion}>
-                        <Text style={s.qaQuestionText}>Q: {q.question}</Text>
-                      </View>
-                      <View style={s.qaAnswer}>
-                        <Text style={s.qaAnswerText}>{q.answer}</Text>
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              )}
-
-              {/* AI Chat Messages */}
-              {messages.map((msg, i) => (
-                <View key={i} style={{ marginBottom: 12, alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                  {msg.role === 'assistant' && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, width: '85%' }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Text style={{ fontSize: 12 }}>🙏</Text>
-                        <Text style={{ fontSize: 11, fontWeight: '700', color: '#D4A44C' }}>Gita Scholar</Text>
-                      </View>
-                      <TouchableOpacity onPress={() => handlePlayScholarMsg(msg.content, i)}>
-                        <Ionicons name={playingScholarMsgId === i ? "stop-circle" : "volume-medium"} size={16} color="#D4A44C" />
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                  <View style={{
-                    maxWidth: '85%',
-                    borderRadius: 18,
-                    padding: 16,
-                    ...(msg.role === 'user'
-                      ? { backgroundColor: '#D4A44C', borderTopRightRadius: 4 }
-                      : { backgroundColor: '#1A1A1A', borderTopLeftRadius: 4, borderWidth: 1, borderColor: '#2A2A2A' }
-                    )
-                  }}>
-                    <Text style={{ fontSize: 14, lineHeight: 22, color: msg.role === 'user' ? '#0D0D0D' : '#E0D5C5' }}>
-                      {msg.content}
-                    </Text>
-                  </View>
-                </View>
-              ))}
-
-              {/* AI Loading */}
-              {isAiLoading && (
-                <View style={{ alignItems: 'flex-start', marginBottom: 12 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 4 }}>
-                    <Text style={{ fontSize: 12 }}>🙏</Text>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#D4A44C' }}>Gita Scholar</Text>
-                  </View>
-                  <View style={{ borderRadius: 18, borderTopLeftRadius: 4, backgroundColor: '#1A1A1A', borderWidth: 1, borderColor: '#2A2A2A', padding: 16, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    <ActivityIndicator size="small" color="#D4A44C" />
-                    <Text style={{ fontSize: 14, color: '#777' }}>Contemplating...</Text>
-                  </View>
-                </View>
-              )}
-
-              {/* AI Error */}
-              {aiError && (
-                <View style={{ marginBottom: 12, padding: 14, borderRadius: 12, backgroundColor: 'rgba(229,57,53,0.1)', borderWidth: 1, borderColor: 'rgba(229,57,53,0.3)' }}>
-                  <Text style={{ fontSize: 14, color: '#E53935' }}>{aiError}</Text>
-                </View>
-              )}
-
-              {/* Question Input */}
-              <View style={s.inputRow}>
-                <TextInput
-                  style={s.input}
-                  placeholder="Ask a question about this verse..."
-                  placeholderTextColor="#555"
-                  multiline
-                  value={questionText}
-                  onChangeText={setQuestionText}
-                  editable={!isAiLoading}
-                />
-                <TouchableOpacity
-                  onPress={() => handleAskQuestion(questionText)}
-                  disabled={isAiLoading || !questionText.trim()}
-                  style={[s.sendBtn, (isAiLoading || !questionText.trim()) && { opacity: 0.4 }]}
-                >
-                  <Ionicons name="send" size={16} color="#0D0D0D" />
-                </TouchableOpacity>
-              </View>
-
-              {/* Clear Chat */}
-              {messages.length > 0 && (
-                <TouchableOpacity onPress={clearChat} style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                  <Ionicons name="refresh-outline" size={14} color="#555" />
-                  <Text style={{ fontSize: 12, color: '#555' }}>Clear conversation</Text>
-                </TouchableOpacity>
-              )}
-            </View>
 
             {/* ─── Bottom Navigation ─── */}
             <View style={s.navRow}>
@@ -511,8 +630,110 @@ export default function SlokaScreen() {
               </TouchableOpacity>
             </View>
           </ScrollView>
+
+          {/* ─── Hidden View for Image Capture ─── */}
+          {sloka && (
+            <View 
+              collapsable={false}
+              ref={cardRef} 
+              style={{ position: 'absolute', top: -10000, left: -10000, opacity: 0 }}
+            >
+              <VerseCard 
+                sanskrit={sloka.sanskrit}
+                translation={cleanTranslation}
+                chapter={chapter}
+                verse={verse}
+              />
+            </View>
+          )}
         </KeyboardAvoidingView>
       </SafeAreaView>
+
+      {/* Floating Action Button (FAB) for AI */}
+      <TouchableOpacity
+        style={s.fab}
+        onPress={() => setIsAiModalVisible(true)}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="chatbubbles" size={24} color="#0D0D0D" />
+      </TouchableOpacity>
+
+      {/* Full-Screen AI Modal */}
+      {isAiModalVisible && (
+        <View style={s.aiModalOverlay}>
+          <View style={s.aiModalHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Ionicons name="chatbubbles" size={20} color="#D4A44C" />
+              <Text style={{ color: '#D4A44C', fontSize: 16, fontWeight: '800' }}>Scholar AI</Text>
+            </View>
+            <TouchableOpacity onPress={() => setIsAiModalVisible(false)} style={s.headerBtn}>
+              <Ionicons name="close" size={20} color="#FFF" />
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
+            {/* Predefined Questions */}
+            {precomputedQuestions.length > 0 && messages.length === 0 && (
+              <View style={{ marginBottom: 16 }}>
+                {precomputedQuestions.map((q: any, i: number) => (
+                  <View key={i} style={s.qaCard}>
+                    <View style={s.qaQuestion}>
+                      <Text style={s.qaQuestionText}>Q: {q.question}</Text>
+                    </View>
+                    <View style={s.qaAnswer}>
+                      <Text style={s.qaAnswerText}>{q.answer}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Chat Messages */}
+            {messages.map((msg, i) => (
+              <View key={i} style={{ marginBottom: 16, alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                <View style={{ maxWidth: '85%', borderRadius: 16, padding: 14, backgroundColor: msg.role === 'user' ? '#D4A44C' : '#1A1A1A' }}>
+                  <Text style={{ fontSize: 15, lineHeight: 24, color: msg.role === 'user' ? '#0D0D0D' : '#E0D5C5' }}>{msg.content}</Text>
+                </View>
+              </View>
+            ))}
+
+            {isAiLoading && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <ActivityIndicator size="small" color="#D4A44C" />
+                <Text style={{ color: '#777' }}>Scholar is reflecting...</Text>
+              </View>
+            )}
+            
+            {aiError && (
+              <Text style={{ color: '#E53935', fontSize: 14, backgroundColor: 'rgba(229,57,53,0.1)', padding: 10, borderRadius: 8 }}>
+                {aiError}
+              </Text>
+            )}
+          </ScrollView>
+
+          {/* Input Area */}
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={80}>
+            <View style={[s.inputRow, { margin: 20 }]}>
+              <TextInput
+                style={s.input}
+                placeholder="Ask Claude..."
+                placeholderTextColor="#555"
+                multiline
+                value={questionText}
+                onChangeText={setQuestionText}
+                editable={!isAiLoading}
+              />
+              <TouchableOpacity
+                onPress={handleAskScholar}
+                disabled={isAiLoading || !questionText.trim()}
+                style={[s.sendBtn, (isAiLoading || !questionText.trim()) && { opacity: 0.4 }]}
+              >
+                <Ionicons name="send" size={16} color="#0D0D0D" />
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      )}
     </View>
   );
 }
@@ -594,13 +815,20 @@ const s = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
   },
+  indicatorDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  indicatorDotActive: {
+    backgroundColor: '#D4A44C',
+  },
 
   // ── Audio ──
   audioRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 20,
-    marginTop: 16,
     padding: 14,
     borderRadius: 16,
     backgroundColor: '#141414',
@@ -672,31 +900,31 @@ const s = StyleSheet.create({
 
   // ── Word Grid ──
   wordGrid: {
-    gap: 1,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  wordRow: {
     flexDirection: 'row',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  wordCard: {
     backgroundColor: '#0D0D0D',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    minWidth: '45%',
+    flexGrow: 1,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.04)',
+    gap: 4,
   },
   wordSanskrit: {
     fontSize: 14,
     fontWeight: '700',
     color: '#D4A44C',
-    width: '40%',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   wordMeaning: {
-    fontSize: 14,
-    color: '#B8AFA3',
-    width: '60%',
-    lineHeight: 20,
+    fontSize: 12,
+    color: '#888',
+    lineHeight: 18,
   },
 
   // ── Q&A ──
@@ -800,5 +1028,39 @@ const s = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#0D0D0D',
+  },
+  
+  // ── FAB & Modal ──
+  fab: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#D4A44C',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#D4A44C',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  aiModalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#0D0D0D',
+    zIndex: 100,
+  },
+  aiModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'android' ? 40 : 60,
+    paddingBottom: 16,
+    backgroundColor: '#141414',
+    borderBottomWidth: 1,
+    borderBottomColor: '#2A2A2A',
   },
 });

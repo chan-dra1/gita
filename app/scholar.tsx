@@ -122,7 +122,7 @@ export default function ScholarScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={22} color="#1A1A1A" />
+          <Ionicons name="arrow-back" size={22} color="#FFF" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>Ask the Scholar</Text>
@@ -249,7 +249,7 @@ export default function ScholarScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF7ED' },
+  container: { flex: 1, backgroundColor: '#0D0D0D' },
 
   header: {
     flexDirection: 'row',
@@ -257,21 +257,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#F0E0CC',
-    backgroundColor: '#FFF7ED',
+    borderBottomColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: '#0D0D0D',
   },
   backButton: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
+    backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center',
   },
   headerCenter: { flex: 1, alignItems: 'center' },
-  headerTitle: { fontSize: 17, fontWeight: '700', color: '#1A1A1A' },
-  headerSubtitle: { fontSize: 11, color: '#B0A090', marginTop: 2 },
+  headerTitle: { fontSize: 17, fontWeight: '700', color: '#FFF' },
+  headerSubtitle: { fontSize: 11, color: '#888', marginTop: 2 },
   clearButton: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: '#FEF3E8', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(232, 117, 26, 0.15)', alignItems: 'center', justifyContent: 'center',
   },
 
   chatArea: { flex: 1 },
@@ -279,24 +277,22 @@ const styles = StyleSheet.create({
 
   welcomeContainer: { alignItems: 'center', paddingVertical: 24 },
   omSymbol: { fontSize: 64, color: '#E8751A', marginBottom: 12 },
-  welcomeTitle: { fontSize: 24, fontWeight: '700', color: '#1A1A1A', marginBottom: 8 },
+  welcomeTitle: { fontSize: 24, fontWeight: '700', color: '#FFF', marginBottom: 8 },
   welcomeText: {
-    fontSize: 15, color: '#6B6067', textAlign: 'center',
+    fontSize: 15, color: '#AAA', textAlign: 'center',
     lineHeight: 22, paddingHorizontal: 20, marginBottom: 28,
   },
 
   suggestionsContainer: { width: '100%' },
-  suggestionsTitle: { fontSize: 13, fontWeight: '600', color: '#8E8E93', marginBottom: 12, paddingHorizontal: 4 },
+  suggestionsTitle: { fontSize: 13, fontWeight: '600', color: '#888', marginBottom: 12, paddingHorizontal: 4 },
   suggestionChip: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#FFF', borderRadius: 14,
+    backgroundColor: '#1A1A1A', borderRadius: 14,
     paddingHorizontal: 16, paddingVertical: 14,
     marginBottom: 8,
-    borderWidth: 1, borderColor: '#F0E0CC',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  suggestionText: { fontSize: 14, color: '#3A3A3A', flex: 1, marginRight: 8 },
+  suggestionText: { fontSize: 14, color: '#E0E0E0', flex: 1, marginRight: 8 },
 
   bubble: {
     maxWidth: '88%', marginBottom: 14, borderRadius: 18, padding: 14,
@@ -308,36 +304,34 @@ const styles = StyleSheet.create({
   },
   assistantBubble: {
     alignSelf: 'flex-start',
-    backgroundColor: '#FFF',
+    backgroundColor: '#1A1A1A',
     borderBottomLeftRadius: 4,
-    borderWidth: 1, borderColor: '#F0E0CC',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
   scholarBadge: { marginBottom: 6 },
   scholarBadgeText: { fontSize: 12, fontWeight: '600', color: '#E8751A' },
   bubbleText: { fontSize: 15, lineHeight: 22 },
   userBubbleText: { color: '#FFF' },
-  assistantBubbleText: { color: '#1A1A1A' },
+  assistantBubbleText: { color: '#E0E0E0' },
 
   typingDots: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  typingText: { fontSize: 14, color: '#B0A090', fontStyle: 'italic' },
+  typingText: { fontSize: 14, color: '#888', fontStyle: 'italic' },
 
   inputBar: {
     flexDirection: 'row', alignItems: 'flex-end',
     padding: 12, gap: 10,
-    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#F0E0CC',
-    backgroundColor: '#FFF7ED',
+    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: '#0D0D0D',
   },
   textInput: {
-    flex: 1, backgroundColor: '#FFF',
+    flex: 1, backgroundColor: '#1A1A1A',
     borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10,
-    fontSize: 15, color: '#1A1A1A', maxHeight: 120,
-    borderWidth: 1, borderColor: '#F0E0CC',
+    fontSize: 15, color: '#FFF', maxHeight: 120,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
   sendButton: {
     width: 44, height: 44, borderRadius: 22,
     backgroundColor: '#E8751A', alignItems: 'center', justifyContent: 'center',
   },
-  sendButtonDisabled: { backgroundColor: '#E5E7EB' },
+  sendButtonDisabled: { backgroundColor: '#333' },
 });

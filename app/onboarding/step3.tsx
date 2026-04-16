@@ -1,67 +1,50 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, Image, ScrollView } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeInRight, FadeIn, Layout, Easing } from 'react-native-reanimated';
-import { saveOnboardingStep } from '../../src/utils/stats';
-import { OnboardingBackground } from '../../src/components/OnboardingBackground';
-import { Dimensions } from 'react-native';
+import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 
-const { width } = Dimensions.get('window');
-
-const OPTIONS = [
+const FEATURES = [
   {
-    id: 'practical',
-    title: 'Practical',
-    description: 'Daily life application and mindfulness',
-    image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&h=200&fit=crop',
+    icon: 'notifications-off' as const,
+    title: 'Focus Mode During Study',
+    desc: 'When you open a verse, Dharma Blocker silences notifications and blocks distracting apps so you can read, reflect, and absorb without interruption.',
   },
   {
-    id: 'philosophical',
-    title: 'Philosophical',
-    description: 'Deep spiritual meaning and wisdom',
-    image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=400&h=200&fit=crop',
+    icon: 'time' as const,
+    title: 'Daily Sacred Hours',
+    desc: 'Set a fixed window each day (e.g. 6–7 AM) where your phone becomes a dedicated Gita reader. Social media, games, and news are paused until your session ends.',
   },
   {
-    id: 'devotional',
-    title: 'Devotional',
-    description: 'Chanting, Bhakti, and sacred rituals',
-    image: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=400&h=200&fit=crop',
+    icon: 'shield-checkmark' as const,
+    title: 'Gentle Redirection',
+    desc: "If you try to open a blocked app, instead of a harsh lock screen you'll see a calming verse from the Gita \u2014 turning temptation into a moment of wisdom.",
   },
   {
-    id: 'holistic',
-    title: 'Holistic',
-    description: 'A balanced mix of all traditions',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=200&fit=crop',
-    default: true,
+    icon: 'flame' as const,
+    title: 'Protects Your Streak',
+    desc: 'By removing digital distractions during study time, Dharma Blocker helps you stay consistent and maintain your daily reading streak.',
   },
 ];
 
 export default function OnboardingStep3() {
   const router = useRouter();
-  const [selectedId, setSelectedId] = useState<string>('holistic');
 
-  const handleContinue = async () => {
-    if (selectedId) {
-      await saveOnboardingStep('guidanceStyle', selectedId);
-      router.push('/onboarding/step4');
-    }
+  const handleContinue = () => {
+    router.push('/onboarding/step4');
   };
 
   return (
-    <OnboardingBackground
-      image={require('../../assets/images/onboarding_4.png')}
-      overlayOpacity={0.7}
-    >
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" translucent />
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
         
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#D1D5DB" />
+            <Ionicons name="arrow-back" size={24} color="#D4A44C" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Personalization</Text>
+          <Text style={styles.headerTitle}>Onboarding</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -71,84 +54,58 @@ export default function OnboardingStep3() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Progress */}
-          <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.progressContainer}>
-            <View style={styles.progressTextRow}>
-              <Text style={styles.progressStep}>STEP 3 OF 4</Text>
-              <Text style={styles.progressLabel}>Preference</Text>
-            </View>
-            <View style={styles.progressBarBg}>
-              <Animated.View layout={Layout.springify().damping(15)} style={styles.progressBarFill} />
-            </View>
-          </Animated.View>
-
-          {/* Title */}
-          <Animated.View entering={FadeInDown.duration(600).delay(200)} style={styles.titleContainer}>
-            <Text style={styles.mainTitle}>What style of guidance do you prefer?</Text>
+          <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.titleSection}>
+            <Text style={styles.eyebrowTitle}>THE DIGITAL SANCTUARY</Text>
+            <Text style={styles.mainTitle}>Meet the</Text>
+            <Text style={[styles.mainTitle, styles.italic]}>Dharma Blocker</Text>
             <Text style={styles.subtitle}>
-              Choose the path that resonates most with your spiritual journey.
+              Your phone is the biggest obstacle to consistent spiritual practice. The Dharma Blocker transforms your device from a distraction machine into a dedicated tool for Gita study.
             </Text>
           </Animated.View>
 
-          {/* Options */}
-          <View style={styles.optionsContainer}>
-            {OPTIONS.map((option, index) => {
-              const isSelected = selectedId === option.id;
-              return (
-                <Animated.View
-                  key={option.id}
-                  entering={FadeInRight.duration(500).delay(300 + index * 100).easing(Easing.out(Easing.cubic))}
-                >
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => setSelectedId(option.id)}
-                    style={[styles.optionCard, isSelected && styles.optionCardSelected]}
-                  >
-                    <View style={styles.optionContent}>
-                      <View style={styles.optionHeader}>
-                        <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
-                          {option.title}
-                        </Text>
-                        {isSelected ? (
-                          <Animated.View entering={FadeIn.duration(200)} style={styles.checkmark}>
-                            <Ionicons name="checkmark-circle" size={24} color="#F48B29" />
-                          </Animated.View>
-                        ) : (
-                          <View style={styles.checkmarkPlaceholder} />
-                        )}
-                      </View>
-                      <Text style={[styles.optionDescription, isSelected && styles.optionDescriptionSelected]}>
-                        {option.description}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                </Animated.View>
-              );
-            })}
+          {/* How It Works */}
+          <Animated.View entering={FadeInDown.duration(500).delay(200)} style={styles.howItWorksCard}>
+            <Text style={styles.howItWorksEyebrow}>HOW IT WORKS</Text>
+            <Text style={styles.howItWorksTitle}>Your phone, your rules</Text>
+            <Text style={styles.howItWorksDesc}>
+              Choose which apps to block during your reading time. When it's time to study, Dharma Blocker activates automatically — no willpower needed. You read your committed verses in peace, and then your apps come back.
+            </Text>
+          </Animated.View>
+
+          {/* Feature Cards */}
+          <View style={styles.cardsContainer}>
+            {FEATURES.map((item, index) => (
+              <Animated.View key={item.title} entering={FadeInRight.duration(500).delay(300 + index * 100)} style={styles.listCard}>
+                <View style={styles.iconBox}>
+                  <Ionicons name={item.icon} size={16} color="#D4A44C" />
+                </View>
+                <Text style={styles.listCardTitle}>{item.title}</Text>
+                <Text style={styles.listCardDesc}>{item.desc}</Text>
+              </Animated.View>
+            ))}
           </View>
         </ScrollView>
 
-        {/* Footer */}
-        <Animated.View entering={FadeInDown.duration(600).delay(700)} style={styles.footer}>
-          <TouchableOpacity
-            activeOpacity={0.9}
+        {/* Bottom CTA */}
+        <Animated.View entering={FadeInDown.duration(600).delay(800)} style={styles.bottomSection}>
+          <TouchableOpacity 
+            style={styles.activateButton}
             onPress={handleContinue}
-            style={styles.continueButton}
+            activeOpacity={0.9}
           >
-            <Text style={styles.continueText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color="#0A1128" />
+            <Text style={styles.activateText}>CONTINUE</Text>
           </TouchableOpacity>
+          <Text style={styles.activateSubtext}>YOU CAN CONFIGURE DHARMA BLOCKER IN SETTINGS</Text>
         </Animated.View>
+
       </SafeAreaView>
-    </OnboardingBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
+  container: { flex: 1, backgroundColor: '#0D0D0D' },
+  safeArea: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -157,154 +114,62 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 8,
   },
-  backButton: {
-    padding: 8,
-    marginLeft: -8,
+  backButton: { padding: 8, marginLeft: -8 },
+  headerTitle: { fontSize: 16, fontWeight: '600', color: '#D4A44C', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  
+  scrollView: { flex: 1 },
+  scrollContent: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 120 },
+  
+  titleSection: { alignItems: 'center', marginBottom: 32 },
+  eyebrowTitle: { fontSize: 11, color: '#D4A44C', fontWeight: '800', letterSpacing: 2, marginBottom: 16 },
+  mainTitle: { fontSize: 36, fontWeight: '800', color: '#FFFFFF', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', lineHeight: 44 },
+  italic: { fontStyle: 'italic', color: '#D4A44C' },
+  subtitle: { fontSize: 14, color: '#9CA3AF', lineHeight: 22, textAlign: 'center', marginTop: 16 },
+
+  howItWorksCard: {
+    backgroundColor: 'rgba(212, 164, 76, 0.06)',
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 164, 76, 0.15)',
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#E5E7EB',
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+  howItWorksEyebrow: { fontSize: 10, color: '#D4A44C', fontWeight: '800', letterSpacing: 1.5, marginBottom: 8 },
+  howItWorksTitle: { fontSize: 20, fontWeight: '700', color: '#FFFFFF', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', marginBottom: 12 },
+  howItWorksDesc: { fontSize: 14, color: '#9CA3AF', lineHeight: 22 },
+  
+  cardsContainer: { gap: 12 },
+  
+  listCard: {
+    backgroundColor: '#141414',
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1, 
+    borderColor: 'rgba(255,255,255,0.05)',
   },
-  progressContainer: {
-    marginTop: 8,
+  iconBox: { width: 32, height: 32, borderRadius: 8, backgroundColor: 'rgba(212, 164, 76, 0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  listCardTitle: { fontSize: 16, fontWeight: '600', color: '#FFFFFF', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', marginBottom: 8 },
+  listCardDesc: { fontSize: 13, color: '#9CA3AF', lineHeight: 20 },
+
+  bottomSection: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 24,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 24,
+    paddingTop: 16,
+    backgroundColor: '#0D0D0D',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.05)',
   },
-  progressTextRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  activateButton: {
+    backgroundColor: '#D4A44C',
+    borderRadius: 8,
+    paddingVertical: 16,
     alignItems: 'center',
     marginBottom: 12,
   },
-  progressStep: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#F48B29',
-    letterSpacing: 1,
-  },
-  progressLabel: {
-    fontSize: 12,
-    color: '#9CA3AF',
-  },
-  progressBarBg: {
-    height: 6,
-    backgroundColor: '#1E293B',
-    borderRadius: 999,
-    flexDirection: 'row',
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: '#F48B29',
-    width: '75%',
-    borderRadius: 999,
-  },
-  titleContainer: {
-    marginTop: 24,
-    marginBottom: 24,
-  },
-  mainTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    lineHeight: 36,
-    letterSpacing: -0.5,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 15,
-    color: '#D1D5DB',
-    marginTop: 10,
-    lineHeight: 22,
-    textAlign: 'center',
-  },
-  optionsContainer: {
-    gap: 16,
-    marginBottom: 24,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 24,
-  },
-  optionCard: {
-    borderRadius: 16,
-    backgroundColor: 'rgba(22, 32, 58, 0.7)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    overflow: 'hidden',
-  },
-  optionCardSelected: {
-    borderColor: '#F48B29',
-    backgroundColor: 'rgba(26, 39, 71, 0.8)',
-    shadowColor: '#F48B29',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  optionImage: {
-    width: '100%',
-    height: 100,
-  },
-  optionContent: {
-    padding: 16,
-  },
-  optionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  optionTitle: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: '#E5E7EB',
-  },
-  optionTitleSelected: {
-    color: '#F48B29',
-  },
-  optionDescription: {
-    fontSize: 13,
-    color: '#9CA3AF',
-  },
-  optionDescriptionSelected: {
-    color: '#D1D5DB',
-  },
-  checkmark: {
-    marginLeft: 8,
-  },
-  checkmarkPlaceholder: {
-    width: 24,
-    height: 24,
-    marginLeft: 8,
-  },
-  footer: {
-    paddingHorizontal: 24,
-    paddingBottom: 32,
-    paddingTop: 16,
-  },
-  continueButton: {
-    height: 56,
-    borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F48B29',
-    shadowColor: '#F48B29',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 8,
-    gap: 8,
-  },
-  continueText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#0A1128',
-  },
+  activateText: { fontSize: 14, fontWeight: '800', color: '#0D0D0D', letterSpacing: 1 },
+  activateSubtext: { fontSize: 9, color: '#666', fontWeight: '700', letterSpacing: 1, textAlign: 'center' },
 });
