@@ -20,6 +20,7 @@ import { type StreakData } from '../../src/types';
 import { t } from '../../src/utils/i18n';
 import { useLanguage } from '../../src/context/LanguageContext';
 import { syncWidgetData } from '../../src/utils/widgets';
+import { useTheme } from '../../src/context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -49,6 +50,7 @@ const KRISHNA_IMAGES = [
 export default function HomeScreen() {
   const router = useRouter();
   const { language } = useLanguage();
+  const { colors, isDark } = useTheme();
   const [dailySloka, setDailySloka] = useState<any | null>(null);
   const [isChecking, setIsChecking] = useState(true);
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
@@ -57,7 +59,7 @@ export default function HomeScreen() {
   const [profileName, setProfileName] = useState('Scholar');
   const [lastRead, setLastRead] = useState<any>(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [todaySloka, data, fetchedStreakData, pName, last] = await Promise.all([
         getRandomSloka(),
@@ -78,7 +80,12 @@ export default function HomeScreen() {
           chapter: todaySloka.chapter,
           verse: todaySloka.verse,
           sanskrit: todaySloka.sanskrit,
-          english: getLocalizedTranslation(todaySloka.chapter, todaySloka.verse, todaySloka.translation_english, 'en')
+          english: getLocalizedTranslation(
+            todaySloka.chapter,
+            todaySloka.verse,
+            todaySloka.translation_english,
+            language
+          ),
         });
       }
     } catch (error) {
@@ -86,7 +93,7 @@ export default function HomeScreen() {
     } finally {
       setIsChecking(false);
     }
-  };
+  }, [language]);
 
   useEffect(() => {
     async function checkOnboarding() {
@@ -107,16 +114,20 @@ export default function HomeScreen() {
       setRandomKrishnaImage(KRISHNA_IMAGES[randomIndex]);
       loadData(); // Refresh data when screen is focused
 
-    }, [])
+    }, [loadData])
   );
 
   if (isChecking) {
-    return <View style={{ flex: 1, backgroundColor: '#0D0D0D' }} />;
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
   }
 
   return (
-    <SafeAreaView style={s.root} edges={['top']}>
-      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" />
+    <SafeAreaView style={[s.root, { backgroundColor: colors.background }]} edges={['top']}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
@@ -124,33 +135,33 @@ export default function HomeScreen() {
         {/* Header Strip */}
         <View style={s.header}>
           <View>
-            <Text style={s.headerSubtitle}>
+            <Text style={[s.headerSubtitle, { color: colors.primary }]}>
               {t('todaysJourney', language)}
             </Text>
-            <Text style={s.headerTitle}>
+            <Text style={[s.headerTitle, { color: colors.text }]}>
               {t('innerPeace', language)}
             </Text>
           </View>
           <TouchableOpacity
             onPress={() => router.push('/settings' as any)}
-            style={s.profileHeaderBtn}
+            style={[s.profileHeaderBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', borderColor: colors.border }]}
           >
-            <View style={s.avatarMin}>
-              <Text style={s.avatarMinText}>{profileName.charAt(0).toUpperCase()}</Text>
+            <View style={[s.avatarMin, { backgroundColor: colors.primary }]}>
+              <Text style={[s.avatarMinText, { color: colors.background }]}>{profileName.charAt(0).toUpperCase()}</Text>
             </View>
-            <Text style={s.profileNameText}>{profileName}</Text>
+            <Text style={[s.profileNameText, { color: colors.text }]}>{profileName}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Premium Hero Image */}
         <View style={s.heroContainer}>
-          <View style={s.heroCard}>
+          <View style={[s.heroCard, { backgroundColor: colors.card, borderColor: isDark ? 'rgba(212, 164, 76, 0.2)' : 'rgba(181, 135, 42, 0.2)' }]}>
             <Image
               source={randomKrishnaImage}
               style={{ width: '100%', height: '100%' }}
               resizeMode="cover"
             />
-            <View style={s.heroOverlay} />
+            <View style={[s.heroOverlay, { backgroundColor: isDark ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.05)' }]} />
             
           </View>
         </View>
@@ -159,7 +170,7 @@ export default function HomeScreen() {
 
         {/* Action List */}
         <View style={s.actionSection}>
-          <Text style={s.sectionTitle}>
+          <Text style={[s.sectionTitle, { color: colors.primary }]}>
             {t('quickActions', language)}
           </Text>
           
@@ -168,78 +179,78 @@ export default function HomeScreen() {
             {lastRead && (
               <TouchableOpacity
                 onPress={() => router.push(`/sloka/${lastRead.chapter}/${lastRead.verse}` as any)}
-                style={s.actionCard}
+                style={[s.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}
               >
-                <View style={[s.actionIconBox, { backgroundColor: 'rgba(212, 164, 76, 0.15)' }]}>
-                  <Ionicons name="play" size={22} color="#D4A44C" />
+                <View style={[s.actionIconBox, { backgroundColor: `${colors.primary}25` }]}>
+                  <Ionicons name="play" size={22} color={colors.primary} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={s.actionTitle}>Continue Reading</Text>
-                  <Text style={s.actionSub}>Resume Chapter {lastRead.chapter}, Verse {lastRead.verse}</Text>
+                  <Text style={[s.actionTitle, { color: colors.text }]}>Continue Reading</Text>
+                  <Text style={[s.actionSub, { color: colors.textSecondary }]}>Resume Chapter {lastRead.chapter}, Verse {lastRead.verse}</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#333" />
+                <Ionicons name="chevron-forward" size={20} color={isDark ? "#333" : "#CCC"} />
               </TouchableOpacity>
             )}
 
             {/* Library Action */}
             <TouchableOpacity
               onPress={() => router.push('/(tabs)/library' as any)}
-              style={s.actionCard}
+              style={[s.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}
             >
-              <View style={[s.actionIconBox, { backgroundColor: 'rgba(212, 164, 76, 0.15)' }]}>
-                <Ionicons name="book" size={22} color="#D4A44C" />
+              <View style={[s.actionIconBox, { backgroundColor: `${colors.primary}25` }]}>
+                <Ionicons name="book" size={22} color={colors.primary} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={s.actionTitle}>
+                <Text style={[s.actionTitle, { color: colors.text }]}>
                   {t('library', language)}
                 </Text>
-                <Text style={s.actionSub}>
+                <Text style={[s.actionSub, { color: colors.textSecondary }]}>
                   {t('exploreChapters', language)}
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#333" />
+              <Ionicons name="chevron-forward" size={20} color={isDark ? "#333" : "#CCC"} />
             </TouchableOpacity>
 
             {/* Listen Action */}
             <TouchableOpacity
               onPress={() => {
                 if (dailySloka) {
-                  router.push(`/sloka/${dailySloka.chapter}/${dailySloka.verse}` as any);
+                  router.push(`/sloka/${dailySloka.chapter}/${dailySloka.verse}?isDaily=true` as any);
                 }
               }}
-              style={s.actionCard}
+              style={[s.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}
             >
               <View style={[s.actionIconBox, { backgroundColor: 'rgba(74, 124, 89, 0.15)' }]}>
                 <Ionicons name="headset" size={22} color="#4ADE80" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={s.actionTitle}>
+                <Text style={[s.actionTitle, { color: colors.text }]}>
                   {t('listen', language)}
                 </Text>
-                <Text style={s.actionSub}>
+                <Text style={[s.actionSub, { color: colors.textSecondary }]}>
                   {t('audioSlokas', language)}
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#333" />
+              <Ionicons name="chevron-forward" size={20} color={isDark ? "#333" : "#CCC"} />
             </TouchableOpacity>
 
             {/* Scholar AI Action */}
             <TouchableOpacity
               onPress={() => router.push('/scholar' as any)}
-              style={s.actionCard}
+              style={[s.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}
             >
               <View style={[s.actionIconBox, { backgroundColor: 'rgba(232, 117, 26, 0.15)' }]}>
                 <Ionicons name="chatbubbles" size={22} color="#E8751A" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={s.actionTitle}>
+                <Text style={[s.actionTitle, { color: colors.text }]}>
                   Ask the Scholar
                 </Text>
-                <Text style={s.actionSub}>
+                <Text style={[s.actionSub, { color: colors.textSecondary }]}>
                   AI-powered Gita wisdom
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#333" />
+              <Ionicons name="chevron-forward" size={20} color={isDark ? "#333" : "#CCC"} />
             </TouchableOpacity>
           </View>
         </View>
@@ -248,7 +259,7 @@ export default function HomeScreen() {
         <View style={{ marginTop: 24, paddingHorizontal: 20 }}>
           <TouchableOpacity
             onPress={() => router.push('/meditation' as any)}
-            style={[s.dharmaBanner, { borderColor: 'rgba(74, 124, 89, 0.3)', backgroundColor: '#0A120D' }]}
+            style={[s.dharmaBanner, { borderColor: 'rgba(74, 124, 89, 0.3)', backgroundColor: isDark ? '#0A120D' : '#F0F9F4' }]}
           >
             <View style={[s.dharmaDecor, { backgroundColor: 'rgba(74, 124, 89, 0.05)' }]} />
             
@@ -259,14 +270,14 @@ export default function HomeScreen() {
                   Hands-Free Listening
                 </Text>
               </View>
-              <Text style={s.dharmaTitle}>
+              <Text style={[s.dharmaTitle, { color: colors.text }]}>
                 Meditation Mode
               </Text>
-              <Text style={s.dharmaSub}>
+              <Text style={[s.dharmaSub, { color: colors.textSecondary }]}>
                 Auto-play Sanskrit and English slokas sequentially.
               </Text>
             </View>
-            <View style={[s.dharmaArrow, { borderColor: 'rgba(74, 124, 89, 0.2)' }]}>
+            <View style={[s.dharmaArrow, { borderColor: 'rgba(74, 124, 89, 0.2)', backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }]}>
               <Ionicons name="chevron-forward" size={20} color="#4ADE80" />
             </View>
           </TouchableOpacity>
@@ -276,26 +287,26 @@ export default function HomeScreen() {
         <View style={{ marginTop: 16, paddingHorizontal: 20 }}>
           <TouchableOpacity
             onPress={() => router.push('/dharma' as any)}
-            style={s.dharmaBanner}
+            style={[s.dharmaBanner, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
-            <View style={s.dharmaDecor} />
+            <View style={[s.dharmaDecor, { backgroundColor: `${colors.primary}10` }]} />
             
             <View style={{ flex: 1, paddingRight: 16 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <Ionicons name="shield-checkmark" size={18} color="#D4A44C" />
-                <Text style={s.dharmaLabel}>
+                <Ionicons name="shield-checkmark" size={18} color={colors.primary} />
+                <Text style={[s.dharmaLabel, { color: colors.primary }]}>
                   {t('dharmaMode', language)}
                 </Text>
               </View>
-              <Text style={s.dharmaTitle}>
+              <Text style={[s.dharmaTitle, { color: colors.text }]}>
                 {t('protectYourFocus', language)}
               </Text>
-              <Text style={s.dharmaSub}>
+              <Text style={[s.dharmaSub, { color: colors.textSecondary }]}>
                 {t('dharmaModeDescription', language)}
               </Text>
             </View>
-            <View style={s.dharmaArrow}>
-              <Ionicons name="chevron-forward" size={20} color="#FFF" />
+            <View style={[s.dharmaArrow, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', borderColor: colors.border }]}>
+              <Ionicons name="chevron-forward" size={20} color={colors.text} />
             </View>
           </TouchableOpacity>
         </View>
@@ -304,36 +315,36 @@ export default function HomeScreen() {
         {dailySloka && (
           <View style={{ marginTop: 32, paddingHorizontal: 20, marginBottom: 20 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16, paddingHorizontal: 4 }}>
-              <Ionicons name="sunny" size={16} color="#D4A44C" />
-              <Text style={{ color: '#D4A44C', fontSize: 12, fontWeight: '800', marginLeft: 6, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+              <Ionicons name="sunny" size={16} color={colors.primary} />
+              <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '800', marginLeft: 6, letterSpacing: 1.5, textTransform: 'uppercase' }}>
                 {t('verseOfTheDay', language)}
               </Text>
             </View>
             
             <TouchableOpacity
-              onPress={() => router.push(`/sloka/${dailySloka.chapter}/${dailySloka.verse}` as any)}
-              style={s.dailyCard}
+              onPress={() => router.push(`/sloka/${dailySloka.chapter}/${dailySloka.verse}?isDaily=true` as any)}
+              style={[s.dailyCard, { backgroundColor: colors.card, shadowColor: colors.primary }]}
               activeOpacity={0.9}
             >
               {/* Glass/Glow Effect Background */}
-              <View style={s.dailyCardGlow} />
-              <View style={s.dailyCardInner}>
+              <View style={[s.dailyCardGlow, { backgroundColor: `${colors.primary}25` }]} />
+              <View style={[s.dailyCardInner, { borderColor: `${colors.primary}30`, backgroundColor: isDark ? 'rgba(18, 18, 18, 0.6)' : 'rgba(255, 255, 255, 0.8)' }]}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                  <Text style={s.dailyCardRef}>
+                  <Text style={[s.dailyCardRef, { color: colors.textSecondary }]}>
                     {t('chapterVerse', language, { chapter: dailySloka.chapter, verse: dailySloka.verse })}
                   </Text>
-                  <View style={s.dailyCardPlayBtn}>
-                    <Ionicons name="play" size={12} color="#0D0D0D" />
+                  <View style={[s.dailyCardPlayBtn, { backgroundColor: colors.primary }]}>
+                    <Ionicons name="play" size={12} color={colors.background} />
                   </View>
                 </View>
 
-                <Text style={s.dailyCardText} numberOfLines={4}>
+                <Text style={[s.dailyCardText, { color: colors.text }]} numberOfLines={4}>
                   "{getLocalizedTranslation(dailySloka.chapter, dailySloka.verse, dailySloka.translation_english, language)}"
                 </Text>
 
                 <View style={s.dailyCardFooter}>
-                  <Text style={s.dailyCardAction}>Read Full Verse</Text>
-                  <Ionicons name="arrow-forward" size={14} color="#D4A44C" />
+                  <Text style={[s.dailyCardAction, { color: colors.primary }]}>Read Full Verse</Text>
+                  <Ionicons name="arrow-forward" size={14} color={colors.primary} />
                 </View>
               </View>
             </TouchableOpacity>

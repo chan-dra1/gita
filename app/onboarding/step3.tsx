@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 
@@ -29,6 +30,85 @@ const FEATURES = [
 
 export default function OnboardingStep3() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    safeArea: { flex: 1 },
+    backButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.card,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    progressContainer: {
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+      paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8,
+    },
+    dotsRow: { flexDirection: 'row', gap: 6 },
+    dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.border },
+    dotActive: { width: 18, backgroundColor: colors.primary },
+    
+    scrollView: { flex: 1 },
+    scrollContent: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 120 },
+    
+    titleSection: { alignItems: 'center', marginBottom: 32 },
+    eyebrowTitle: { fontSize: 11, color: colors.primary, fontWeight: '800', letterSpacing: 2, marginBottom: 16 },
+    mainTitle: { fontSize: 36, fontWeight: '800', color: colors.text, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', lineHeight: 44 },
+    italic: { fontStyle: 'italic', color: colors.primary },
+    subtitle: { fontSize: 14, color: colors.textSecondary, lineHeight: 22, textAlign: 'center', marginTop: 16 },
+
+    howItWorksCard: {
+      backgroundColor: `${colors.primary}1A`,
+      borderRadius: 16,
+      padding: 24,
+      marginBottom: 24,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    howItWorksEyebrow: { fontSize: 10, color: colors.primary, fontWeight: '800', letterSpacing: 1.5, marginBottom: 8 },
+    howItWorksTitle: { fontSize: 20, fontWeight: '700', color: colors.text, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', marginBottom: 12 },
+    howItWorksDesc: { fontSize: 14, color: colors.textSecondary, lineHeight: 22 },
+    
+    cardsContainer: { gap: 12 },
+    
+    listCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 20,
+      borderWidth: 1, 
+      borderColor: colors.border,
+    },
+    iconBox: { width: 32, height: 32, borderRadius: 8, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+    listCardTitle: { fontSize: 16, fontWeight: '600', color: colors.text, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', marginBottom: 8 },
+    listCardDesc: { fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
+
+    bottomSection: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      paddingHorizontal: 24,
+      paddingBottom: Platform.OS === 'ios' ? 34 : 24,
+      paddingTop: 16,
+      backgroundColor: colors.background,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    activateButton: {
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      paddingVertical: 16,
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    activateText: { fontSize: 14, fontWeight: '800', color: colors.background, letterSpacing: 1 },
+    activateSubtext: { fontSize: 9, color: colors.textSecondary, fontWeight: '700', letterSpacing: 1, textAlign: 'center' },
+  }), [colors, isDark]);
 
   const handleContinue = () => {
     router.push('/onboarding/step4');
@@ -36,13 +116,13 @@ export default function OnboardingStep3() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" translucent />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} translucent />
       <SafeAreaView style={styles.safeArea}>
         
         {/* Progress dots */}
         <View style={styles.progressContainer}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={22} color="#D4A44C" />
+            <Ionicons name="arrow-back" size={22} color={colors.primary} />
           </TouchableOpacity>
           <View style={styles.dotsRow}>
             {[0,1,2,3,4,5,6,7].map(i => (
@@ -81,7 +161,7 @@ export default function OnboardingStep3() {
             {FEATURES.map((item, index) => (
               <Animated.View key={item.title} entering={FadeInRight.duration(500).delay(300 + index * 100)} style={styles.listCard}>
                 <View style={styles.iconBox}>
-                  <Ionicons name={item.icon} size={16} color="#D4A44C" />
+                  <Ionicons name={item.icon} size={16} color={colors.primary} />
                 </View>
                 <Text style={styles.listCardTitle}>{item.title}</Text>
                 <Text style={styles.listCardDesc}>{item.desc}</Text>
@@ -110,7 +190,16 @@ export default function OnboardingStep3() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0D0D0D' },
   safeArea: { flex: 1 },
-  backButton: { padding: 8 },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
   progressContainer: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8,

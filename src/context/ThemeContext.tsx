@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
-interface ThemeColors {
+export interface ThemeColors {
   background: string;
   card: string;
   text: string;
@@ -23,12 +23,12 @@ export const darkColors: ThemeColors = {
 };
 
 export const lightColors: ThemeColors = {
-  background: '#F7F5F0',
+  background: '#FDFCF8', // Warm parchment white
   card: '#FFFFFF',
-  text: '#1A1A1A',
-  textSecondary: '#4A4A4A',
-  primary: '#B5872A', // Slightly darker gold for contrast on light mode
-  border: 'rgba(0,0,0,0.08)',
+  text: '#2C1810', // Deep earthy brown for better readability than pure black
+  textSecondary: '#6B5E4C', // Muted clay brown
+  primary: '#B5872A', // Rich temple gold
+  border: 'rgba(181, 135, 42, 0.15)', // Subtle gold-tinted border
 };
 
 interface ThemeContextProps {

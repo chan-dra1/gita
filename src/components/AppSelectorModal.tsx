@@ -131,7 +131,7 @@ export const AppSelectorModal: React.FC<AppSelectorModalProps> = ({
 
           {loading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#F48B29" />
+              <ActivityIndicator size="large" color="#D4A44C" />
               <Text style={styles.loadingText}>Fetching installed apps...</Text>
             </View>
           ) : (
@@ -147,14 +147,14 @@ export const AppSelectorModal: React.FC<AppSelectorModalProps> = ({
                     activeOpacity={0.7}
                   >
                     <View style={styles.appIconPlaceholder}>
-                      <Ionicons name="apps-outline" size={20} color={isSelected ? "#F48B29" : "#9CA3AF"} />
+                      <Ionicons name="apps-outline" size={20} color={isSelected ? "#D4A44C" : "#9CA3AF"} />
                     </View>
                     <View style={styles.appInfo}>
                       <Text style={[styles.appLabel, isSelected && styles.appLabelSelected]}>{item.label}</Text>
                       <Text style={styles.appPackage}>{item.packageName}</Text>
                     </View>
                     <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-                      {isSelected && <Ionicons name="checkmark" size={16} color="#0A1128" />}
+                      {isSelected && <Ionicons name="checkmark" size={16} color="#0D0D0D" />}
                     </View>
                   </TouchableOpacity>
                 );
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     height: '80%',
-    backgroundColor: '#0A1128',
+    backgroundColor: '#0D0D0D',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingTop: 20,
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#D4A44C',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   closeButton: {
@@ -254,8 +254,8 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   appItemSelected: {
-    backgroundColor: 'rgba(244, 139, 41, 0.1)',
-    borderColor: 'rgba(244, 139, 41, 0.3)',
+    backgroundColor: 'rgba(212, 164, 76, 0.1)',
+    borderColor: 'rgba(212, 164, 76, 0.3)',
   },
   appIconPlaceholder: {
     width: 40,
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
     color: '#E5E7EB',
   },
   appLabelSelected: {
-    color: '#F48B29',
+    color: '#D4A44C',
   },
   appPackage: {
     fontSize: 12,
@@ -292,14 +292,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkboxSelected: {
-    backgroundColor: '#F48B29',
-    borderColor: '#F48B29',
+    backgroundColor: '#D4A44C',
+    borderColor: '#D4A44C',
   },
   footer: {
     padding: 24,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.1)',
-    backgroundColor: '#0A1128',
+    backgroundColor: '#0D0D0D',
   },
   selectionCount: {
     textAlign: 'center',
@@ -309,18 +309,18 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     height: 54,
-    backgroundColor: '#F48B29',
+    backgroundColor: '#D4A44C',
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#F48B29',
+    shadowColor: '#D4A44C',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 6,
   },
   saveButtonText: {
-    color: '#0A1128',
+    color: '#0D0D0D',
     fontSize: 17,
     fontWeight: 'bold',
   },

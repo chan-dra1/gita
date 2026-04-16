@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, Switch, Platform, Alert, StyleSheet, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -46,10 +46,12 @@ import {
   type SlokaReadEntry 
 } from '../../src/utils/stats';
 import { subscribeToGlobalSankalpa } from '../../src/utils/karma';
-import { t } from '../../src/utils/i18n';
+import { t, type Language } from '../../src/utils/i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '../../src/context/LanguageContext';
-import { useTheme, ThemeMode } from '../../src/context/ThemeContext';
+import { useAuth } from '../../src/context/AuthContext';
+import { useTheme, ThemeMode, ThemeColors } from '../../src/context/ThemeContext';
+import { pushLocalDataToCloud, pullCloudDataToLocal } from '../../src/utils/cloudSync';
 import { scheduleSmartNotifications } from '../../src/utils/notifications';
 import { AppSelectorModal } from '../../src/components/AppSelectorModal';
 
@@ -66,7 +68,162 @@ export default function SettingsScreen() {
   const [recentSlokas, setRecentSlokas] = useState<SlokaReadEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const { language, setLanguage } = useLanguage();
-  const { mode, setMode, colors } = useTheme();
+  const { mode, setMode, colors, isDark } = useTheme();
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: { flex: 1 },
+    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    header: { 
+      flexDirection: 'row', 
+      justifyContent: 'space-between', 
+      alignItems: 'center', 
+      paddingHorizontal: 24, 
+      paddingTop: 12, 
+      paddingBottom: 20,
+    },
+    headerSubtitle: { fontSize: 11, fontWeight: '700', letterSpacing: 1, color: colors.textSecondary },
+    headerTitle: { fontSize: 28, fontWeight: '800', marginTop: 4, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', color: colors.text },
+    profileButton: { width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
+    avatarPlaceholder: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primary },
+    avatarText: { fontSize: 18, fontWeight: '800', color: colors.background },
+    
+    scrollContent: { paddingBottom: 60 },
+    
+    statsCard: { 
+      flexDirection: 'row', 
+      marginHorizontal: 20, 
+      marginTop: 16, 
+      borderRadius: 20, 
+      paddingVertical: 20,
+      alignItems: 'center',
+      borderWidth: 1,
+      shadowOffset: { width: 0, height: 4 }, 
+      shadowOpacity: 0.1, 
+      shadowRadius: 10, 
+      elevation: 3,
+      backgroundColor: colors.card,
+      borderColor: colors.border,
+    },
+    statDivider: { width: 1, height: '60%', backgroundColor: colors.border },
+    statBox: { flex: 1, alignItems: 'center' },
+    statNumber: { fontSize: 26, fontWeight: '800', color: colors.text },
+    statLabel: { fontSize: 11, fontWeight: '600', marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5, color: colors.textSecondary },
+
+    section: { marginTop: 24, marginHorizontal: 20 },
+    sectionHeader: { fontSize: 12, fontWeight: '700', marginLeft: 8, marginBottom: 8, letterSpacing: 1, color: colors.textSecondary },
+    sectionBody: { borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card },
+    
+    row: { 
+      flexDirection: 'row', 
+      alignItems: 'center', 
+      paddingVertical: 14, 
+      paddingRight: 16, 
+      paddingLeft: 16, 
+      borderBottomWidth: StyleSheet.hairlineWidth, 
+      borderColor: colors.border,
+      backgroundColor: colors.card,
+    },
+    rowLast: { borderBottomWidth: 0 },
+    iconContainer: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
+    rowContent: { flex: 1, justifyContent: 'center' },
+    rowLabel: { fontSize: 16, fontWeight: '600', color: colors.text },
+    rowDesc: { fontSize: 12, marginTop: 2, color: colors.textSecondary },
+    rightContent: { flexDirection: 'row', alignItems: 'center' },
+    rowValue: { fontSize: 15, fontWeight: '500', color: colors.textSecondary },
+    
+    footer: { alignItems: 'center', marginTop: 40, marginBottom: 20 },
+    footerText: { fontSize: 12, marginBottom: 4, fontWeight: '500', letterSpacing: 0.5, color: colors.textSecondary },
+
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', alignItems: 'center' },
+    modalContent: { borderRadius: 24, padding: 24, width: '85%', alignItems: 'center', borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card },
+    modalTitle: { fontSize: 20, fontWeight: '800', marginBottom: 20, color: colors.text },
+    inputWrapper: { width: '100%', marginBottom: 24 },
+    textInput: { width: '100%', borderRadius: 12, padding: 16, fontSize: 16, borderWidth: 1, borderColor: colors.border, color: colors.text, backgroundColor: colors.background },
+    modalButtons: { flexDirection: 'row', gap: 12, width: '100%' },
+    modalButton: { flex: 1, paddingVertical: 14, borderRadius: 14, alignItems: 'center', borderWidth: 1, borderColor: colors.border },
+    modalButtonPrimary: { backgroundColor: colors.primary, borderWidth: 0 },
+    modalButtonText: { fontSize: 16, fontWeight: '700', color: colors.text },
+    modalButtonPrimaryText: { fontSize: 16, fontWeight: '800', color: colors.background },
+
+    langOption: {
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 16,
+      paddingHorizontal: 16,
+      borderRadius: 12,
+      marginBottom: 8,
+      backgroundColor: colors.background,
+    },
+    langOptionSelected: {
+      borderWidth: 1,
+      borderColor: colors.primary,
+      backgroundColor: `${colors.primary}10`,
+    },
+    langOptionText: {
+      fontSize: 16,
+      fontWeight: '500',
+      color: colors.text,
+    },
+    langOptionTextSelected: {
+      fontWeight: '700',
+      color: colors.primary,
+    },
+
+    modalContentLarge: { borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 24, width: '100%', height: '85%', position: 'absolute', bottom: 0, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card },
+    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+    modalTitleLarge: { fontSize: 24, fontWeight: '800', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', color: colors.text },
+    modalClose: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.border },
+    modalScroll: { flex: 1 },
+    modalSectionTitle: { fontSize: 18, fontWeight: '800', marginTop: 24, marginBottom: 8, color: colors.text },
+    modalText: { fontSize: 15, lineHeight: 24, color: colors.textSecondary },
+
+    accountHero: {
+      padding: 20,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
+    accountHeroTop: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+    accountAvatarLg: {
+      width: 58,
+      height: 58,
+      borderRadius: 29,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    accountAvatarLgText: { fontSize: 24, fontWeight: '800', color: colors.background },
+    accountMeta: { flex: 1, minWidth: 0 },
+    accountDisplayName: { fontSize: 19, fontWeight: '800', color: colors.text, letterSpacing: -0.3 },
+    accountEmail: { fontSize: 14, color: colors.textSecondary, marginTop: 5 },
+    accountChipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
+    accountChip: {
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 10,
+      backgroundColor: isDark ? 'rgba(212,164,76,0.12)' : 'rgba(181,135,42,0.12)',
+      borderWidth: 1,
+      borderColor: isDark ? 'rgba(212,164,76,0.25)' : 'rgba(181,135,42,0.22)',
+    },
+    accountChipText: { fontSize: 11, fontWeight: '800', color: colors.primary, letterSpacing: 0.4 },
+    accountUidText: { fontSize: 12, color: colors.textSecondary, marginTop: 14, letterSpacing: 0.2 },
+    signInCard: {
+      padding: 22,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
+    signInTitle: { fontSize: 19, fontWeight: '800', color: colors.text, letterSpacing: -0.2 },
+    signInSubtitle: { fontSize: 14, color: colors.textSecondary, marginTop: 10, lineHeight: 21 },
+    signInCta: {
+      marginTop: 18,
+      backgroundColor: colors.primary,
+      borderRadius: 16,
+      paddingVertical: 15,
+      alignItems: 'center',
+    },
+    signInCtaText: { fontSize: 16, fontWeight: '800', color: colors.background, letterSpacing: 0.3 },
+  }), [colors, isDark]);
 
   // New Features
   const [profileName, setProfileName] = useState('Seeker');
@@ -86,6 +243,10 @@ export default function SettingsScreen() {
   // Global Community
   const [globalSankalpa, setGlobalSankalpa] = useState(0);
 
+  const { user, loading: authLoading, logout } = useAuth();
+  const [accountBusy, setAccountBusy] = useState(false);
+
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
 
   const loadStats = useCallback(async () => {
     try {
@@ -142,19 +303,20 @@ export default function SettingsScreen() {
     return () => unsubscribe();
   }, [loadStats]);
 
-  const handleThemeToggle = () => {
-    Alert.alert(
-      "Theme Mode",
-      "Dark Mode is the current default.\nLight Mode is coming soon in a future update!",
-      [
-        { text: "OK", style: "cancel" }
-      ]
-    );
+  const handleThemeToggle = async () => {
+    const modes: ThemeMode[] = ['dark', 'light', 'system'];
+    const currentIndex = modes.indexOf(mode);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    await setMode(modes[nextIndex]);
   };
 
   const handleLanguageToggle = async () => {
-    const newLang = language === 'en' ? 'hi' : 'en';
-    await setLanguage(newLang);
+    setShowLanguageModal(true);
+  };
+
+  const selectLanguage = async (lang: Language) => {
+    await setLanguage(lang);
+    setShowLanguageModal(false);
   };
 
   const handleSaveName = async () => {
@@ -280,10 +442,64 @@ export default function SettingsScreen() {
     }
   };
 
+  const handlePushCloud = useCallback(async () => {
+    if (!user) return;
+    setAccountBusy(true);
+    try {
+      await pushLocalDataToCloud(user.uid);
+      Alert.alert(t('syncSuccessTitle', language), t('syncSuccessMsg', language));
+    } catch {
+      Alert.alert('Error', t('syncFailedMsg', language));
+    } finally {
+      setAccountBusy(false);
+    }
+  }, [user, language]);
+
+  const handlePullCloud = useCallback(async () => {
+    if (!user) return;
+    setAccountBusy(true);
+    try {
+      await pullCloudDataToLocal(user.uid);
+      await loadStats();
+      Alert.alert(t('syncSuccessTitle', language), t('pullSuccessMsg', language));
+    } catch {
+      Alert.alert('Error', t('pullFailedMsg', language));
+    } finally {
+      setAccountBusy(false);
+    }
+  }, [user, language, loadStats]);
+
+  const handleSignOut = useCallback(() => {
+    Alert.alert(
+      t('signOutConfirmTitle', language),
+      t('signOutConfirmMessage', language),
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: t('signOutAction', language),
+          style: 'destructive',
+          onPress: async () => {
+            setAccountBusy(true);
+            try {
+              if (user) await pushLocalDataToCloud(user.uid);
+              await logout();
+              router.replace('/(tabs)' as any);
+            } catch (e: unknown) {
+              const msg = e instanceof Error ? e.message : 'Sign out failed';
+              Alert.alert('Error', msg);
+            } finally {
+              setAccountBusy(false);
+            }
+          },
+        },
+      ]
+    );
+  }, [user, language, logout, router]);
+
   const handleRestorePurchases = async () => {
     try {
       setLoading(true);
-      const customerInfo = await Purchases.restorePurchases();
+      const customerInfo = await Purchases.getCustomerInfo();
       const active = !!customerInfo.entitlements.active[Config.ENTITLEMENT_ID];
       setIsPremium(active || new Date() < new Date('2026-05-10'));
       Alert.alert(
@@ -312,7 +528,7 @@ export default function SettingsScreen() {
     <Text style={styles.sectionHeader}>{title.toUpperCase()}</Text>
   );
 
-  const SettingRow = ({ icon, label, desc, value, onPress, rightContent, isLast, iconColor = '#E8751A' }: any) => (
+  const SettingRow = ({ icon, label, desc, value, onPress, rightContent, isLast, iconColor = '#E8751A', danger }: any) => (
     <TouchableOpacity 
       style={[styles.row, isLast && styles.rowLast]} 
       onPress={onPress} 
@@ -323,13 +539,13 @@ export default function SettingsScreen() {
         <Ionicons name={icon} size={20} color={iconColor} />
       </View>
       <View style={styles.rowContent}>
-        <Text style={styles.rowLabel}>{label}</Text>
+        <Text style={[styles.rowLabel, danger && { color: '#EF4444' }]}>{label}</Text>
         {desc && <Text style={styles.rowDesc}>{desc}</Text>}
       </View>
       <View style={styles.rightContent}>
         {value && <Text style={styles.rowValue}>{value}</Text>}
         {rightContent}
-        {onPress && <Ionicons name="chevron-forward" size={18} color="#475569" style={{marginLeft: 8}} />}
+        {onPress && <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} style={{marginLeft: 8}} />}
       </View>
     </TouchableOpacity>
   );
@@ -360,7 +576,7 @@ export default function SettingsScreen() {
           <View style={styles.avatarPlaceholder}>
             <Text style={styles.avatarText}>{profileName.charAt(0).toUpperCase()}</Text>
           </View>
-          <Text style={{ color: '#D4A44C', fontSize: 12, marginTop: 4, fontWeight: '600' }}>{profileName}</Text>
+          <Text style={{ color: colors.primary, fontSize: 12, marginTop: 4, fontWeight: '600' }}>{profileName}</Text>
         </TouchableOpacity>
       </View>
 
@@ -384,10 +600,99 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* ACCOUNT GROUP */}
+        {/* ACCOUNT & SYNC — Firebase session, cloud backup, subscriptions */}
         <View style={styles.section}>
           <SectionHeader title={t('accountSync', language)} />
           <View style={styles.sectionBody}>
+            {!authLoading && !user && (
+              <View style={styles.signInCard}>
+                <Text style={styles.signInTitle}>{t('accountBackupTitle', language)}</Text>
+                <Text style={styles.signInSubtitle}>{t('accountBackupSubtitle', language)}</Text>
+                <TouchableOpacity
+                  style={styles.signInCta}
+                  onPress={() => router.push('/auth?mode=login' as any)}
+                  activeOpacity={0.88}
+                >
+                  <Text style={styles.signInCtaText}>{t('accountCtaSignIn', language)}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {!authLoading && user && (
+              <View style={styles.accountHero}>
+                <View style={styles.accountHeroTop}>
+                  <View style={styles.accountAvatarLg}>
+                    <Text style={styles.accountAvatarLgText}>
+                      {(user.displayName || profileName || user.email || '?').charAt(0).toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={styles.accountMeta}>
+                    <Text style={styles.accountDisplayName} numberOfLines={1}>
+                      {user.displayName || profileName}
+                    </Text>
+                    {!!user.email && (
+                      <Text style={styles.accountEmail} numberOfLines={1}>
+                        {user.email}
+                      </Text>
+                    )}
+                    <View style={styles.accountChipsRow}>
+                      {user.emailVerified ? (
+                        <View style={styles.accountChip}>
+                          <Text style={styles.accountChipText}>Verified email</Text>
+                        </View>
+                      ) : (
+                        <View style={styles.accountChip}>
+                          <Text style={styles.accountChipText}>Email not verified</Text>
+                        </View>
+                      )}
+                      {user.providerData?.some((p) => p.providerId === 'google.com') && (
+                        <View style={styles.accountChip}>
+                          <Text style={styles.accountChipText}>Google</Text>
+                        </View>
+                      )}
+                      {user.providerData?.some((p) => p.providerId === 'password') && (
+                        <View style={styles.accountChip}>
+                          <Text style={styles.accountChipText}>Email & password</Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                </View>
+                <Text style={styles.accountUidText}>
+                  {t('accountUserId', language)} · {user.uid.slice(0, 8)}…{user.uid.slice(-4)}
+                </Text>
+                {!!user.metadata?.creationTime && (
+                  <Text style={[styles.accountUidText, { marginTop: 4 }]}>
+                    {t('accountMemberSince', language)} ·{' '}
+                    {new Date(user.metadata.creationTime).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </Text>
+                )}
+              </View>
+            )}
+
+            {!!user && (
+              <>
+                <SettingRow
+                  icon="cloud-upload-outline"
+                  label={t('cloudSyncNow', language)}
+                  desc={accountBusy ? '…' : t('cloudSyncNowDesc', language)}
+                  iconColor={colors.primary}
+                  onPress={accountBusy ? undefined : handlePushCloud}
+                />
+                <SettingRow
+                  icon="cloud-download-outline"
+                  label={t('cloudPullLatest', language)}
+                  desc={accountBusy ? '…' : t('cloudPullLatestDesc', language)}
+                  iconColor="#3B82F6"
+                  onPress={accountBusy ? undefined : handlePullCloud}
+                />
+              </>
+            )}
+
             <SettingRow 
               icon="star" 
               label={t('gitaPremium', language)} 
@@ -402,14 +707,25 @@ export default function SettingsScreen() {
               desc="Renew access from App Store"
               iconColor="#8B5CF6"
               onPress={handleRestorePurchases} 
-              isLast
+              isLast={!user}
             />
+            {!!user && (
+              <SettingRow
+                icon="log-out-outline"
+                label={t('signOutAction', language)}
+                desc="End session on this device"
+                iconColor="#EF4444"
+                onPress={accountBusy ? undefined : handleSignOut}
+                danger
+                isLast
+              />
+            )}
           </View>
         </View>
 
         {/* AI & COMMUNITY */}
         <View style={styles.section}>
-          <SectionHeader title="COMMUNITY & AI" />
+          <SectionHeader title={t('communityAndAi', language)} />
           <View style={styles.sectionBody}>
             <SettingRow 
               icon="people" 
@@ -457,7 +773,7 @@ export default function SettingsScreen() {
             <SettingRow 
               icon="color-palette" 
               label="App Theme" 
-              value="Dark (Coming Soon: Light)"
+              value={mode.charAt(0).toUpperCase() + mode.slice(1)}
               iconColor="#8B5CF6"
               onPress={handleThemeToggle} 
             />
@@ -479,25 +795,18 @@ export default function SettingsScreen() {
             <SettingRow 
               icon="shield-checkmark" 
               label={t('dharmaMode', language)} 
-              desc={t('dharmaModeDesc', language)}
+              desc={blockedApps.length > 0 ? `${blockedApps.length} apps blocked` : t('dharmaModeDesc', language)}
               iconColor="#DC2626"
               rightContent={
                 <Switch 
                   value={dharmaMode} 
                   onValueChange={handleDharmaModeToggle} 
-                  trackColor={{ false: '#D1D5DB', true: '#FED7AA' }}
-                  thumbColor={dharmaMode ? '#E8751A' : '#F9FAFB'} 
-                  ios_backgroundColor="#D1D5DB"
+                  trackColor={{ false: colors.border, true: colors.primary }}
+                  thumbColor={dharmaMode ? (isDark ? colors.background : colors.card) : (isDark ? '#F9FAFB' : '#D1D5DB')} 
+                  ios_backgroundColor={colors.border}
                 />
               }
-            />
-            <SettingRow 
-              icon="options" 
-              label="Select Blocked Apps" 
-              desc={blockedApps.length > 0 ? `${blockedApps.length} apps selected` : "No apps selected"}
-              iconColor="#F97316"
               onPress={() => setShowAppSelector(true)}
-              isLast={!remindersEnabled}
             />
             <SettingRow 
               icon="notifications" 
@@ -508,9 +817,9 @@ export default function SettingsScreen() {
                 <Switch 
                   value={remindersEnabled} 
                   onValueChange={handleRemindersToggle} 
-                  trackColor={{ false: '#D1D5DB', true: '#FED7AA' }}
-                  thumbColor={remindersEnabled ? '#E8751A' : '#F9FAFB'} 
-                  ios_backgroundColor="#D1D5DB"
+                  trackColor={{ false: colors.border, true: colors.primary }}
+                  thumbColor={remindersEnabled ? (isDark ? colors.background : colors.card) : (isDark ? '#F9FAFB' : '#D1D5DB')} 
+                  ios_backgroundColor={colors.border}
                 />
               }
             />
@@ -531,7 +840,7 @@ export default function SettingsScreen() {
             {showTimePicker && (() => {
               if (Platform.OS === 'web') {
                  return (
-                    <View style={{ marginVertical: 10, alignSelf: 'center', backgroundColor: '#FFF', padding: 10, borderRadius: 10, elevation: 2 }}>
+                    <View style={{ marginVertical: 10, alignSelf: 'center', backgroundColor: colors.card, padding: 10, borderRadius: 10, elevation: 2, borderColor: colors.border, borderWidth: 1 }}>
                        {/* @ts-ignore - Web specific input element */}
                        <input
                           type="time"
@@ -543,23 +852,23 @@ export default function SettingsScreen() {
                                 newDate.setHours(parseInt(h, 10), parseInt(m, 10));
                                 onTimeChange({ type: 'set' }, newDate);
                              }
-                          }}
+                           }}
                           onBlur={() => setShowTimePicker(false)}
-                          color="#E8751A"
+                          color={colors.primary}
                           style={{
                              padding: '8px 12px',
                              fontSize: '16px',
                              borderRadius: '8px',
-                             border: '1px solid #E8751A',
-                             backgroundColor: '#FFF8F0',
-                             color: '#E8751A',
+                             border: `1px solid ${colors.border}`,
+                             backgroundColor: colors.background,
+                             color: colors.text,
                              fontWeight: 'bold',
                              outline: 'none',
                              cursor: 'pointer'
                           }}
                        />
                        <TouchableOpacity style={{ marginTop: 10, alignItems: 'center' }} onPress={() => setShowTimePicker(false)}>
-                          <Text style={{ color: '#E8751A', fontWeight: 'bold' }}>Done</Text>
+                          <Text style={{ color: colors.primary, fontWeight: 'bold' }}>Done</Text>
                        </TouchableOpacity>
                     </View>
                  );
@@ -580,6 +889,9 @@ export default function SettingsScreen() {
 
         {/* Footer */}
         <View style={styles.footer}>
+          <Text style={[styles.footerText, { textAlign: 'center', paddingHorizontal: 16 }]}>
+            {t('attributionDataset', language)}
+          </Text>
           <Text style={styles.footerText}>App Version 1.0.0</Text>
           <Text style={styles.footerText}>Made with devotion · The Gita Editorial</Text>
         </View>
@@ -597,6 +909,7 @@ export default function SettingsScreen() {
                 value={editNameValue}
                 onChangeText={setEditNameValue}
                 placeholder="Enter your name"
+                placeholderTextColor={colors.textSecondary}
                 autoFocus
                 maxLength={20}
               />
@@ -620,7 +933,7 @@ export default function SettingsScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitleLarge}>{t('howGitaWorks', language)}</Text>
               <TouchableOpacity onPress={() => setShowHowItWorks(false)} style={styles.modalClose}>
-                <Ionicons name="close" size={24} color="#FFF" />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
@@ -634,7 +947,7 @@ export default function SettingsScreen() {
               <Text style={styles.modalText}>
                 When you find a verse that speaks to your heart, tap the bookmark icon (🔖) at the top of the verse page. It will be saved to your personal collection. You can view all saved verses anytime from Settings → Saved Slokas.
               </Text>
-
+              
               <Text style={styles.modalSectionTitle}>📤 Sharing Wisdom</Text>
               <Text style={styles.modalText}>
                 Share any verse with friends and family by tapping the share button on the verse page. The verse will be shared as a beautiful card that can be posted on social media or sent via any messaging app.
@@ -696,91 +1009,45 @@ export default function SettingsScreen() {
         onSelectApps={handleAppSelection}
       />
 
+      {/* Language Selection Modal */}
+      <Modal visible={showLanguageModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { width: '90%', maxHeight: '80%', backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={styles.modalTitle}>{t('language', language)}</Text>
+            <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
+              {[
+                { id: 'en', name: 'English' },
+                { id: 'hi', name: 'हिन्दी (Hindi)' },
+              ].map((langItem) => (
+                <TouchableOpacity
+                  key={langItem.id}
+                  style={[
+                    styles.langOption,
+                    language === langItem.id && styles.langOptionSelected
+                  ]}
+                  onPress={() => selectLanguage(langItem.id as Language)}
+                >
+                  <Text style={[
+                    styles.langOptionText,
+                    language === langItem.id && styles.langOptionTextSelected
+                  ]}>
+                    {langItem.name}
+                  </Text>
+                  {language === langItem.id && (
+                    <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            <TouchableOpacity 
+              onPress={() => setShowLanguageModal(false)} 
+              style={[styles.modalButton, { marginTop: 20, width: '100%' }]}>
+              <Text style={styles.modalButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D0D' },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0D0D0D' },
-  header: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    paddingHorizontal: 24, 
-    paddingTop: 12, 
-    paddingBottom: 20,
-    backgroundColor: '#0D0D0D' 
-  },
-  headerSubtitle: { fontSize: 11, fontWeight: '700', color: '#D4A44C', letterSpacing: 1 },
-  headerTitle: { fontSize: 28, fontWeight: '800', color: '#FFFFFF', marginTop: 4, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
-  profileButton: { width: 50, height: 50, borderRadius: 25, backgroundColor: 'rgba(212, 164, 76, 0.15)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(212, 164, 76, 0.3)' },
-  avatarPlaceholder: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#D4A44C', alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: '#0D0D0D', fontSize: 18, fontWeight: '800' },
-  
-  scrollContent: { paddingBottom: 60 },
-  
-  statsCard: { 
-    flexDirection: 'row', 
-    marginHorizontal: 20, 
-    marginTop: 16, 
-    backgroundColor: '#1A1A1A', 
-    borderRadius: 20, 
-    paddingVertical: 20,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    shadowColor: '#D4A44C', 
-    shadowOffset: { width: 0, height: 4 }, 
-    shadowOpacity: 0.1, 
-    shadowRadius: 10, 
-    elevation: 3 
-  },
-  statDivider: { width: 1, height: '60%', backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-  statBox: { flex: 1, alignItems: 'center' },
-  statNumber: { fontSize: 26, fontWeight: '800', color: '#FFFFFF' },
-  statLabel: { fontSize: 11, color: '#9CA3AF', fontWeight: '600', marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
-
-  section: { marginTop: 24, marginHorizontal: 20 },
-  sectionHeader: { fontSize: 12, fontWeight: '700', color: '#D4A44C', marginLeft: 8, marginBottom: 8, letterSpacing: 1 },
-  sectionBody: { backgroundColor: '#1A1A1A', borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.08)' },
-  
-  row: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    paddingVertical: 14, 
-    paddingRight: 16, 
-    paddingLeft: 16, 
-    borderBottomWidth: StyleSheet.hairlineWidth, 
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)' 
-  },
-  rowLast: { borderBottomWidth: 0 },
-  iconContainer: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
-  rowContent: { flex: 1, justifyContent: 'center' },
-  rowLabel: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
-  rowDesc: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
-  rightContent: { flexDirection: 'row', alignItems: 'center' },
-  rowValue: { fontSize: 15, color: '#D4A44C', fontWeight: '500' },
-  
-  footer: { alignItems: 'center', marginTop: 40, marginBottom: 20 },
-  footerText: { fontSize: 12, color: '#6B7280', marginBottom: 4, fontWeight: '500', letterSpacing: 0.5 },
-
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.8)', justifyContent: 'center', alignItems: 'center' },
-  modalContent: { backgroundColor: '#1A1A1A', borderRadius: 24, padding: 24, width: '85%', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(212, 164, 76, 0.3)' },
-  modalTitle: { fontSize: 20, fontWeight: '800', color: '#FFFFFF', marginBottom: 20 },
-  inputWrapper: { width: '100%', marginBottom: 24 },
-  textInput: { width: '100%', backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 12, padding: 16, fontSize: 16, color: '#FFFFFF', borderWidth: 1, borderColor: '#333' },
-  modalButtons: { flexDirection: 'row', gap: 12, width: '100%' },
-  modalButton: { flex: 1, paddingVertical: 14, borderRadius: 14, alignItems: 'center', backgroundColor: '#333' },
-  modalButtonPrimary: { backgroundColor: '#D4A44C' },
-  modalButtonText: { fontSize: 16, fontWeight: '700', color: '#FFF' },
-  modalButtonPrimaryText: { fontSize: 16, fontWeight: '800', color: '#0D0D0D' },
-
-  modalContentLarge: { backgroundColor: '#1A1A1A', borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 24, width: '100%', height: '85%', position: 'absolute', bottom: 0, borderWidth: 1, borderColor: 'rgba(212, 164, 76, 0.2)' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  modalTitleLarge: { fontSize: 24, fontWeight: '800', color: '#D4A44C', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
-  modalClose: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' },
-  modalScroll: { flex: 1 },
-  modalSectionTitle: { fontSize: 18, fontWeight: '800', color: '#FFFFFF', marginTop: 24, marginBottom: 8 },
-  modalText: { fontSize: 15, color: '#9CA3AF', lineHeight: 24 },
-});

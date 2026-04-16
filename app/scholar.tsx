@@ -98,7 +98,7 @@ export default function ScholarScreen() {
   const [playingMessageId, setPlayingMessageId] = useState<number | null>(null);
   const [streamingText, setStreamingText] = useState('');
   const scrollRef = useRef<ScrollView>(null);
-  const streamingRef = useRef<NodeJS.Timeout | null>(null);
+  const streamingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   React.useEffect(() => {
     getProfileName().then((name) => {

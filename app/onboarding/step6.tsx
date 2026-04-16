@@ -2,12 +2,13 @@
  * Onboarding Step 6 — Share Feature Showcase
  * Shows users how to share beautiful verse cards on social media.
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View, Text, TouchableOpacity, SafeAreaView,
   StatusBar, StyleSheet, Dimensions, Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -68,6 +69,73 @@ function VerseCardPreview() {
 
 export default function OnboardingStep6() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
+
+  const styles = useMemo(() => StyleSheet.create({
+    safeArea: { flex: 1 },
+    header: {
+      paddingHorizontal: 16,
+      paddingTop: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    backButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.card,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    progressContainer: {
+      flexDirection: 'row', justifyContent: 'center', gap: 6,
+      paddingTop: 16,
+    },
+    dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.border },
+    dotActive: { width: 18, backgroundColor: colors.primary },
+
+    cardContainer: {
+      flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32,
+    },
+
+    cardPreview: {
+      width: width - 64,
+      borderRadius: 20,
+      overflow: 'hidden',
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.3,
+      shadowRadius: 24,
+      elevation: 12,
+    },
+    cardGradient: { padding: 28, alignItems: 'center' },
+    cardAccentTop: { width: 40, height: 2, backgroundColor: colors.primary, marginBottom: 16, borderRadius: 1 },
+    cardOm: { fontSize: 28, color: colors.primary, marginBottom: 14, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+    cardSanskrit: { fontSize: 16, color: colors.text, textAlign: 'center', lineHeight: 28, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', marginBottom: 16 },
+    cardDivider: { width: 60, height: 1, backgroundColor: colors.border, marginBottom: 16 },
+    cardTranslation: { fontSize: 13, color: colors.textSecondary, textAlign: 'center', lineHeight: 20, fontStyle: 'italic', marginBottom: 12 },
+    cardRef: { fontSize: 10, color: colors.textSecondary, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 16 },
+    cardAccentBottom: { width: 40, height: 2, backgroundColor: colors.primary, marginBottom: 16, borderRadius: 1 },
+    shareIconsRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    shareIconBadge: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
+    shareIconsLabel: { fontSize: 11, color: colors.textSecondary, marginLeft: 4 },
+
+    bottomContent: {
+      paddingHorizontal: 28, paddingBottom: 20,
+    },
+    title: { fontSize: 28, fontWeight: '800', color: colors.text, marginBottom: 10, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+    subtitle: { fontSize: 15, color: colors.textSecondary, lineHeight: 23, marginBottom: 20 },
+    bullets: { gap: 10, marginBottom: 28 },
+    bullet: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    bulletText: { fontSize: 14, color: colors.text, flex: 1, lineHeight: 20 },
+
+    continueBtn: { borderRadius: 16, overflow: 'hidden' },
+    continueBtnGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, gap: 8 },
+    continueBtnText: { color: colors.background, fontSize: 16, fontWeight: '800' },
+  }), [colors, isDark]);
 
   return (
     <OnboardingBackground
@@ -75,7 +143,18 @@ export default function OnboardingStep6() {
       overlayOpacity={0.75}
     >
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor="transparent" translucent />
+
+        {/* Header with Back Button */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
 
         {/* Progress dots */}
         <View style={styles.progressContainer}>
@@ -100,15 +179,15 @@ export default function OnboardingStep6() {
           {/* Feature bullets */}
           <View style={styles.bullets}>
             <View style={styles.bullet}>
-              <Ionicons name="image-outline" size={18} color="#D4A44C" />
+              <Ionicons name="image-outline" size={18} color={colors.primary} />
               <Text style={styles.bulletText}>Beautiful verse cards, auto-generated</Text>
             </View>
             <View style={styles.bullet}>
-              <Ionicons name="logo-instagram" size={18} color="#D4A44C" />
+              <Ionicons name="logo-instagram" size={18} color={colors.primary} />
               <Text style={styles.bulletText}>Share directly to Instagram Stories</Text>
             </View>
             <View style={styles.bullet}>
-              <Ionicons name="chatbubble-ellipses-outline" size={18} color="#D4A44C" />
+              <Ionicons name="chatbubble-ellipses-outline" size={18} color={colors.primary} />
               <Text style={styles.bulletText}>
                 {"Share Krishna's word—each card invites others into the verse"}
               </Text>
@@ -126,7 +205,7 @@ export default function OnboardingStep6() {
               style={styles.continueBtnGradient}
             >
               <Text style={styles.continueBtnText}>Continue</Text>
-              <Ionicons name="arrow-forward" size={18} color="#0D0D0D" />
+              <Ionicons name="arrow-forward" size={18} color={colors.background} />
             </LinearGradient>
           </TouchableOpacity>
         </Animated.View>
@@ -137,6 +216,23 @@ export default function OnboardingStep6() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
+  header: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
   progressContainer: {
     flexDirection: 'row', justifyContent: 'center', gap: 6,
     paddingTop: 16,

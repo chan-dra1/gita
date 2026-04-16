@@ -14,6 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { syncWidgetData } from '../src/utils/widgets';
 import { getLocalizedTranslation } from '../src/utils/sloka';
+import { useLanguage } from '../src/context/LanguageContext';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
@@ -57,6 +58,7 @@ const SACRED_COUNTS = [
 
 export default function MeditationScreen() {
   const router = useRouter();
+  const { language } = useLanguage();
   const player = useMeditationPlayer();
   const [targetCount, setTargetCount] = useState(5);
   const [repeatCount, setRepeatCount] = useState(1);
@@ -101,10 +103,15 @@ export default function MeditationScreen() {
         chapter: currentItem.chapter,
         verse: currentItem.verse,
         sanskrit: currentItem.sloka.sanskrit,
-        english: getLocalizedTranslation(currentItem.chapter, currentItem.verse, currentItem.sloka.translation_english, 'en')
+        english: getLocalizedTranslation(
+          currentItem.chapter,
+          currentItem.verse,
+          currentItem.sloka.translation_english,
+          language
+        ),
       });
     }
-  }, [player.currentIndex, player.queue]);
+  }, [player.currentIndex, player.queue, language]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: breatheValue.value }],
@@ -408,7 +415,14 @@ export default function MeditationScreen() {
                   contentContainerStyle={s.meaningScrollContent}
                   showsVerticalScrollIndicator={false}
                 >
-                  <Text style={s.ambientEnglish}>{currentItem.sloka.translation_english}</Text>
+                  <Text style={s.ambientEnglish}>
+                    {getLocalizedTranslation(
+                      currentItem.chapter,
+                      currentItem.verse,
+                      currentItem.sloka.translation_english,
+                      language
+                    )}
+                  </Text>
                 </ScrollView>
               )}
 

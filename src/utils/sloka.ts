@@ -6,7 +6,10 @@
  */
 
 import gitaData from '../data/bhagavad-gita.json';
+import hiTranslations from '../data/languages/hi.json';
 import type { Chapter, GitaData, Sloka } from '../types';
+
+const hiVersePack = hiTranslations as Record<string, string>;
 
 // Handle JSON structure variance across bundlers (Native vs Web)
 const gitaRaw: any = gitaData;
@@ -126,22 +129,22 @@ export function getTotalChapterCount(): number {
     return data && data.chapters ? data.chapters.length : 0;
 }
 
-export function getLocalizedTranslation(chapter: number, verse: number, englishTranslation: string, languageCode: string): string {
+/**
+ * Verse translation for the selected UI language.
+ * Full Hindi pack: Swami Ramsukhdas (701 verses), The Gita Initiative dataset (Unlicense).
+ * Other languages fall back to English until additional public-domain packs are added.
+ */
+export function getLocalizedTranslation(
+    chapter: number,
+    verse: number,
+    englishTranslation: string,
+    languageCode: string
+): string {
     if (languageCode === 'en') return englishTranslation;
-    
-    try {
-        let langPack: Record<string, string> = {};
-        if (languageCode === 'hi') {
-            const hiData = require('../data/languages/hi.json');
-            langPack = hiData.chapters ? hiData : hiData.default || hiData;
-        }
-        
-        const key = `${chapter}_${verse}`;
-        if (langPack[key]) {
-            return langPack[key];
-        }
-        return englishTranslation;
-    } catch (e) {
-        return englishTranslation;
+    const key = `${chapter}_${verse}`;
+    if (languageCode === 'hi') {
+        const localized = hiVersePack[key];
+        if (localized) return localized;
     }
+    return englishTranslation;
 }

@@ -1,73 +1,70 @@
 import commentaryData from '../data/commentary.json';
+import chapterSummaries from '../data/chapterSummaries.json';
 import type { Commentary } from '../types';
+import type { Language } from './i18n';
+import { getChapterTitle } from './chapterDisplay';
 
 export type { Commentary };
 
 const COMMENTARIES: Record<string, Commentary> = commentaryData.commentaries;
+const SUMMARIES = chapterSummaries as Record<string, { en: string; hi: string }>;
+
+/** Short reflective line per UI language (expand over time). */
+const GENERIC_APPLICATION: Record<Language, string> = {
+  en: 'Take a quiet moment with this chapter. Notice where its teaching meets your choices today—without forcing an answer.',
+  hi: 'इस अध्याय के साथ कुछ क्षण चुपचाप बैठें। देखें कि इसकी शिक्षा आज आपके निर्णयों से कहाँ मिलती है—जबरदस्ती उत्तर ढूँढे बिना।',
+};
+
+// @ts-ignore - Keeping for future use
+const _hiddenGenericApplication = {
+  mr: 'Take a quiet moment with this chapter. Notice where its teaching meets your choices today—without forcing an answer.',
+  ta: 'Take a quiet moment with this chapter. Notice where its teaching meets your choices today—without forcing an answer.',
+  te: 'Take a quiet moment with this chapter. Notice where its teaching meets your choices today—without forcing an answer.',
+  bn: 'Take a quiet moment with this chapter. Notice where its teaching meets your choices today—without forcing an answer.',
+  gu: 'Take a quiet moment with this chapter. Notice where its teaching meets your choices today—without forcing an answer.',
+  kn: 'Take a quiet moment with this chapter. Notice where its teaching meets your choices today—without forcing an answer.',
+};
 
 /**
  * Get commentary for a specific verse
- * @param chapter - Chapter number
- * @param verse - Verse number
- * @returns Commentary object or null if not found
  */
 export function getCommentary(chapter: number, verse: number): Commentary | null {
   const key = `${chapter}.${verse}`;
   return COMMENTARIES[key] || null;
 }
 
-/**
- * Check if commentary exists for a verse
- * @param chapter - Chapter number
- * @param verse - Verse number
- * @returns boolean
- */
 export function hasCommentary(chapter: number, verse: number): boolean {
   const key = `${chapter}.${verse}`;
   return key in COMMENTARIES;
 }
 
 /**
- * Get a meaningful excerpt for verses without specific commentary
- * This provides spiritual context based on chapter themes
+ * Chapter-level meaning when no verse-specific commentary exists.
+ * Uses open chapter summaries (en/hi) from The Gita Initiative dataset + localized chapter title.
  */
-export function getGenericCommentary(chapter: number, verse: number): Commentary {
-  const chapterThemes: Record<number, { title: string; theme: string }> = {
-    1: { title: "Arjuna's Dilemma", theme: "The battlefield of Kurukshetra represents the moral dilemmas we face in life. Arjuna's confusion is universal—when duty conflicts with emotion." },
-    2: { title: "Sankhya Yoga", theme: "The path of knowledge and the immortality of the soul. This chapter establishes the foundation of spiritual understanding." },
-    3: { title: "Karma Yoga", theme: "The yoga of selfless action. We must perform our duties without attachment to results, offering all actions as service." },
-    4: { title: "Jnana Yoga", theme: "The yoga of knowledge and the science of incarnation. Divine wisdom is revealed through surrender and inquiry." },
-    5: { title: "Karma Vairagya Yoga", theme: "The balance between action and renunciation. True renunciation is in the mind, not just external acts." },
-    6: { title: "Dhyana Yoga", theme: "The yoga of meditation and mind control. A disciplined mind is the greatest ally; an uncontrolled mind, the greatest enemy." },
-    7: { title: "Jnana Vijnana Yoga", theme: "Knowledge of the Absolute. Krishna reveals His divine nature and how to know Him through bhakti." },
-    8: { title: "Aksara-Parabrahman Yoga", theme: "The imperishable Brahman and the process of departure from this world. What we remember at death determines our next destination." },
-    9: { title: "Raja-Vidya-Guhya Yoga", theme: "The most confidential knowledge—the path of pure devotion. Surrender to the Divine brings complete protection." },
-    10: { title: "Vibhuti Yoga", theme: "The opulence of the Absolute. Krishna reveals His manifestations throughout creation." },
-    11: { title: "Visvarupa-Darsana Yoga", theme: "The universal form. Arjuna sees the cosmic form of the Divine, revealing the infinite nature of God." },
-    12: { title: "Bhakti Yoga", theme: "The yoga of devotion. The qualities that make a devotar dear to the Lord—non-enviousness, kindness, equanimity." },
-    13: { title: "Ksetra-Ksetrajna Vibhaga Yoga", theme: "The distinction between the field (body) and the knower of the field (soul). Understanding our true nature." },
-    14: { title: "Gunatraya-Vibhaga Yoga", theme: "The three modes of material nature. Understanding sattva, rajas, and tamas helps transcend their influence." },
-    15: { title: "Purusottama Yoga", theme: "The Supreme Person. Krishna is the source of everything, seated in the hearts of all beings." },
-    16: { title: "Daivasura-Sampad-Vibhaga Yoga", theme: "The divine and demoniac natures. Understanding qualities that lead to liberation versus bondage." },
-    17: { title: "Sraddhatraya-Vibhaga Yoga", theme: "The divisions of faith. Faith according to one's nature—sattvic, rajasic, or tamasic." },
-    18: { title: "Moksha-Sanyasa Yoga", theme: "Liberation through renunciation. The conclusion of the Gita—surrender unto the Supreme." },
-  };
-
-  const theme = chapterThemes[chapter];
-  const chapterInfo = theme || { title: "The Bhagavad Gita", theme: "The timeless wisdom of the Gita guides us toward self-realization and liberation." };
-
+export function getGenericCommentary(chapter: number, _verse: number, lang: Language): Commentary {
+  const row = SUMMARIES[String(chapter)];
+  const title = getChapterTitle(chapter, lang);
+  let body = '';
+  if (row) {
+    body = lang === 'hi' && row.hi ? row.hi : row.en;
+  }
+  if (!body) {
+    body =
+      lang === 'hi'
+        ? 'इस श्लोक का विस्तृत भाष्य इस संस्करण में उपलब्ध नहीं है।'
+        : 'A detailed verse commentary is not bundled for this selection.';
+  }
+  const meaning = body.length > 2400 ? `${body.slice(0, 2400)}…` : body;
   return {
-    sankara: `${chapterInfo.title} - ${chapterInfo.theme}`,
-    meaning: `This verse from Chapter ${chapter} contributes to the understanding of ${chapterInfo.title.toLowerCase()}. The Bhagavad Gita presents a comprehensive spiritual teaching that addresses all aspects of human life—duty, knowledge, devotion, and liberation.`,
-    application: `Reflect on how the teachings of Chapter ${chapter} apply to your current life situation. Every verse in the Gita offers practical wisdom for navigating life's challenges with grace and wisdom.`,
+    sankara: title,
+    meaning,
+    application: GENERIC_APPLICATION[lang] || GENERIC_APPLICATION.en,
   };
 }
 
-/**
- * Get all verses that have detailed commentary available
- */
 export function getVersesWithCommentary(): { chapter: number; verse: number; key: string }[] {
-  return Object.keys(COMMENTARIES).map(key => {
+  return Object.keys(COMMENTARIES).map((key) => {
     const [chapter, verse] = key.split('.').map(Number);
     return { chapter, verse, key };
   });

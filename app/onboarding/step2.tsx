@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { saveOnboardingStep } from '../../src/utils/stats';
@@ -28,7 +29,78 @@ const LEVELS = [
 
 export default function OnboardingStep2() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    safeArea: { flex: 1 },
+    backButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.card,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    progressContainer: {
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+      paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8,
+    },
+    dotsRow: { flexDirection: 'row', gap: 6 },
+    dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.border },
+    dotActive: { width: 18, backgroundColor: colors.primary },
+    scrollView: { flex: 1 },
+    scrollContent: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 120 },
+
+    titleContainer: { marginBottom: 24 },
+    eyebrow: { fontSize: 10, color: colors.primary, fontWeight: '800', letterSpacing: 1.5, marginBottom: 8 },
+    mainTitle: { fontSize: 28, fontWeight: '800', color: colors.text, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', lineHeight: 36, marginBottom: 12 },
+    subtitle: { fontSize: 14, color: colors.textSecondary, lineHeight: 22 },
+
+    cardsContainer: { gap: 12 },
+    levelCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    levelCardSelected: { borderColor: colors.primary, borderWidth: 2, backgroundColor: `${colors.primary}1A` },
+    cardContent: { flexDirection: 'row', alignItems: 'flex-start' },
+    levelTitle: { fontSize: 18, fontWeight: '700', color: colors.primary, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', marginBottom: 8 },
+    levelTitleSelected: { color: colors.primary },
+    levelDescription: { fontSize: 13, color: colors.textSecondary, lineHeight: 20, marginBottom: 12 },
+    tagsRow: { flexDirection: 'row', gap: 8 },
+    tag: { backgroundColor: colors.border, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
+    tagSelected: { backgroundColor: `${colors.primary}1A` },
+    tagText: { fontSize: 10, fontWeight: '700', color: colors.textSecondary, letterSpacing: 0.5 },
+    tagTextSelected: { color: colors.primary },
+    radioOuter: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: colors.textSecondary, marginLeft: 16, marginTop: 4, alignItems: 'center', justifyContent: 'center' },
+    radioOuterSelected: { borderColor: colors.primary },
+    radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary },
+
+    quoteSection: { marginTop: 32, alignItems: 'center' },
+    quoteText: { fontSize: 16, fontStyle: 'italic', color: colors.textSecondary, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', lineHeight: 24, textAlign: 'center', marginBottom: 8 },
+    quoteRef: { fontSize: 10, color: colors.textSecondary, fontWeight: '700', letterSpacing: 1 },
+
+    ctaContainer: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      paddingHorizontal: 24,
+      paddingBottom: Platform.OS === 'ios' ? 34 : 24,
+      paddingTop: 16,
+      backgroundColor: colors.background,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    ctaButton: { backgroundColor: colors.primary, borderRadius: 8, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+    ctaText: { fontSize: 14, fontWeight: '800', color: colors.background, letterSpacing: 1 },
+  }), [colors, isDark]);
 
   const handleContinue = async () => {
     if (!selectedLevel) return;
@@ -38,13 +110,13 @@ export default function OnboardingStep2() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" translucent />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} translucent />
       <SafeAreaView style={styles.safeArea}>
         
         {/* Progress dots */}
         <View style={styles.progressContainer}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={22} color="#D4A44C" />
+            <Ionicons name="arrow-back" size={22} color={colors.primary} />
           </TouchableOpacity>
           <View style={styles.dotsRow}>
             {[0,1,2,3,4,5,6,7].map(i => (
@@ -119,7 +191,7 @@ export default function OnboardingStep2() {
               style={styles.ctaButton}
             >
               <Text style={styles.ctaText}>CONTINUE</Text>
-              <Ionicons name="chevron-forward" size={18} color="#0D0D0D" />
+              <Ionicons name="chevron-forward" size={18} color={colors.background} />
             </TouchableOpacity>
           </Animated.View>
         )}
@@ -128,64 +200,3 @@ export default function OnboardingStep2() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D0D' },
-  safeArea: { flex: 1 },
-  backButton: { padding: 8 },
-  progressContainer: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8,
-  },
-  dotsRow: { flexDirection: 'row', gap: 6 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.25)' },
-  dotActive: { width: 18, backgroundColor: '#D4A44C' },
-  scrollView: { flex: 1 },
-  scrollContent: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 120 },
-
-  titleContainer: { marginBottom: 24 },
-  eyebrow: { fontSize: 10, color: '#D4A44C', fontWeight: '800', letterSpacing: 1.5, marginBottom: 8 },
-  mainTitle: { fontSize: 28, fontWeight: '800', color: '#FFFFFF', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', lineHeight: 36, marginBottom: 12 },
-  subtitle: { fontSize: 14, color: '#9CA3AF', lineHeight: 22 },
-
-  cardsContainer: { gap: 12 },
-  levelCard: {
-    backgroundColor: '#141414',
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
-  },
-  levelCardSelected: { borderColor: '#D4A44C', borderWidth: 2, backgroundColor: 'rgba(212, 164, 76, 0.06)' },
-  cardContent: { flexDirection: 'row', alignItems: 'flex-start' },
-  levelTitle: { fontSize: 18, fontWeight: '700', color: '#D4A44C', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', marginBottom: 8 },
-  levelTitleSelected: { color: '#D4A44C' },
-  levelDescription: { fontSize: 13, color: '#9CA3AF', lineHeight: 20, marginBottom: 12 },
-  tagsRow: { flexDirection: 'row', gap: 8 },
-  tag: { backgroundColor: 'rgba(255,255,255,0.06)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
-  tagSelected: { backgroundColor: 'rgba(212, 164, 76, 0.15)' },
-  tagText: { fontSize: 10, fontWeight: '700', color: '#666', letterSpacing: 0.5 },
-  tagTextSelected: { color: '#D4A44C' },
-  radioOuter: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#333', marginLeft: 16, marginTop: 4, alignItems: 'center', justifyContent: 'center' },
-  radioOuterSelected: { borderColor: '#D4A44C' },
-  radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#D4A44C' },
-
-  quoteSection: { marginTop: 32, alignItems: 'center' },
-  quoteText: { fontSize: 16, fontStyle: 'italic', color: '#666', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', lineHeight: 24, textAlign: 'center', marginBottom: 8 },
-  quoteRef: { fontSize: 10, color: '#444', fontWeight: '700', letterSpacing: 1 },
-
-  ctaContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 24,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 24,
-    paddingTop: 16,
-    backgroundColor: '#0D0D0D',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.05)',
-  },
-  ctaButton: { backgroundColor: '#D4A44C', borderRadius: 8, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  ctaText: { fontSize: 14, fontWeight: '800', color: '#0D0D0D', letterSpacing: 1 },
-});

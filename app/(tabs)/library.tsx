@@ -1,11 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
-import { FlatList, Text, TouchableOpacity, View, ActivityIndicator, StatusBar, Image } from 'react-native';
+import { useTheme } from '../../src/context/ThemeContext';
+import { useCallback, useEffect, useState, useMemo } from 'react';
+import { FlatList, Text, TouchableOpacity, View, ActivityIndicator, StatusBar, Image, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getAllChapters } from '../../src/utils/sloka';
 import { getSlokasRead } from '../../src/utils/stats';
 import { getChapterImage } from '../../src/utils/chapterImages';
+import { getChapterTitle } from '../../src/utils/chapterDisplay';
+import { useLanguage } from '../../src/context/LanguageContext';
+import { t } from '../../src/utils/i18n';
 
 const chapters = getAllChapters();
 
@@ -18,8 +22,150 @@ interface ChapterProgress {
 
 export default function LibraryScreen() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
+  const { language } = useLanguage();
+
+  const goBack = useCallback(() => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)' as any);
+    }
+  }, [router]);
   const [progress, setProgress] = useState<Map<number, ChapterProgress>>(new Map());
   const [loading, setLoading] = useState(true);
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+    header: {
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      paddingBottom: 20,
+    },
+    headerTopRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+    },
+    backButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.card,
+    },
+    headerTextBlock: {
+      flex: 1,
+      minWidth: 0,
+    },
+    headerEyebrow: {
+      fontSize: 11,
+      fontWeight: '800',
+      color: colors.primary,
+      letterSpacing: 2,
+      textTransform: 'uppercase',
+    },
+    headerTitle: {
+      fontSize: 26,
+      fontWeight: '800',
+      color: colors.text,
+      marginTop: 4,
+      letterSpacing: -0.5,
+    },
+    headerSubtitle: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      fontWeight: '600',
+      marginTop: 6,
+      letterSpacing: 0.3,
+    },
+    chapterCard: {
+      marginBottom: 16,
+      borderRadius: 24,
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      overflow: 'hidden',
+    },
+    chapterImage: {
+      width: '100%',
+      height: 140,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+    },
+    imageOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 140,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      backgroundColor: 'rgba(0,0,0,0.3)',
+    },
+    chapterBadge: {
+      position: 'absolute',
+      top: 12,
+      left: 14,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 10,
+    },
+    chapterBadgeText: {
+      fontSize: 12,
+      fontWeight: '800',
+      color: colors.background,
+      letterSpacing: 0.5,
+    },
+    chapterInfoContainer: { padding: 16 },
+    chapterTitle: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: colors.text,
+      marginBottom: 2,
+    },
+    chapterSanskrit: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      fontWeight: '500',
+      marginBottom: 4,
+      fontStyle: 'italic',
+    },
+    chapterProgressContainer: {
+      flexDirection: 'row', 
+      alignItems: 'center', 
+      marginTop: 6
+    },
+    chapterProgressText: {
+      fontSize: 13,
+    },
+    chapterProgressBadge: {
+      marginLeft: 8,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 6,
+    },
+    chapterProgressBadgeText: {
+      fontSize: 10, 
+      fontWeight: '700',
+    },
+    progressBarContainer: {
+      marginTop: 10,
+    },
+    progressBarBackground: {
+      height: 4,
+      backgroundColor: colors.border,
+      borderRadius: 2,
+      overflow: 'hidden',
+    },
+    progressBarFill: {
+      height: '100%',
+      borderRadius: 2,
+    },
+  }), [colors, isDark]);
 
   const loadProgress = useCallback(async () => {
     try {
@@ -72,43 +218,36 @@ export default function LibraryScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#0D0D0D', justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#D4A44C" />
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#0D0D0D' }}>
-      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" />
-      {/* Header */}
-      <View
-        style={{
-          paddingHorizontal: 24,
-          paddingTop: 12,
-          paddingBottom: 20,
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 28,
-            fontWeight: '700',
-            color: '#FFFFFF',
-          }}
-        >
-          Bhagavad Gita
-        </Text>
-        <Text
-          style={{
-            fontSize: 14,
-            color: '#D4A44C',
-            fontWeight: '600',
-            marginTop: 4,
-            letterSpacing: 1,
-            textTransform: 'uppercase',
-          }}
-        >
-          18 Chapters · 700 Slokas
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
+      {/* Header — back to Home when opened from Quick Actions (stack may be empty) */}
+      <View style={styles.header}>
+        <View style={styles.headerTopRow}>
+          <TouchableOpacity
+            onPress={goBack}
+            style={styles.backButton}
+            activeOpacity={0.75}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="arrow-back" size={22} color={colors.text} />
+          </TouchableOpacity>
+          <View style={styles.headerTextBlock}>
+            <Text style={styles.headerEyebrow}>Bhagavad Gita</Text>
+            <Text style={styles.headerTitle} numberOfLines={2}>
+              {t('library', language)}
+            </Text>
+          </View>
+        </View>
+        <Text style={styles.headerSubtitle}>
+          {t('exploreChapters', language)} · 18 · 700
         </Text>
       </View>
 
@@ -126,107 +265,70 @@ export default function LibraryScreen() {
           return (
             <TouchableOpacity
               onPress={() => router.push(`/chapter/${item.chapter}` as any)}
-              style={{
-                marginBottom: 16,
-                borderRadius: 24,
-                backgroundColor: '#141414',
-                borderWidth: 1,
-                borderColor: isComplete ? 'rgba(34, 197, 94, 0.3)' : 'rgba(255,255,255,0.05)',
-                overflow: 'hidden',
-              }}
+              style={[
+                styles.chapterCard,
+                { borderColor: isComplete ? `${colors.primary}40` : colors.border }
+              ]}
             >
               {/* Chapter Image */}
               <Image
                 source={getChapterImage(item.chapter)}
-                style={{
-                  width: '100%',
-                  height: 140,
-                  borderTopLeftRadius: 24,
-                  borderTopRightRadius: 24,
-                }}
+                style={styles.chapterImage}
                 resizeMode="cover"
               />
               
               {/* Gradient overlay on image */}
-              <View style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 140,
-                borderTopLeftRadius: 24,
-                borderTopRightRadius: 24,
-                backgroundColor: 'rgba(0,0,0,0.3)',
-              }} />
+              <View style={styles.imageOverlay} />
               
               {/* Chapter number badge on image */}
-              <View style={{
-                position: 'absolute',
-                top: 12,
-                left: 14,
-                backgroundColor: isComplete ? 'rgba(34, 197, 94, 0.85)' : 'rgba(212, 164, 76, 0.85)',
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 10,
-              }}>
+              <View style={[
+                styles.chapterBadge,
+                { backgroundColor: isComplete ? `${colors.primary}D9` : `${colors.primary}D9` }
+              ]}>
                 {isComplete ? (
-                  <Ionicons name="checkmark-circle" size={16} color="#FFF" />
+                  <Ionicons name="checkmark-circle" size={16} color={colors.background} />
                 ) : (
-                  <Text style={{
-                    fontSize: 12,
-                    fontWeight: '800',
-                    color: '#FFF',
-                    letterSpacing: 0.5,
-                  }}>
+                  <Text style={styles.chapterBadgeText}>
                     CH {item.chapter}
                   </Text>
                 )}
               </View>
 
               {/* Chapter Info */}
-              <View style={{ padding: 16 }}>
+              <View style={styles.chapterInfoContainer}>
                 <Text
-                  style={{
-                    fontSize: 17,
-                    fontWeight: '700',
-                    color: '#FFFFFF',
-                    marginBottom: 2,
-                  }}
+                  style={styles.chapterTitle}
                 >
-                  {item.name}
+                  {getChapterTitle(item.chapter, language)}
                 </Text>
                 <Text
-                  style={{
-                    fontSize: 13,
-                    color: '#888',
-                    fontWeight: '500',
-                    marginBottom: 4,
-                    fontStyle: 'italic',
-                  }}
+                  style={styles.chapterSanskrit}
                 >
                   {item.name_sanskrit}
                 </Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+                <View style={styles.chapterProgressContainer}>
                   <Text
-                    style={{
-                      fontSize: 13,
-                      color: hasStarted ? '#D4A44C' : '#666',
-                      fontWeight: hasStarted ? '600' : '400',
-                    }}
+                    style={[
+                      styles.chapterProgressText,
+                      { color: hasStarted ? colors.primary : colors.textSecondary }
+                    ]}
                   >
-                    {chapterProgress?.readCount || 0}/{item.verses_count} verses read
+                    {t('versesReadProgress', language, {
+                      read: chapterProgress?.readCount || 0,
+                      total: item.verses_count,
+                    })}
                   </Text>
                   {hasStarted && !isComplete && (
                     <View
-                      style={{
-                        marginLeft: 8,
-                        backgroundColor: 'rgba(212, 164, 76, 0.1)',
-                        paddingHorizontal: 6,
-                        paddingVertical: 2,
-                        borderRadius: 6,
-                      }}
+                      style={[
+                        styles.chapterProgressBadge,
+                        { backgroundColor: `${colors.primary}1A` }
+                      ]}
                     >
-                      <Text style={{ fontSize: 10, fontWeight: '700', color: '#D4A44C' }}>
+                      <Text style={[
+                        styles.chapterProgressBadgeText,
+                        { color: colors.primary }
+                      ]}>
                         {percentComplete}%
                       </Text>
                     </View>
@@ -235,22 +337,18 @@ export default function LibraryScreen() {
 
                 {/* Progress Bar */}
                 {hasStarted && (
-                  <View style={{ marginTop: 10 }}>
+                  <View style={styles.progressBarContainer}>
                     <View
-                      style={{
-                        height: 4,
-                        backgroundColor: '#1A1A1A',
-                        borderRadius: 2,
-                        overflow: 'hidden',
-                      }}
+                      style={styles.progressBarBackground}
                     >
                       <View
-                        style={{
-                          height: '100%',
-                          width: `${percentComplete}%`,
-                          backgroundColor: isComplete ? '#22C55E' : '#D4A44C',
-                          borderRadius: 2,
-                        }}
+                        style={[
+                          styles.progressBarFill,
+                          { 
+                            width: `${percentComplete}%`,
+                            backgroundColor: isComplete ? '#22C55E' : colors.primary, 
+                          }
+                        ]}
                       />
                     </View>
                   </View>

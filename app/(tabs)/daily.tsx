@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
+import React, { useState, useMemo } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -26,6 +28,129 @@ const QUICK_MOODS = [
 
 export default function DailyScreen() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    header: {
+      paddingHorizontal: 24,
+      paddingTop: 12,
+      paddingBottom: 20,
+    },
+    headerSubtitle: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: colors.primary,
+      letterSpacing: 1,
+    },
+    headerTitle: {
+      fontSize: 28,
+      fontWeight: '800',
+      color: colors.text,
+      marginTop: 4,
+      fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    },
+    accentLine: {
+      marginHorizontal: 24,
+      height: 1,
+      backgroundColor: colors.border,
+      marginBottom: 24,
+    },
+    textInputCard: {
+      backgroundColor: colors.card,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: 20,
+      minHeight: 160,
+    },
+    textInput: {
+      fontSize: 16,
+      color: colors.text,
+      lineHeight: 24,
+      flex: 1,
+      textAlignVertical: 'top',
+    },
+    moodEmoji: {
+      fontSize: 18,
+      color: colors.primary,
+    },
+    quickMoodsContainer: {
+      paddingHorizontal: 24,
+      marginTop: 28,
+    },
+    quickMoodsTitle: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: colors.primary,
+      letterSpacing: 1.5,
+      marginBottom: 14,
+    },
+    moodButtonsContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 10,
+    },
+    moodButton: {
+      paddingHorizontal: 18,
+      paddingVertical: 10,
+      borderRadius: 24,
+      borderWidth: 1,
+    },
+    moodButtonText: {
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    errorContainer: {
+      marginHorizontal: 24,
+      marginTop: 16,
+      padding: 14,
+      borderRadius: 12,
+      backgroundColor: 'rgba(220, 50, 50, 0.1)',
+      borderWidth: 1,
+      borderColor: 'rgba(220, 50, 50, 0.3)',
+    },
+    errorText: {
+      fontSize: 14,
+      color: '#FF6B6B',
+    },
+    findSlokaButtonContainer: {
+      paddingHorizontal: 24,
+      marginTop: 32,
+    },
+    findSlokaButton: {
+      paddingVertical: 18,
+      borderRadius: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 10,
+    },
+    findSlokaButtonText: {
+      fontSize: 17,
+      fontWeight: '700',
+    },
+    gitaQuoteContainer: {
+      paddingHorizontal: 24,
+      marginTop: 40,
+      alignItems: 'center',
+    },
+    gitaQuoteText: {
+      fontSize: 14,
+      fontStyle: 'italic',
+      color: colors.textSecondary,
+      fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+      lineHeight: 22,
+      textAlign: 'center',
+    },
+    gitaQuoteSource: {
+      fontSize: 10,
+      color: colors.textSecondary,
+      fontWeight: '700',
+      letterSpacing: 1,
+      marginTop: 8,
+    },
+  }), [colors, isDark]);
   const [mood, setMood] = useState('');
   const { sloka: recommendation, isLoading, error, fetchByMood } = useSloka();
 
@@ -45,37 +170,22 @@ export default function DailyScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#0D0D0D' }}>
+    <SafeAreaView style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
       >
         {/* Header */}
         <View
-          style={{
-            paddingHorizontal: 24,
-            paddingTop: 12,
-            paddingBottom: 20,
-          }}
+          style={styles.header}
         >
           <Text
-            style={{
-              fontSize: 11,
-              fontWeight: '700',
-              color: '#D4A44C',
-              letterSpacing: 1,
-            }}
+            style={styles.headerSubtitle}
           >
             DAILY INTENT
           </Text>
           <Text
-            style={{
-              fontSize: 28,
-              fontWeight: '800',
-              color: '#FFFFFF',
-              marginTop: 4,
-              fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-            }}
+            style={styles.headerTitle}
           >
             How do you feel today?
           </Text>
@@ -83,86 +193,56 @@ export default function DailyScreen() {
 
         {/* Decorative accent line */}
         <View
-          style={{
-            marginHorizontal: 24,
-            height: 1,
-            backgroundColor: 'rgba(212, 164, 76, 0.2)',
-            marginBottom: 24,
-          }}
+          style={styles.accentLine}
         />
 
         {/* Text Input Card */}
         <View style={{ paddingHorizontal: 24 }}>
           <View
-            style={{
-              backgroundColor: '#1A1A1A',
-              borderRadius: 20,
-              borderWidth: 1,
-              borderColor: 'rgba(212, 164, 76, 0.15)',
-              padding: 20,
-              minHeight: 160,
-            }}
+            style={styles.textInputCard}
           >
             <TextInput
-              style={{
-                fontSize: 16,
-                color: '#E0D5C5',
-                lineHeight: 24,
-                flex: 1,
-                textAlignVertical: 'top',
-              }}
+              style={styles.textInput}
               placeholder="Type your feelings or intentions here... e.g., 'I am feeling overwhelmed with work and need peace.'"
-              placeholderTextColor="#555555"
+              placeholderTextColor={colors.textSecondary}
               multiline
               value={mood}
               onChangeText={setMood}
             />
             <View style={{ alignItems: 'flex-end', marginTop: 8 }}>
-              <Text style={{ fontSize: 18, color: '#D4A44C' }}>✨</Text>
+              <Text style={styles.moodEmoji}>✨</Text>
             </View>
           </View>
         </View>
 
         {/* Quick-Select Moods */}
-        <View style={{ paddingHorizontal: 24, marginTop: 28 }}>
+        <View style={styles.quickMoodsContainer}>
           <Text
-            style={{
-              fontSize: 11,
-              fontWeight: '700',
-              color: '#D4A44C',
-              letterSpacing: 1.5,
-              marginBottom: 14,
-            }}
+            style={styles.quickMoodsTitle}
           >
             QUICK-SELECT MOODS
           </Text>
           <View
-            style={{
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              gap: 10,
-            }}
+            style={styles.moodButtonsContainer}
           >
             {QUICK_MOODS.map((m) => (
               <TouchableOpacity
                 key={m}
                 onPress={() => handleQuickMood(m)}
                 disabled={isLoading}
-                style={{
-                  paddingHorizontal: 18,
-                  paddingVertical: 10,
-                  borderRadius: 24,
-                  borderWidth: 1,
-                  borderColor: mood === m ? '#D4A44C' : 'rgba(255,255,255,0.1)',
-                  backgroundColor: mood === m ? 'rgba(212, 164, 76, 0.1)' : '#1A1A1A',
-                  opacity: isLoading ? 0.6 : 1,
-                }}
+                style={[
+                  styles.moodButton,
+                  { 
+                    borderColor: mood === m ? colors.primary : colors.border,
+                    backgroundColor: mood === m ? `${colors.primary}10` : colors.card,
+                    opacity: isLoading ? 0.6 : 1,
+                  }
+                ]}
               >
                 <Text
                   style={{
-                    fontSize: 14,
-                    fontWeight: '600',
-                    color: mood === m ? '#D4A44C' : '#9CA3AF',
+                    ...styles.moodButtonText,
+                    color: mood === m ? colors.primary : colors.textSecondary,
                   }}
                 >
                   {m}
@@ -175,74 +255,53 @@ export default function DailyScreen() {
         {/* Error */}
         {error && (
           <View
-            style={{
-              marginHorizontal: 24,
-              marginTop: 16,
-              padding: 14,
-              borderRadius: 12,
-              backgroundColor: 'rgba(220, 50, 50, 0.1)',
-              borderWidth: 1,
-              borderColor: 'rgba(220, 50, 50, 0.3)',
-            }}
+            style={styles.errorContainer}
           >
-            <Text style={{ fontSize: 14, color: '#FF6B6B' }}>{error}</Text>
+            <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
 
         {/* Find My Sloka Button */}
-        <View style={{ paddingHorizontal: 24, marginTop: 32 }}>
+        <View style={styles.findSlokaButtonContainer}>
           <TouchableOpacity
             onPress={handleFindSloka}
             disabled={isLoading || !mood.trim()}
-            style={{
-              backgroundColor: isLoading || !mood.trim() ? '#333333' : '#D4A44C',
-              paddingVertical: 18,
-              borderRadius: 12,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 10,
-              shadowColor: '#D4A44C',
-              shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: isLoading || !mood.trim() ? 0 : 0.3,
-              shadowRadius: 16,
-              elevation: isLoading || !mood.trim() ? 0 : 8,
-            }}
+            style={[
+              styles.findSlokaButton,
+              {
+                backgroundColor: isLoading || !mood.trim() ? colors.border : colors.primary,
+                shadowColor: colors.primary,
+                shadowOpacity: isLoading || !mood.trim() ? 0 : 0.3,
+                elevation: isLoading || !mood.trim() ? 0 : 8,
+              }
+            ]}
           >
             {isLoading ? (
-              <ActivityIndicator size="small" color="#FFF" />
+              <ActivityIndicator size="small" color={colors.background} />
             ) : (
               <>
                 <Text
                   style={{
-                    color: isLoading || !mood.trim() ? '#666' : '#0D0D0D',
-                    fontSize: 17,
-                    fontWeight: '700',
+                    ...styles.findSlokaButtonText,
+                    color: isLoading || !mood.trim() ? colors.textSecondary : colors.background,
                   }}
                 >
                   Find My Sloka
                 </Text>
-                <Ionicons name="book" size={20} color={isLoading || !mood.trim() ? '#666' : '#0D0D0D'} />
+                <Ionicons name="book" size={20} color={isLoading || !mood.trim() ? colors.textSecondary : colors.background} />
               </>
             )}
           </TouchableOpacity>
         </View>
 
         {/* Gita Quote */}
-        <View style={{ paddingHorizontal: 24, marginTop: 40, alignItems: 'center' }}>
+        <View style={styles.gitaQuoteContainer}>
           <Text
-            style={{
-              fontSize: 14,
-              fontStyle: 'italic',
-              color: '#555',
-              fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-              lineHeight: 22,
-              textAlign: 'center',
-            }}
+            style={styles.gitaQuoteText}
           >
             "You have the right to work, but never to the fruit of work."
           </Text>
-          <Text style={{ fontSize: 10, color: '#444', fontWeight: '700', letterSpacing: 1, marginTop: 8 }}>
+          <Text style={styles.gitaQuoteSource}>
             BHAGAVAD GITA 2.47
           </Text>
         </View>

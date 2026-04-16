@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, Switch, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Animated, { FadeInDown, FadeIn, Layout, Easing } from 'react-native-reanimated';
@@ -25,9 +26,180 @@ Notifications.setNotificationHandler({
 
 export default function OnboardingStep5() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const [remindersEnabled, setRemindersEnabled] = useState(true);
   const [time, setTime] = useState(new Date(new Date().setHours(8, 0, 0, 0))); // Default 8 AM
   const [isLoading, setIsLoading] = useState(false);
+
+  const styles = useMemo(() => StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: 'transparent',
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingTop: 16,
+      paddingBottom: 8,
+    },
+    backButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.card,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    dotsRow: { flexDirection: 'row', gap: 6 },
+    topDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.border },
+    topDotActive: { width: 18, backgroundColor: colors.primary },
+    progressContainer: {
+      marginTop: 8,
+    },
+    progressTextRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    progressStepLabel: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    progressStep: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      color: colors.primary,
+      letterSpacing: 1,
+    },
+    progressBarBg: {
+      height: 6,
+      backgroundColor: colors.border,
+      borderRadius: 999,
+      flexDirection: 'row',
+      overflow: 'hidden',
+    },
+    progressBarFill: {
+      height: '100%',
+      backgroundColor: colors.primary,
+      width: '100%',
+      borderRadius: 999,
+    },
+    titleContainer: {
+      marginTop: 24,
+      marginBottom: 24,
+    },
+    mainTitle: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: colors.text,
+      fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+      lineHeight: 36,
+      letterSpacing: -0.5,
+      textAlign: 'center',
+    },
+    subtitle: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      marginTop: 10,
+      lineHeight: 22,
+      textAlign: 'center',
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingHorizontal: 24,
+      paddingTop: 16,
+      paddingBottom: 24,
+    },
+    remindersContainer: {
+      marginTop: 8,
+      padding: 18,
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginBottom: 24,
+    },
+    remindersContent: {
+      flex: 1,
+    },
+    remindersTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 4,
+    },
+    remindersDescription: {
+      fontSize: 13,
+      color: colors.textSecondary,
+    },
+    timePickerContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 20,
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    timePickerLabel: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 16,
+    },
+    timePickerWrapper: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+    },
+    timePicker: {
+      width: 200,
+      height: 150,
+    },
+    footer: {
+      paddingHorizontal: 24,
+      paddingBottom: 32,
+      paddingTop: 16,
+    },
+    completeButton: {
+      height: 56,
+      borderRadius: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.primary,
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.35,
+      shadowRadius: 16,
+      elevation: 8,
+    },
+    completeButtonText: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: colors.background,
+    },
+    sparkleIcon: {
+      marginLeft: 8,
+    },
+    footerHint: {
+      fontSize: 12,
+      textAlign: 'center',
+      color: colors.textSecondary,
+      marginTop: 16,
+    },
+  }), [colors, isDark]);
 
   const handleComplete = async () => {
     if (isLoading) return;
@@ -76,12 +248,12 @@ export default function OnboardingStep5() {
       overlayOpacity={0.7}
     >
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor="transparent" translucent />
         
         {/* Progress dots */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={22} color="#D1D5DB" />
+            <Ionicons name="arrow-back" size={22} color={colors.text} />
           </TouchableOpacity>
           <View style={styles.dotsRow}>
             {[0,1,2,3,4,5,6,7].map(i => (
@@ -123,9 +295,9 @@ export default function OnboardingStep5() {
             <Switch
               value={remindersEnabled}
               onValueChange={setRemindersEnabled}
-              trackColor={{ false: '#374151', true: '#1A2747' }}
-              thumbColor={remindersEnabled ? '#F48B29' : '#9CA3AF'}
-              ios_backgroundColor="#374151"
+              trackColor={{ false: colors.border, true: colors.primary }}
+              thumbColor={remindersEnabled ? (isDark ? colors.background : colors.card) : colors.textSecondary}
+              ios_backgroundColor={colors.border}
             />
           </Animated.View>
 
@@ -151,9 +323,9 @@ export default function OnboardingStep5() {
                         padding: '12px 16px',
                         fontSize: '20px',
                         borderRadius: '12px',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        backgroundColor: 'rgba(22, 32, 58, 0.7)',
-                        color: '#E5E7EB',
+                        border: `1px solid ${colors.border}`,
+                        backgroundColor: colors.card,
+                        color: colors.text,
                         outline: 'none',
                         cursor: 'pointer',
                         fontFamily: 'inherit'
@@ -167,7 +339,7 @@ export default function OnboardingStep5() {
                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                     onChange={onTimeChange}
                     style={styles.timePicker}
-                    textColor="#E5E7EB"
+                    textColor={colors.text}
                   />
                 )}
               </View>
@@ -189,7 +361,7 @@ export default function OnboardingStep5() {
             ) : (
               <React.Fragment>
                 <Text style={styles.completeButtonText}>Complete Setup</Text>
-                <Ionicons name="sparkles" size={20} color="#0A1128" style={styles.sparkleIcon} />
+                <Ionicons name="sparkles" size={20} color={colors.background} style={styles.sparkleIcon} />
               </React.Fragment>
             )}
           </TouchableOpacity>
@@ -216,7 +388,16 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 8,
   },
-  backButton: { padding: 8 },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
   dotsRow: { flexDirection: 'row', gap: 6 },
   topDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.3)' },
   topDotActive: { width: 18, backgroundColor: '#D4A44C' },

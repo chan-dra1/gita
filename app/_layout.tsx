@@ -6,7 +6,8 @@ import * as Notifications from 'expo-notifications';
 import Purchases from 'react-native-purchases';
 import { LanguageProvider } from '../src/context/LanguageContext';
 import { AuthProvider } from '../src/context/AuthContext';
-import { ThemeProvider } from '../src/context/ThemeContext';
+import { ThemeProvider, useTheme, ThemeMode } from '../src/context/ThemeContext';
+import { Appearance } from 'react-native';
 
 import { Config } from '../src/constants/config';
 
@@ -24,7 +25,16 @@ if (Platform.OS !== 'web') {
 }
 
 export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <RootLayoutContent />
+    </ThemeProvider>
+  );
+}
+
+function RootLayoutContent() {
   const appState = useRef(AppState.currentState);
+  const { colors, mode, setMode } = useTheme();
 
   useEffect(() => {
     // Create Android notification channel (required for Android 8+)
@@ -82,35 +92,57 @@ export default function RootLayout() {
       };
     }).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (mode === 'system') {
+      const subscription = Appearance.addChangeListener(({ colorScheme }) => {
+        setMode('system'); // Re-evaluate system preference
+      });
+      return () => subscription.remove();
+    }
+  }, [mode]);
+
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <LanguageProvider>
-          <Stack
-            screenOptions={{
+    <AuthProvider>
+      <LanguageProvider>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+            animation: 'slide_from_right',
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="sloka/[chapter]/[verse]"
+            options={{
               headerShown: false,
-              contentStyle: { backgroundColor: '#0D0D0D' },
               animation: 'slide_from_right',
             }}
-          >
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen
-              name="sloka/[chapter]/[verse]"
-              options={{
-                headerShown: false,
-                animation: 'slide_from_right',
-              }}
-            />
-            <Stack.Screen
-              name="settings"
-              options={{
-                headerShown: false,
-                animation: 'slide_from_right',
-              }}
-            />
-          </Stack>
-        </LanguageProvider>
-      </AuthProvider>
-    </ThemeProvider>
+          />
+          <Stack.Screen
+            name="settings"
+            options={{
+              headerShown: false,
+              animation: 'slide_from_right',
+            }}
+          />
+          <Stack.Screen
+            name="onboarding/[step]"
+            options={{
+              headerShown: false,
+              animation: 'slide_from_right',
+            }}
+          />
+          <Stack.Screen
+            name="onboarding/paywall"
+            options={{
+              headerShown: false,
+              animation: 'slide_from_right',
+            }}
+          />
+        </Stack>
+      </LanguageProvider>
+    </AuthProvider>
   );
 }

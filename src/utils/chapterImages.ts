@@ -20,9 +20,8 @@ const CHAPTER_IMAGES: Record<number, any> = {
   14: require('../../assets/images/contextual/chapters/ch14_three_gunas.png'),
   15: require('../../assets/images/contextual/chapters/ch15_supreme_person.png'),
   16: require('../../assets/images/contextual/chapters/ch16_divine_demonic.png'),
-  // Chapters 17-18 reuse existing contextual images as fallback
-  17: require('../../assets/images/contextual/meditation.webp'),
-  18: require('../../assets/images/contextual/peace.webp'),
+  17: require('../../assets/images/contextual/chapters/ch17_faith.png'),
+  18: require('../../assets/images/contextual/chapters/ch18_liberation.png'),
 };
 
 /**
