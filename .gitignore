@@ -3,6 +3,12 @@
 # dependencies
 node_modules/
 
+# Never commit a local Node binary tree or npm cache (Cursor/Git will crawl millions of lines)
+node-arm64/
+/node/
+.npm-cache/
+.expo_home/
+
 # Expo
 .expo/
 dist/
@@ -53,3 +59,11 @@ app-example
 /ios
 /android
 .vercel
+
+# Project Cleanup (Performance)
+/dist/
+/node/
+/node-arm64/
+/.npm-cache/
+buildlogs*.json
+*.log

@@ -86,22 +86,8 @@ module.exports = function withGitaWidgets(config) {
     },
   ]);
 
-  // 4. iOS File System: Copy templates
-  config = withDangerousMod(config, [
-    'ios',
-    async (config) => {
-      const projectRoot = config.modRequest.projectRoot;
-      const projectName = config.modRequest.projectName || 'gita';
-      const iosDest = path.join(projectRoot, 'ios', projectName, 'VerseWidget.swift');
-      const iosTemplate = path.join(projectRoot, 'targets/widgets/ios/VerseWidget.swift');
-      
-      if (fs.existsSync(iosTemplate)) {
-        fs.mkdirSync(path.dirname(iosDest), { recursive: true });
-        fs.copyFileSync(iosTemplate, iosDest);
-      }
-      return config;
-    },
-  ]);
+  // iOS Widget Extension sources live under targets/widgets/ios/ — do not inject @main WidgetKit
+  // files into the main app target (invalid for App Store). Add a Widget Extension target in Xcode/EAS.
 
   return config;
 };

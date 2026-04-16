@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["GitaWidgetsModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.gitawidgets.GitaWidgetsModule"]
+  }
+}

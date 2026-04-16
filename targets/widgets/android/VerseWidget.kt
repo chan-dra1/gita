@@ -14,12 +14,25 @@ class VerseWidget : AppWidgetProvider() {
     }
 
     companion object {
+        private const val PREFS_NAME = "gita_widget"
+
         fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val chapter = prefs.getInt("widget_chapter", 1)
+            val verse = prefs.getInt("widget_verse", 1)
+            val sanskrit = prefs.getString("widget_sanskrit", null)
+                ?: "धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सवः"
+            val english = prefs.getString("widget_english", null)
+                ?: "On the holy field of Kurukshetra..."
+
             val views = RemoteViews(context.packageName, R.layout.verse_widget)
-            
-            // Data is set by the Expo app using AppGroups/SharedPreferences
-            // This is a placeholder for the production widget logic
-            
+            views.setTextViewText(
+                R.id.widget_title,
+                "CHAPTER $chapter · VERSE $verse"
+            )
+            views.setTextViewText(R.id.widget_sanskrit, sanskrit)
+            views.setTextViewText(R.id.widget_english, english)
+
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }

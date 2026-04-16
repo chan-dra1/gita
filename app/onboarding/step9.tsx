@@ -160,7 +160,7 @@ export default function OnboardingStep9() {
   }
 
   const handleContinue = () => {
-    router.push('/onboarding/paywall' as any);
+    router.push('/onboarding/dharma-focus' as any);
   };
 
   return (

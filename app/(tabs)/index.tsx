@@ -14,7 +14,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getRandomSloka, getLocalizedTranslation } from '../../src/utils/sloka';
+import { getLocalizedTranslation } from '../../src/utils/sloka';
+import { getOrCreateDailySloka } from '../../src/utils/dailyVerse';
 import { getOnboardingData, isOnboardingComplete, type OnboardingData, getStreakData, getProfileName, getLastReadSloka } from '../../src/utils/stats';
 import { type StreakData } from '../../src/types';
 import { t } from '../../src/utils/i18n';
@@ -62,7 +63,7 @@ export default function HomeScreen() {
   const loadData = useCallback(async () => {
     try {
       const [todaySloka, data, fetchedStreakData, pName, last] = await Promise.all([
-        getRandomSloka(),
+        getOrCreateDailySloka(),
         getOnboardingData(),
         getStreakData(),
         getProfileName(),

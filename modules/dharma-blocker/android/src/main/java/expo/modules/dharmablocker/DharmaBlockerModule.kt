@@ -120,5 +120,26 @@ class DharmaBlockerModule : Module() {
         context.stopService(intent)
       }
     }
+
+    // iOS Family Controls APIs — no-ops on Android so JS can call a single surface.
+    AsyncFunction("getAuthorizationStatus") {
+      "unsupported"
+    }
+
+    Function("hasFamilySelection") {
+      false
+    }
+
+    AsyncFunction("presentFamilyActivityPicker") {
+      null
+    }
+
+    AsyncFunction("setFamilySelectionBase64") { _: String? ->
+      null
+    }
+
+    AsyncFunction("clearFamilySelection") {
+      null
+    }
   }
 }

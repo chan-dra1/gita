@@ -1,6 +1,5 @@
-import { NativeModules, Platform } from 'react-native';
-
-const { GitaWidgetModule } = NativeModules;
+import { Platform } from 'react-native';
+import { requireNativeModule } from 'expo-modules-core';
 
 export interface WidgetData {
   chapter: number;
@@ -9,25 +8,33 @@ export interface WidgetData {
   english: string;
 }
 
+type GitaWidgetsNative = {
+  setWidgetData(chapter: number, verse: number, sanskrit: string, english: string): Promise<void>;
+  updateWidget(chapter: number, verse: number, sanskrit: string, english: string): Promise<void>;
+};
+
+let native: GitaWidgetsNative | null = null;
+if (Platform.OS !== 'web') {
+  try {
+    native = requireNativeModule<GitaWidgetsNative>('GitaWidgets');
+  } catch {
+    native = null;
+  }
+}
+
 /**
  * Syncs the latest verse data with the native Home Screen widgets.
  */
 export async function syncWidgetData(data: WidgetData): Promise<void> {
   try {
+    if (!native) {
+      console.warn('GitaWidgets native module not found. Widget sync skipped.');
+      return;
+    }
     if (Platform.OS === 'android') {
-      // Logic for Android Widget update
-      if (GitaWidgetModule?.updateWidget) {
-        await GitaWidgetModule.updateWidget(data);
-      } else {
-        console.warn('GitaWidgetModule for Android not found. Widget sync skipped.');
-      }
+      await native.updateWidget(data.chapter, data.verse, data.sanskrit, data.english);
     } else if (Platform.OS === 'ios') {
-      // Logic for iOS App Group update
-      if (GitaWidgetModule?.setWidgetData) {
-        await GitaWidgetModule.setWidgetData(data);
-      } else {
-        console.warn('GitaWidgetModule for iOS not found. Widget sync skipped.');
-      }
+      await native.setWidgetData(data.chapter, data.verse, data.sanskrit, data.english);
     }
   } catch (error) {
     console.error('Failed to sync widget data:', error);

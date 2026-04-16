@@ -27,9 +27,15 @@ try {
 if (!DharmaBlocker) {
   DharmaBlocker = {
     requestPermissions: async () => { console.warn("DharmaBlocker not available"); return false; },
+    hasUsagePermission: () => false,
     startBlocking: (_apps: string[]) => console.warn("DharmaBlocker not available"),
     stopBlocking: () => console.warn("DharmaBlocker not available"),
     getInstalledApps: async () => { console.warn("DharmaBlocker not available"); return []; },
+    getAuthorizationStatus: async () => 'unsupported' as const,
+    hasFamilySelection: () => false,
+    presentFamilyActivityPicker: async () => null,
+    setFamilySelectionBase64: async () => null,
+    clearFamilySelection: async () => null,
   };
 }
 import { 
@@ -238,6 +244,7 @@ export default function SettingsScreen() {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showAppSelector, setShowAppSelector] = useState(false);
   const [blockedApps, setBlockedApps] = useState<string[]>([]);
+  const [iosFamilySelection, setIosFamilySelection] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
 
   // Global Community
@@ -269,6 +276,16 @@ export default function SettingsScreen() {
       
       const blocked = await getBlockedApps();
       setBlockedApps(blocked);
+
+      if (Platform.OS === 'ios' && DharmaBlocker?.hasFamilySelection) {
+        try {
+          setIosFamilySelection(DharmaBlocker.hasFamilySelection());
+        } catch {
+          setIosFamilySelection(false);
+        }
+      } else {
+        setIosFamilySelection(false);
+      }
 
       // Check RevenueCat status
       try {
@@ -329,7 +346,7 @@ export default function SettingsScreen() {
 
 
   const handleDharmaModeToggle = async (value: boolean) => {
-    if (value && blockedApps.length === 0) {
+    if (value && Platform.OS === 'android' && blockedApps.length === 0) {
       setShowAppSelector(true);
       return;
     }
@@ -379,11 +396,53 @@ export default function SettingsScreen() {
           setDharmaMode(false);
           await saveOnboardingStep('dharmaMode', false);
         }
-      } else {
-        Alert.alert("Dharma Mode Active", "Focus mode enabled. Distractions minimized.");
+      } else if (Platform.OS === 'ios' && DharmaBlocker) {
+        try {
+          let auth = await DharmaBlocker.getAuthorizationStatus();
+          if (auth !== 'approved') {
+            const ok = await DharmaBlocker.requestPermissions();
+            if (!ok) {
+              Alert.alert(
+                "Screen Time",
+                "Family Controls access was not approved. You can try again or open Settings → Screen Time.",
+                [{ text: "OK", style: "cancel" }],
+              );
+              setDharmaMode(false);
+              await saveOnboardingStep('dharmaMode', false);
+              return;
+            }
+            auth = await DharmaBlocker.getAuthorizationStatus();
+          }
+          if (auth !== 'approved') {
+            setDharmaMode(false);
+            await saveOnboardingStep('dharmaMode', false);
+            return;
+          }
+          if (!DharmaBlocker.hasFamilySelection()) {
+            const b64 = await DharmaBlocker.presentFamilyActivityPicker();
+            if (!b64) {
+              setDharmaMode(false);
+              await saveOnboardingStep('dharmaMode', false);
+              return;
+            }
+            await DharmaBlocker.setFamilySelectionBase64(b64);
+            setIosFamilySelection(DharmaBlocker.hasFamilySelection());
+          }
+          DharmaBlocker.startBlocking([]);
+          setIosFamilySelection(DharmaBlocker.hasFamilySelection());
+          Alert.alert(
+            "Dharma Mode",
+            "Screen Time shields are on. Turn this toggle off anytime to clear shields. You can also adjust limits in Settings → Screen Time.",
+          );
+        } catch (e) {
+          console.warn("DharmaBlocker iOS error:", e);
+          Alert.alert("Dharma Mode", "Could not enable Screen Time shields.");
+          setDharmaMode(false);
+          await saveOnboardingStep('dharmaMode', false);
+        }
       }
     } else {
-      if (Platform.OS === 'android' && DharmaBlocker) {
+      if (Platform.OS !== 'web' && DharmaBlocker) {
         try { DharmaBlocker.stopBlocking(); } catch (e) {}
       }
     }
@@ -795,7 +854,15 @@ export default function SettingsScreen() {
             <SettingRow 
               icon="shield-checkmark" 
               label={t('dharmaMode', language)} 
-              desc={blockedApps.length > 0 ? `${blockedApps.length} apps blocked` : t('dharmaModeDesc', language)}
+              desc={
+                Platform.OS === 'ios'
+                  ? iosFamilySelection
+                    ? 'Screen Time selection saved'
+                    : t('dharmaModeDesc', language)
+                  : blockedApps.length > 0
+                    ? `${blockedApps.length} apps blocked`
+                    : t('dharmaModeDesc', language)
+              }
               iconColor="#DC2626"
               rightContent={
                 <Switch 
@@ -806,7 +873,9 @@ export default function SettingsScreen() {
                   ios_backgroundColor={colors.border}
                 />
               }
-              onPress={() => setShowAppSelector(true)}
+              onPress={() =>
+                Platform.OS === 'android' ? setShowAppSelector(true) : router.push('/dharma' as any)
+              }
             />
             <SettingRow 
               icon="notifications" 
@@ -970,7 +1039,9 @@ export default function SettingsScreen() {
 
               <Text style={styles.modalSectionTitle}>🛡️ Dharma Blocker</Text>
               <Text style={styles.modalText}>
-                This feature helps you stay focused during your reading time by temporarily blocking distracting apps on your phone. You choose which apps to block, and they are only paused while you complete your daily verses. Available on Android only.
+                {Platform.OS === 'ios'
+                  ? 'Dharma Mode on iPhone uses Apple’s Screen Time (Family Controls). You approve access, then pick apps, categories, or websites in Apple’s picker. Shields apply only while you enable the mode here, and you can turn them off anytime in this app or in Settings → Screen Time.'
+                  : 'This feature helps you stay focused during your reading time by temporarily blocking distracting apps you select. Android uses Usage Access and a small overlay when a blocked app opens; you can disable everything from Settings or by turning Dharma Mode off here.'}
               </Text>
 
               <Text style={styles.modalSectionTitle}>🔥 Sadhana Streak</Text>
