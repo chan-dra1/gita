@@ -77,16 +77,31 @@ export default function OnboardingStep7() {
     sacredNum: { fontSize: 16, fontWeight: '800', color: colors.textSecondary, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
     sacredNumActive: { color: colors.background },
 
-    bottomContent: { paddingHorizontal: 28, paddingBottom: 20 },
+    bottomContent: { 
+      paddingHorizontal: 24, 
+      paddingBottom: 48 
+    },
     title: { fontSize: 28, fontWeight: '800', color: colors.text, marginBottom: 10, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
     subtitle: { fontSize: 15, color: colors.textSecondary, lineHeight: 23, marginBottom: 20 },
     bullets: { gap: 10, marginBottom: 28 },
     bullet: { flexDirection: 'row', alignItems: 'center', gap: 12 },
     bulletText: { fontSize: 14, color: colors.text, flex: 1, lineHeight: 20 },
 
-    continueBtn: { borderRadius: 16, overflow: 'hidden' },
-    continueBtnGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, gap: 8 },
-    continueBtnText: { color: colors.background, fontSize: 16, fontWeight: '800' },
+    button: {
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      paddingVertical: 18,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 12,
+    },
+    buttonText: {
+      color: colors.background,
+      fontSize: 18,
+      fontWeight: '700',
+      letterSpacing: 0.5,
+    },
   }), [colors, isDark]);
 
   return (
@@ -155,7 +170,10 @@ export default function OnboardingStep7() {
         </Animated.View>
 
         {/* Bottom content */}
-        <Animated.View entering={FadeInUp.delay(200).duration(600)} style={styles.bottomContent}>
+        <Animated.View 
+          entering={FadeInDown.duration(800).delay(1500).easing(Easing.out(Easing.back(1.2)))} 
+          style={styles.bottomContent}
+        >
           <Text style={styles.title}>Meditation Mode</Text>
           <Text style={styles.subtitle}>
             Listen to sacred chanting while you meditate. Choose how deep you want to go — 
@@ -174,16 +192,17 @@ export default function OnboardingStep7() {
           </View>
 
           <TouchableOpacity
-            style={styles.continueBtn}
+            style={{ borderRadius: 8, overflow: 'hidden' }}
             onPress={() => router.push('/onboarding/step8' as any)}
-            activeOpacity={0.85}
+            activeOpacity={0.88}
           >
             <LinearGradient
-              colors={['#D4A44C', '#B8912E']}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-              style={styles.continueBtnGradient}
+              colors={['#D4A44C', '#C2983B']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.button}
             >
-              <Text style={styles.continueBtnText}>Continue</Text>
+              <Text style={styles.buttonText}>Continue</Text>
               <Ionicons name="arrow-forward" size={18} color={colors.background} />
             </LinearGradient>
           </TouchableOpacity>

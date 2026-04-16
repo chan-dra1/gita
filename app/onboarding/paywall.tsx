@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView, Modal, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView, Modal, Alert, ActivityIndicator, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { Config } from '../../src/constants/config';
 import { saveOnboardingStep } from '../../src/utils/stats';
+import { t } from '../../src/utils/i18n';
+import { useLanguage } from '../../src/context/LanguageContext';
+import { PaywallPopup } from '../../src/components/PaywallPopup';
 
 const TRIAL_DESCRIPTION = 'Includes 14-day free trial';
 
@@ -28,6 +31,7 @@ const FEATURES = [
 
 export default function PaywallScreen() {
   const router = useRouter();
+  const { language } = useLanguage();
   const [selectedTier, setSelectedTier] = useState<string>('yearly');
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [isFetching, setIsFetching] = useState(true);
@@ -214,18 +218,25 @@ export default function PaywallScreen() {
           </Animated.View>
 
           {/* CTA */}
-          <Animated.View entering={FadeInDown.duration(600).delay(400)}>
+          <Animated.View entering={FadeInDown.duration(800).delay(1500).easing(Easing.out(Easing.back(1.2)))}>
             <TouchableOpacity
-              activeOpacity={0.9}
+              activeOpacity={0.88}
               onPress={handlePurchase}
-              style={styles.ctaButton}
+              style={{ borderRadius: 8, overflow: 'hidden' }}
               disabled={isPurchasing || isFetching}
             >
-              {isPurchasing ? (
-                <ActivityIndicator color="#0D0D0D" />
-              ) : (
-                <Text style={styles.ctaButtonText}>BEGIN MY JOURNEY</Text>
-              )}
+              <LinearGradient
+                colors={['#D4A44C', '#C2983B']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.button}
+              >
+                {isPurchasing ? (
+                  <ActivityIndicator color="#0D0D0D" />
+                ) : (
+                  <Text style={styles.buttonText}>BEGIN MY JOURNEY</Text>
+                )}
+              </LinearGradient>
             </TouchableOpacity>
             <Text style={styles.cancelText}>START YOUR 14-DAY FREE TRIAL. CANCEL ANYTIME.</Text>
           </Animated.View>
@@ -261,6 +272,7 @@ export default function PaywallScreen() {
           </View>
         </Modal>
 
+              <PaywallPopup heightPercentage={0.35} />
       </SafeAreaView>
     </View>
   );
@@ -341,15 +353,22 @@ const styles = StyleSheet.create({
   tierPeriodSelected: { color: 'rgba(212, 164, 76, 0.7)' },
 
   // CTA
-  ctaButton: {
-    backgroundColor: '#D4A44C',
+  button: {
+    backgroundColor: colors.primary,
     borderRadius: 8,
-    paddingVertical: 16,
+    paddingVertical: 18,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    justifyContent: 'center',
+    gap: 12,
   },
-  ctaButtonText: { fontSize: 14, fontWeight: '800', color: '#0D0D0D', letterSpacing: 1 },
-  cancelText: { fontSize: 9, color: '#666', fontWeight: '700', letterSpacing: 1, textAlign: 'center', marginBottom: 32 },
+  buttonText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.background,
+    letterSpacing: 0.5,
+  },
+  cancelText: { fontSize: 9, color: colors.textSecondary, fontWeight: '700', letterSpacing: 1, textAlign: 'center', marginBottom: 32 },
 
   // Footer
   footerLinks: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 16 },

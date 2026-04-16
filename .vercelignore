@@ -6,6 +6,8 @@ android/
 ios/
 .git/
 .vercel/
-build_debug.log
-build_error.log
-build_full.log
+.gradle-user-home/
+.kotlin/
+.npm-cache/
+*.log
+# Note: Do NOT exclude *.mp3, *.png, *.webp — they are needed for audio CDN and app assets

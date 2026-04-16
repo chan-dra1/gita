@@ -87,16 +87,31 @@ export default function OnboardingStep8() {
     savedChapterNum: { fontSize: 11, color: colors.primary, fontWeight: '700' },
     savedCardText: { flex: 1, fontSize: 12, color: colors.textSecondary, lineHeight: 18 },
 
-    bottomContent: { paddingHorizontal: 28, paddingBottom: 20 },
+    bottomContent: {
+      paddingHorizontal: 24,
+      paddingBottom: 48,
+    },
     title: { fontSize: 28, fontWeight: '800', color: colors.text, marginBottom: 10, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
     subtitle: { fontSize: 15, color: colors.textSecondary, lineHeight: 23, marginBottom: 20 },
     bullets: { gap: 10, marginBottom: 28 },
     bullet: { flexDirection: 'row', alignItems: 'center', gap: 12 },
     bulletText: { fontSize: 14, color: colors.text, flex: 1, lineHeight: 20 },
 
-    continueBtn: { borderRadius: 16, overflow: 'hidden' },
-    continueBtnGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, gap: 8 },
-    continueBtnText: { color: colors.background, fontSize: 16, fontWeight: '800' },
+    button: {
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      paddingVertical: 18,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 12,
+    },
+    buttonText: {
+      color: colors.background,
+      fontSize: 18,
+      fontWeight: '700',
+      letterSpacing: 0.5,
+    },
   }), [colors, isDark]);
 
   function SavedVerseCard({ chapter, verse, text, delay }: { chapter: number; verse: number; text: string; delay: number }) {
@@ -174,7 +189,10 @@ export default function OnboardingStep8() {
         </View>
 
         {/* Bottom content */}
-        <Animated.View entering={FadeInUp.delay(200).duration(600)} style={styles.bottomContent}>
+        <Animated.View 
+          entering={FadeInDown.duration(800).delay(1500).easing(Easing.out(Easing.back(1.2)))} 
+          style={styles.bottomContent}
+        >
           <Text style={styles.title}>Your Sacred Library</Text>
           <Text style={styles.subtitle}>
             Tap the bookmark icon on any verse to save it. Build your personal collection 
@@ -197,16 +215,17 @@ export default function OnboardingStep8() {
           </View>
 
           <TouchableOpacity
-            style={styles.continueBtn}
+            style={{ borderRadius: 8, overflow: 'hidden' }}
             onPress={handleContinue}
-            activeOpacity={0.85}
+            activeOpacity={0.88}
           >
             <LinearGradient
-              colors={['#D4A44C', '#B8912E']}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-              style={styles.continueBtnGradient}
+              colors={['#D4A44C', '#C2983B']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.button}
             >
-              <Text style={styles.continueBtnText}>See Your Plan</Text>
+              <Text style={styles.buttonText}>See Your Plan</Text>
               <Ionicons name="arrow-forward" size={18} color={colors.background} />
             </LinearGradient>
           </TouchableOpacity>

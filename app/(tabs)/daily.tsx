@@ -14,21 +14,24 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSloka } from '../../src/hooks/useSloka';
+import { useLanguage } from '../../src/context/LanguageContext';
+import { t } from '../../src/utils/i18n';
 
-const QUICK_MOODS = [
-  'Anxious',
-  'Focused',
-  'Stressed',
-  'Curious',
-  'Grateful',
-  'Lost',
-  'Peaceful',
-  'Fearful',
-];
+const MOOD_I18N_KEYS = [
+  'moodAnxious',
+  'moodFocused',
+  'moodStressed',
+  'moodCurious',
+  'moodGrateful',
+  'moodLost',
+  'moodPeaceful',
+  'moodFearful',
+] as const;
 
 export default function DailyScreen() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
+  const { language } = useLanguage();
 
   const styles = useMemo(() => StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
@@ -179,16 +182,8 @@ export default function DailyScreen() {
         <View
           style={styles.header}
         >
-          <Text
-            style={styles.headerSubtitle}
-          >
-            DAILY INTENT
-          </Text>
-          <Text
-            style={styles.headerTitle}
-          >
-            How do you feel today?
-          </Text>
+          <Text style={styles.headerSubtitle}>{t('dailyEyebrow', language)}</Text>
+          <Text style={styles.headerTitle}>{t('dailyTitle', language)}</Text>
         </View>
 
         {/* Decorative accent line */}
@@ -203,7 +198,7 @@ export default function DailyScreen() {
           >
             <TextInput
               style={styles.textInput}
-              placeholder="Type your feelings or intentions here... e.g., 'I am feeling overwhelmed with work and need peace.'"
+              placeholder={t('dailyPlaceholder', language)}
               placeholderTextColor={colors.textSecondary}
               multiline
               value={mood}
@@ -217,24 +212,22 @@ export default function DailyScreen() {
 
         {/* Quick-Select Moods */}
         <View style={styles.quickMoodsContainer}>
-          <Text
-            style={styles.quickMoodsTitle}
-          >
-            QUICK-SELECT MOODS
-          </Text>
+          <Text style={styles.quickMoodsTitle}>{t('dailyQuickMoods', language)}</Text>
           <View
             style={styles.moodButtonsContainer}
           >
-            {QUICK_MOODS.map((m) => (
+            {MOOD_I18N_KEYS.map((key) => {
+              const label = t(key, language);
+              return (
               <TouchableOpacity
-                key={m}
-                onPress={() => handleQuickMood(m)}
+                key={key}
+                onPress={() => handleQuickMood(label)}
                 disabled={isLoading}
                 style={[
                   styles.moodButton,
                   { 
-                    borderColor: mood === m ? colors.primary : colors.border,
-                    backgroundColor: mood === m ? `${colors.primary}10` : colors.card,
+                    borderColor: mood === label ? colors.primary : colors.border,
+                    backgroundColor: mood === label ? `${colors.primary}10` : colors.card,
                     opacity: isLoading ? 0.6 : 1,
                   }
                 ]}
@@ -242,13 +235,14 @@ export default function DailyScreen() {
                 <Text
                   style={{
                     ...styles.moodButtonText,
-                    color: mood === m ? colors.primary : colors.textSecondary,
+                    color: mood === label ? colors.primary : colors.textSecondary,
                   }}
                 >
-                  {m}
+                  {label}
                 </Text>
               </TouchableOpacity>
-            ))}
+              );
+            })}
           </View>
         </View>
 
@@ -286,7 +280,7 @@ export default function DailyScreen() {
                     color: isLoading || !mood.trim() ? colors.textSecondary : colors.background,
                   }}
                 >
-                  Find My Sloka
+                  {t('dailyFindSloka', language)}
                 </Text>
                 <Ionicons name="book" size={20} color={isLoading || !mood.trim() ? colors.textSecondary : colors.background} />
               </>
@@ -296,14 +290,8 @@ export default function DailyScreen() {
 
         {/* Gita Quote */}
         <View style={styles.gitaQuoteContainer}>
-          <Text
-            style={styles.gitaQuoteText}
-          >
-            "You have the right to work, but never to the fruit of work."
-          </Text>
-          <Text style={styles.gitaQuoteSource}>
-            BHAGAVAD GITA 2.47
-          </Text>
+          <Text style={styles.gitaQuoteText}>{t('dailyQuote247', language)}</Text>
+          <Text style={styles.gitaQuoteSource}>{t('dailyQuoteRef', language)}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

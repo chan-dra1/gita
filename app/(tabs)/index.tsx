@@ -202,8 +202,10 @@ export default function HomeScreen() {
                   <Ionicons name="play" size={22} color={colors.primary} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[s.actionTitle, { color: colors.text }]}>Continue Reading</Text>
-                  <Text style={[s.actionSub, { color: colors.textSecondary }]}>Resume Chapter {lastRead.chapter}, Verse {lastRead.verse}</Text>
+                  <Text style={[s.actionTitle, { color: colors.text }]}>{t('homeContinueReading', language)}</Text>
+                  <Text style={[s.actionSub, { color: colors.textSecondary }]}>
+                    {t('homeResumeReading', language, { chapter: lastRead.chapter, verse: lastRead.verse })}
+                  </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={isDark ? "#333" : "#CCC"} />
               </TouchableOpacity>
@@ -261,10 +263,10 @@ export default function HomeScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[s.actionTitle, { color: colors.text }]}>
-                  Ask the Scholar
+                  {t('askScholar', language)}
                 </Text>
                 <Text style={[s.actionSub, { color: colors.textSecondary }]}>
-                  AI-powered Gita wisdom
+                  {t('homeAskScholarSub', language)}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color={isDark ? "#333" : "#CCC"} />
@@ -284,14 +286,14 @@ export default function HomeScreen() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <Ionicons name="headset" size={18} color="#4ADE80" />
                 <Text style={[s.dharmaLabel, { color: '#4ADE80' }]}>
-                  Hands-Free Listening
+                  {t('homeHandsFree', language)}
                 </Text>
               </View>
               <Text style={[s.dharmaTitle, { color: colors.text }]}>
-                Meditation Mode
+                {t('homeMeditationBannerTitle', language)}
               </Text>
               <Text style={[s.dharmaSub, { color: colors.textSecondary }]}>
-                Auto-play Sanskrit and English slokas sequentially.
+                {t('homeMeditationBannerSub', language)}
               </Text>
             </View>
             <View style={[s.dharmaArrow, { borderColor: 'rgba(74, 124, 89, 0.2)', backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }]}>
@@ -360,7 +362,7 @@ export default function HomeScreen() {
                 </Text>
 
                 <View style={s.dailyCardFooter}>
-                  <Text style={[s.dailyCardAction, { color: colors.primary }]}>Read Full Verse</Text>
+                  <Text style={[s.dailyCardAction, { color: colors.primary }]}>{t('homeReadFullVerse', language)}</Text>
                   <Ionicons name="arrow-forward" size={14} color={colors.primary} />
                 </View>
               </View>

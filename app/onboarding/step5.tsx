@@ -10,6 +10,7 @@ import { saveOnboardingStep, completeOnboarding, getOnboardingData } from '../..
 import { scheduleSmartNotifications } from '../../src/utils/notifications';
 import { OnboardingBackground } from '../../src/components/OnboardingBackground';
 import { Dimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient'; // Import LinearGradient
 
 const { width } = Dimensions.get('window');
 
@@ -151,6 +152,7 @@ export default function OnboardingStep5() {
       borderRadius: 16,
       borderWidth: 1,
       borderColor: colors.border,
+      marginBottom: 24,
     },
     timePickerLabel: {
       fontSize: 15,
@@ -169,29 +171,22 @@ export default function OnboardingStep5() {
     },
     footer: {
       paddingHorizontal: 24,
-      paddingBottom: 32,
-      paddingTop: 16,
+      paddingBottom: 48, // Updated from 32
     },
-    completeButton: {
-      height: 56,
-      borderRadius: 16,
+    button: {
+      borderRadius: 8, // Updated from 16
+      paddingVertical: 18, // Updated from 16
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.primary,
-      shadowColor: colors.primary,
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.35,
-      shadowRadius: 16,
-      elevation: 8,
+      gap: 12, // Updated from no gap
+      backgroundColor: colors.primary, // Keeping background color for gradient to overlay
     },
-    completeButtonText: {
-      fontSize: 18,
-      fontWeight: 'bold',
+    buttonText: {
+      fontSize: 18, // Updated from 18
+      fontWeight: '700', // Updated from bold
       color: colors.background,
-    },
-    sparkleIcon: {
-      marginLeft: 8,
+      letterSpacing: 0.5, // Added letterSpacing
     },
     footerHint: {
       fontSize: 12,
@@ -347,23 +342,28 @@ export default function OnboardingStep5() {
           )}
         </ScrollView>
 
-        <Animated.View entering={FadeInDown.duration(600).delay(500)} style={styles.footer}>
+        <Animated.View entering={FadeInDown.duration(800).delay(1500).easing(Easing.out(Easing.back(1.2)))} style={styles.footer}>
           <TouchableOpacity
-            activeOpacity={0.9}
+            activeOpacity={0.88}
             onPress={handleComplete}
-            style={styles.completeButton}
+            style={styles.button}
             disabled={isLoading}
           >
-            {isLoading ? (
-              <React.Fragment>
-                <Text style={styles.completeButtonText}>Saving...</Text>
-              </React.Fragment>
-            ) : (
-              <React.Fragment>
-                <Text style={styles.completeButtonText}>Complete Setup</Text>
-                <Ionicons name="sparkles" size={20} color={colors.background} style={styles.sparkleIcon} />
-              </React.Fragment>
-            )}
+            <LinearGradient
+              colors={['#D4A44C', '#C2983B']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, gap: 12, borderRadius: 8, overflow: 'hidden', flex: 1 }}
+            >
+              {isLoading ? (
+                <Text style={styles.buttonText}>Saving...</Text>
+              ) : (
+                <>
+                  <Text style={styles.buttonText}>Complete Setup</Text>
+                  <Ionicons name="sparkles" size={20} color={colors.background} />
+                </>
+              )}
+            </LinearGradient>
           </TouchableOpacity>
           
           <Text style={styles.footerHint}>
@@ -374,173 +374,3 @@ export default function OnboardingStep5() {
     </OnboardingBackground>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  dotsRow: { flexDirection: 'row', gap: 6 },
-  topDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.3)' },
-  topDotActive: { width: 18, backgroundColor: '#D4A44C' },
-  progressContainer: {
-    marginTop: 8,
-  },
-  progressTextRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  progressStepLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#D1D5DB',
-  },
-  progressStep: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#F48B29',
-    letterSpacing: 1,
-  },
-  progressBarBg: {
-    height: 6,
-    backgroundColor: '#1E293B',
-    borderRadius: 999,
-    flexDirection: 'row',
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: '#F48B29',
-    width: '100%',
-    borderRadius: 999,
-  },
-  titleContainer: {
-    marginTop: 24,
-    marginBottom: 24,
-  },
-  mainTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    lineHeight: 36,
-    letterSpacing: -0.5,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 15,
-    color: '#9CA3AF',
-    marginTop: 10,
-    lineHeight: 22,
-    textAlign: 'center',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 24,
-  },
-  remindersContainer: {
-    marginTop: 8,
-    padding: 18,
-    backgroundColor: 'rgba(22, 32, 58, 0.7)',
-    borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    marginBottom: 24,
-  },
-  remindersContent: {
-    flex: 1,
-  },
-  remindersTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#E5E7EB',
-    marginBottom: 4,
-  },
-  remindersDescription: {
-    fontSize: 13,
-    color: '#9CA3AF',
-  },
-  timePickerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: 'rgba(22, 32, 58, 0.7)',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  timePickerLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#E5E7EB',
-    marginBottom: 16,
-  },
-  timePickerWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-  },
-  timePicker: {
-    width: 200,
-    height: 150,
-  },
-  footer: {
-    paddingHorizontal: 24,
-    paddingBottom: 32,
-    paddingTop: 16,
-  },
-  completeButton: {
-    height: 56,
-    borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F48B29',
-    shadowColor: '#F48B29',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  completeButtonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#0A1128',
-  },
-  sparkleIcon: {
-    marginLeft: 8,
-  },
-  footerHint: {
-    fontSize: 12,
-    textAlign: 'center',
-    color: '#6B7280',
-    marginTop: 16,
-  },
-});

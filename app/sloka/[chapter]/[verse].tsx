@@ -32,7 +32,7 @@ import { useTheme, ThemeColors } from '../../../src/context/ThemeContext';
 // Dynamic import for AI to avoid web crash on top-level Anthropic-SDK load
 import type { ChatMessage } from '../../../src/utils/ai';
 import { getChapter, getSloka, getLocalizedTranslation } from '../../../src/utils/sloka';
-import { getCommentary, getGenericCommentary, type Commentary } from '../../../src/utils/commentary';
+import { getCommentaryForVerse, type Commentary } from '../../../src/utils/commentary';
 import { t } from '../../../src/utils/i18n';
 import { verseSourcesAlertTitle, verseTextProvenanceBody } from '../../../src/constants/verseTextProvenance';
 import { addSlokaRead, isSlokaSaved, saveSloka, unsaveSloka, getOnboardingData, getTodaysSlokasReadCount, isSlokaRead } from '../../../src/utils/stats';
@@ -177,12 +177,13 @@ export default function SlokaScreen() {
       const saved = await isSlokaSaved(chapter, verse);
       setIsSaved(saved);
 
-      // Load commentary
-      let comm = getCommentary(chapter, verse);
-      if (!comm) {
-        comm = getGenericCommentary(chapter, verse, language);
+      // Load commentary (Hindi uses chapter summaries when verse JSON is English-only)
+      try {
+        setCommentary(getCommentaryForVerse(chapter, verse, language));
+      } catch (e) {
+        console.error('[Sloka] commentary load failed', e);
+        setCommentary(null);
       }
-      setCommentary(comm);
     };
 
     loadData();
@@ -924,11 +925,6 @@ export default function SlokaScreen() {
             {/* ─── Translation ─── */}
             <View style={s.section}>
               <Text style={s.sectionTitle}>{t('sectionTranslation', language)}</Text>
-              {['mr', 'ta', 'te', 'bn', 'gu', 'kn'].includes(language) && (
-                <Text style={[s.bodyText, { marginBottom: 10, opacity: 0.85 }]}>
-                  {t('verseTranslationBanner', language)}
-                </Text>
-              )}
               <Text style={s.translationText}>
                 "{cleanTranslation}"
               </Text>
@@ -938,6 +934,11 @@ export default function SlokaScreen() {
             {wordPairs.length > 0 && (
               <View style={s.section}>
                 <Text style={s.sectionTitle}>{t('sectionWordByWord', language)}</Text>
+                {language === 'hi' && (
+                  <Text style={[s.bodyText, { marginBottom: 10, opacity: 0.85 }]}>
+                    {t('wordMeaningsBanner', language)}
+                  </Text>
+                )}
                 <View style={s.wordGrid}>
                   {wordPairs.map((pair, ix) => (
                     <View key={ix} style={s.wordCard}>
@@ -971,11 +972,6 @@ export default function SlokaScreen() {
             {purport && purport !== commentary?.meaning && (
               <View style={s.section}>
                 <Text style={s.sectionTitle}>{t('sectionExpandedPurport', language)}</Text>
-                {language !== 'hi' && language !== 'en' && (
-                  <Text style={[s.bodyText, { marginBottom: 12, opacity: 0.88 }]}>
-                    {t('purportEnglishBanner', language)}
-                  </Text>
-                )}
                 <Text style={s.bodyText}>{purport}</Text>
               </View>
             )}

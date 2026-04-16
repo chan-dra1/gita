@@ -15,15 +15,6 @@ const GENERIC_APPLICATION: Record<Language, string> = {
   hi: 'इस अध्याय के साथ कुछ क्षण चुपचाप बैठें। देखें कि इसकी शिक्षा आज आपके निर्णयों से कहाँ मिलती है—जबरदस्ती उत्तर ढूँढे बिना।',
 };
 
-// @ts-ignore - Keeping for future use
-const _hiddenGenericApplication = {
-  mr: 'Take a quiet moment with this chapter. Notice where its teaching meets your choices today—without forcing an answer.',
-  ta: 'Take a quiet moment with this chapter. Notice where its teaching meets your choices today—without forcing an answer.',
-  te: 'Take a quiet moment with this chapter. Notice where its teaching meets your choices today—without forcing an answer.',
-  bn: 'Take a quiet moment with this chapter. Notice where its teaching meets your choices today—without forcing an answer.',
-  gu: 'Take a quiet moment with this chapter. Notice where its teaching meets your choices today—without forcing an answer.',
-  kn: 'Take a quiet moment with this chapter. Notice where its teaching meets your choices today—without forcing an answer.',
-};
 
 /**
  * Get commentary for a specific verse
@@ -61,6 +52,27 @@ export function getGenericCommentary(chapter: number, _verse: number, lang: Lang
     meaning,
     application: GENERIC_APPLICATION[lang] || GENERIC_APPLICATION.en,
   };
+}
+
+/**
+ * Commentary shown on the sloka screen. `commentary.json` is English-only; when the UI is Hindi,
+ * swap in chapter-level Hindi summaries + Hindi application text so headings and body match.
+ */
+export function getCommentaryForVerse(chapter: number, verse: number, lang: Language): Commentary {
+  const key = `${chapter}.${verse}`;
+  const specific = COMMENTARIES[key] ?? null;
+  if (!specific) {
+    return getGenericCommentary(chapter, verse, lang);
+  }
+  if (lang === 'hi') {
+    const hi = getGenericCommentary(chapter, verse, 'hi');
+    return {
+      ...specific,
+      meaning: hi.meaning,
+      application: hi.application,
+    };
+  }
+  return specific;
 }
 
 export function getVersesWithCommentary(): { chapter: number; verse: number; key: string }[] {

@@ -562,8 +562,8 @@ export default function SettingsScreen() {
       const active = !!customerInfo.entitlements.active[Config.ENTITLEMENT_ID];
       setIsPremium(active || new Date() < new Date('2026-05-10'));
       Alert.alert(
-        active ? 'Restored' : 'Status',
-        active ? 'Premium access restored successfully!' : 'No active subscriptions found.'
+        active ? t('restoreAlertRestoredTitle', language) : t('restoreAlertStatusTitle', language),
+        active ? t('restoreAlertSuccess', language) : t('restoreAlertNone', language)
       );
     } catch (e: any) {
       Alert.alert('Error', e.message);
@@ -623,7 +623,7 @@ export default function SettingsScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.headerSubtitle}>BHAGAVAD GITA</Text>
-          <Text style={styles.headerTitle}>Settings</Text>
+          <Text style={styles.headerTitle}>{t('settings', language)}</Text>
         </View>
         <TouchableOpacity 
           onPress={() => {
@@ -697,21 +697,21 @@ export default function SettingsScreen() {
                     <View style={styles.accountChipsRow}>
                       {user.emailVerified ? (
                         <View style={styles.accountChip}>
-                          <Text style={styles.accountChipText}>Verified email</Text>
+                          <Text style={styles.accountChipText}>{t('emailVerified', language)}</Text>
                         </View>
                       ) : (
                         <View style={styles.accountChip}>
-                          <Text style={styles.accountChipText}>Email not verified</Text>
+                          <Text style={styles.accountChipText}>{t('emailNotVerified', language)}</Text>
                         </View>
                       )}
                       {user.providerData?.some((p) => p.providerId === 'google.com') && (
                         <View style={styles.accountChip}>
-                          <Text style={styles.accountChipText}>Google</Text>
+                          <Text style={styles.accountChipText}>{t('authProviderGoogle', language)}</Text>
                         </View>
                       )}
                       {user.providerData?.some((p) => p.providerId === 'password') && (
                         <View style={styles.accountChip}>
-                          <Text style={styles.accountChipText}>Email & password</Text>
+                          <Text style={styles.accountChipText}>{t('authProviderEmailPassword', language)}</Text>
                         </View>
                       )}
                     </View>
@@ -755,15 +755,15 @@ export default function SettingsScreen() {
             <SettingRow 
               icon="star" 
               label={t('gitaPremium', language)} 
-              desc={isPremium ? "Active" : "Unlock all features"}
+              desc={isPremium ? t('premiumStatusActive', language) : t('premiumStatusInactive', language)}
               iconColor="#F59E0B"
-              value={isPremium ? "PRO" : ""}
+              value={isPremium ? t('premiumBadge', language) : ""}
               onPress={() => router.push('/onboarding/paywall')} 
             />
             <SettingRow 
               icon="refresh" 
-              label="Restore Purchases" 
-              desc="Renew access from App Store"
+              label={t('restorePurchases', language)} 
+              desc={t('restorePurchasesSubtitle', language)}
               iconColor="#8B5CF6"
               onPress={handleRestorePurchases} 
               isLast={!user}
@@ -772,7 +772,7 @@ export default function SettingsScreen() {
               <SettingRow
                 icon="log-out-outline"
                 label={t('signOutAction', language)}
-                desc="End session on this device"
+                desc={t('signOutSubtitle', language)}
                 iconColor="#EF4444"
                 onPress={accountBusy ? undefined : handleSignOut}
                 danger
@@ -788,8 +788,8 @@ export default function SettingsScreen() {
           <View style={styles.sectionBody}>
             <SettingRow 
               icon="people" 
-              label="Global Sankalpa" 
-              desc="Verses read worldwide by the community"
+              label={t('globalSankalpaTitle', language)} 
+              desc={t('globalSankalpaSubtitle', language)}
               iconColor="#10B981"
               value={globalSankalpa > 0 ? globalSankalpa.toLocaleString() : '...'}
               isLast
@@ -803,8 +803,8 @@ export default function SettingsScreen() {
           <View style={styles.sectionBody}>
             <SettingRow 
               icon="flame" 
-              label="Sadhana Streak" 
-              desc="View your devotion calendar"
+              label={t('sadhanaStreakTitle', language)} 
+              desc={t('sadhanaStreakSubtitle', language)}
               iconColor="#D4A44C"
               onPress={() => router.push('/streak' as any)} 
             />
@@ -817,7 +817,7 @@ export default function SettingsScreen() {
             <SettingRow 
               icon="chatbubble-ellipses" 
               label={t('askScholar', language)} 
-              desc="Deep wisdom guidance"
+              desc={t('askScholarSubtitle', language)}
               iconColor="#8B5CF6"
               onPress={() => router.push('/scholar' as any)} 
             />
@@ -831,15 +831,21 @@ export default function SettingsScreen() {
             />
             <SettingRow 
               icon="color-palette" 
-              label="App Theme" 
-              value={mode.charAt(0).toUpperCase() + mode.slice(1)}
+              label={t('appTheme', language)} 
+              value={
+                mode === 'light'
+                  ? t('themeLight', language)
+                  : mode === 'dark'
+                    ? t('themeDark', language)
+                    : t('themeSystem', language)
+              }
               iconColor="#8B5CF6"
               onPress={handleThemeToggle} 
             />
             <SettingRow 
               icon="information-circle" 
               label={t('howGitaWorks', language)} 
-              desc="AI & Privacy details"
+              desc={t('howGitaWorksSubtitle', language)}
               iconColor="#6B7280"
               onPress={() => setShowHowItWorks(true)} 
               isLast 
@@ -857,10 +863,10 @@ export default function SettingsScreen() {
               desc={
                 Platform.OS === 'ios'
                   ? iosFamilySelection
-                    ? 'Screen Time selection saved'
+                    ? t('dharmaScreenTimeSaved', language)
                     : t('dharmaModeDesc', language)
                   : blockedApps.length > 0
-                    ? `${blockedApps.length} apps blocked`
+                    ? t('dharmaAppsBlocked', language, { count: blockedApps.length })
                     : t('dharmaModeDesc', language)
               }
               iconColor="#DC2626"
@@ -880,7 +886,13 @@ export default function SettingsScreen() {
             <SettingRow 
               icon="notifications" 
               label={t('dailyReminder', language)} 
-              desc={remindersEnabled ? `Active at ${reminderTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : "Off"}
+              desc={
+                remindersEnabled
+                  ? t('reminderActiveSummary', language, {
+                      time: reminderTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    })
+                  : t('reminderOffSummary', language)
+              }
               iconColor="#0891B2"
               rightContent={
                 <Switch 
@@ -897,7 +909,7 @@ export default function SettingsScreen() {
             {remindersEnabled && (
               <SettingRow 
                 icon="time" 
-                label="Set Reminder Time" 
+                label={t('setReminderTime', language)} 
                 value={reminderTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 iconColor="#F97316"
                 onPress={() => setShowTimePicker(true)}
@@ -937,7 +949,7 @@ export default function SettingsScreen() {
                           }}
                        />
                        <TouchableOpacity style={{ marginTop: 10, alignItems: 'center' }} onPress={() => setShowTimePicker(false)}>
-                          <Text style={{ color: colors.primary, fontWeight: 'bold' }}>Done</Text>
+                          <Text style={{ color: colors.primary, fontWeight: 'bold' }}>{t('timePickerDone', language)}</Text>
                        </TouchableOpacity>
                     </View>
                  );
@@ -961,8 +973,8 @@ export default function SettingsScreen() {
           <Text style={[styles.footerText, { textAlign: 'center', paddingHorizontal: 16 }]}>
             {t('attributionDataset', language)}
           </Text>
-          <Text style={styles.footerText}>App Version 1.0.0</Text>
-          <Text style={styles.footerText}>Made with devotion · The Gita Editorial</Text>
+          <Text style={styles.footerText}>{t('footerVersionLine', language, { version: '1.0.0' })}</Text>
+          <Text style={styles.footerText}>{t('footerTagline', language)}</Text>
         </View>
 
       </ScrollView>
@@ -971,13 +983,13 @@ export default function SettingsScreen() {
       <Modal visible={showNameModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Profile Name</Text>
+            <Text style={styles.modalTitle}>{t('profileName', language)}</Text>
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.textInput}
                 value={editNameValue}
                 onChangeText={setEditNameValue}
-                placeholder="Enter your name"
+                placeholder={t('enterYourName', language)}
                 placeholderTextColor={colors.textSecondary}
                 autoFocus
                 maxLength={20}
@@ -985,10 +997,10 @@ export default function SettingsScreen() {
             </View>
             <View style={styles.modalButtons}>
               <TouchableOpacity onPress={() => setShowNameModal(false)} style={styles.modalButton}>
-                <Text style={styles.modalButtonText}>Cancel</Text>
+                <Text style={styles.modalButtonText}>{t('btnCancel', language)}</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={handleSaveName} style={[styles.modalButton, styles.modalButtonPrimary]}>
-                <Text style={styles.modalButtonPrimaryText}>Save</Text>
+                <Text style={styles.modalButtonPrimaryText}>{t('btnSave', language)}</Text>
               </TouchableOpacity>
             </View>
           </View>

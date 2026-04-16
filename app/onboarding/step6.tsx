@@ -10,7 +10,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInUp, Easing } from 'react-native-reanimated'; // Added Easing
 import { LinearGradient } from 'expo-linear-gradient';
 import { OnboardingBackground } from '../../src/components/OnboardingBackground';
 
@@ -124,7 +124,8 @@ export default function OnboardingStep6() {
     shareIconsLabel: { fontSize: 11, color: colors.textSecondary, marginLeft: 4 },
 
     bottomContent: {
-      paddingHorizontal: 28, paddingBottom: 20,
+      paddingHorizontal: 24, // Updated from 28
+      paddingBottom: 48, // Updated from 20
     },
     title: { fontSize: 28, fontWeight: '800', color: colors.text, marginBottom: 10, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
     subtitle: { fontSize: 15, color: colors.textSecondary, lineHeight: 23, marginBottom: 20 },
@@ -132,9 +133,22 @@ export default function OnboardingStep6() {
     bullet: { flexDirection: 'row', alignItems: 'center', gap: 12 },
     bulletText: { fontSize: 14, color: colors.text, flex: 1, lineHeight: 20 },
 
-    continueBtn: { borderRadius: 16, overflow: 'hidden' },
-    continueBtnGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, gap: 8 },
-    continueBtnText: { color: colors.background, fontSize: 16, fontWeight: '800' },
+    // Standardized button styles
+    button: {
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      paddingVertical: 18,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 12,
+    },
+    buttonText: {
+      color: colors.background,
+      fontSize: 18,
+      fontWeight: '700',
+      letterSpacing: 0.5,
+    },
   }), [colors, isDark]);
 
   return (
@@ -169,7 +183,10 @@ export default function OnboardingStep6() {
         </View>
 
         {/* Bottom content */}
-        <Animated.View entering={FadeInUp.delay(200).duration(600)} style={styles.bottomContent}>
+        <Animated.View
+          entering={FadeInDown.duration(800).delay(1500).easing(Easing.out(Easing.back(1.2)))} // Added animation
+          style={styles.bottomContent}
+        >
           <Text style={styles.title}>Share the Wisdom</Text>
           <Text style={styles.subtitle}>
             Every verse can be shared as a beautiful card. Post to Instagram Stories, WhatsApp, or anywhere — 
@@ -195,16 +212,17 @@ export default function OnboardingStep6() {
           </View>
 
           <TouchableOpacity
-            style={styles.continueBtn}
+            style={{ borderRadius: 8, overflow: 'hidden' }} // Added wrapper for LinearGradient
             onPress={() => router.push('/onboarding/step7' as any)}
-            activeOpacity={0.85}
+            activeOpacity={0.88} // Adjusted activeOpacity
           >
             <LinearGradient
-              colors={['#D4A44C', '#B8912E']}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-              style={styles.continueBtnGradient}
+              colors={['#D4A44C', '#C2983B']} // Adjusted gradient colors
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.button}
             >
-              <Text style={styles.continueBtnText}>Continue</Text>
+              <Text style={styles.buttonText}>Continue</Text>
               <Ionicons name="arrow-forward" size={18} color={colors.background} />
             </LinearGradient>
           </TouchableOpacity>
@@ -213,69 +231,3 @@ export default function OnboardingStep6() {
     </OnboardingBackground>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  progressContainer: {
-    flexDirection: 'row', justifyContent: 'center', gap: 6,
-    paddingTop: 16,
-  },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.25)' },
-  dotActive: { width: 18, backgroundColor: '#D4A44C' },
-
-  cardContainer: {
-    flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32,
-  },
-
-  cardPreview: {
-    width: width - 64,
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#D4A44C',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 24,
-    elevation: 12,
-  },
-  cardGradient: { padding: 28, alignItems: 'center' },
-  cardAccentTop: { width: 40, height: 2, backgroundColor: '#D4A44C', marginBottom: 16, borderRadius: 1 },
-  cardOm: { fontSize: 28, color: '#D4A44C', marginBottom: 14, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
-  cardSanskrit: { fontSize: 16, color: '#FFF', textAlign: 'center', lineHeight: 28, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', marginBottom: 16 },
-  cardDivider: { width: 60, height: 1, backgroundColor: 'rgba(212,164,76,0.4)', marginBottom: 16 },
-  cardTranslation: { fontSize: 13, color: '#D8D0C0', textAlign: 'center', lineHeight: 20, fontStyle: 'italic', marginBottom: 12 },
-  cardRef: { fontSize: 10, color: '#888', fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 16 },
-  cardAccentBottom: { width: 40, height: 2, backgroundColor: '#D4A44C', marginBottom: 16, borderRadius: 1 },
-  shareIconsRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  shareIconBadge: { width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' },
-  shareIconsLabel: { fontSize: 11, color: '#888', marginLeft: 4 },
-
-  bottomContent: {
-    paddingHorizontal: 28, paddingBottom: 20,
-  },
-  title: { fontSize: 28, fontWeight: '800', color: '#FFF', marginBottom: 10, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
-  subtitle: { fontSize: 15, color: 'rgba(255,255,255,0.65)', lineHeight: 23, marginBottom: 20 },
-  bullets: { gap: 10, marginBottom: 28 },
-  bullet: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  bulletText: { fontSize: 14, color: 'rgba(255,255,255,0.8)', flex: 1, lineHeight: 20 },
-
-  continueBtn: { borderRadius: 16, overflow: 'hidden' },
-  continueBtnGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, gap: 8 },
-  continueBtnText: { color: '#0D0D0D', fontSize: 16, fontWeight: '800' },
-});

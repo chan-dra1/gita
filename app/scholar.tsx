@@ -16,6 +16,8 @@ import { getProfileName } from '../src/utils/stats';
 import { Config } from '../src/constants/config';
 import { playDynamicAudio, stopAudio } from '../src/utils/audio';
 import scholarData from '../src/data/scholar_answers.json';
+import { useLanguage } from '../src/context/LanguageContext';
+import { t } from '../src/utils/i18n';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -24,14 +26,7 @@ interface Message {
   isStreaming?: boolean;
 }
 
-const SUGGESTED_QUESTIONS = [
-  'What is the meaning of Dharma?',
-  'How do I deal with grief and loss?',
-  'What does Krishna say about fear?',
-  'How can I find inner peace?',
-  'What is karma and how does it work?',
-  'How do I act without attachment to results?',
-];
+const SCHOLAR_Q_KEYS = ['scholarQ1', 'scholarQ2', 'scholarQ3', 'scholarQ4', 'scholarQ5', 'scholarQ6'] as const;
 
 const SCHOLAR_CONTEXT = {
   chapter: 0,
@@ -91,6 +86,7 @@ function findPrecomputedAnswer(question: string): string | null {
 
 export default function ScholarScreen() {
   const router = useRouter();
+  const { language } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -234,8 +230,8 @@ export default function ScholarScreen() {
           <Ionicons name="arrow-back" size={22} color="#FFF" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Ask the Scholar</Text>
-          <Text style={styles.headerSubtitle}>Bhagavad Gita Wisdom · AI Powered</Text>
+          <Text style={styles.headerTitle}>{t('scholarHeaderTitle', language)}</Text>
+          <Text style={styles.headerSubtitle}>{t('scholarHeaderSub', language)}</Text>
         </View>
         {messages.length > 0 && (
           <TouchableOpacity
@@ -262,14 +258,13 @@ export default function ScholarScreen() {
           {messages.length === 0 && (
             <View style={styles.welcomeContainer}>
               <Text style={styles.omSymbol}>ॐ</Text>
-              <Text style={styles.welcomeTitle}>Namaste, {profileName}</Text>
-              <Text style={styles.welcomeText}>
-                Ask me anything about the Bhagavad Gita, Dharma, life challenges, or spirituality. 
-                I am here to offer wisdom with humility.
-              </Text>
+              <Text style={styles.welcomeTitle}>{t('scholarNamaste', language, { name: profileName })}</Text>
+              <Text style={styles.welcomeText}>{t('scholarWelcomeBody', language)}</Text>
               <View style={styles.suggestionsContainer}>
-                <Text style={styles.suggestionsTitle}>You might ask...</Text>
-                {SUGGESTED_QUESTIONS.map((q, i) => (
+                <Text style={styles.suggestionsTitle}>{t('scholarSuggestionsTitle', language)}</Text>
+                {SCHOLAR_Q_KEYS.map((key, i) => {
+                  const q = t(key, language);
+                  return (
                   <TouchableOpacity
                     key={i}
                     style={styles.suggestionChip}
@@ -279,7 +274,8 @@ export default function ScholarScreen() {
                     <Text style={styles.suggestionText}>{q}</Text>
                     <Ionicons name="arrow-forward" size={14} color="#D4A44C" />
                   </TouchableOpacity>
-                ))}
+                );
+                })}
               </View>
             </View>
           )}
@@ -296,7 +292,7 @@ export default function ScholarScreen() {
               {msg.role === 'assistant' && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                   <View style={styles.scholarBadge}>
-                    <Text style={styles.scholarBadgeText}>🧘 Scholar</Text>
+                    <Text style={styles.scholarBadgeText}>{t('scholarBadge', language)}</Text>
                   </View>
                   {!msg.isStreaming && (
                     <TouchableOpacity onPress={() => handlePlayAudio(msg.content, msg.timestamp)}>
@@ -323,10 +319,10 @@ export default function ScholarScreen() {
           {isLoading && messages.length > 0 && !messages[messages.length - 1]?.isStreaming && (
             <View style={[styles.bubble, styles.assistantBubble]}>
               <View style={styles.scholarBadge}>
-                <Text style={styles.scholarBadgeText}>🧘 Scholar</Text>
+                <Text style={styles.scholarBadgeText}>{t('scholarBadge', language)}</Text>
               </View>
               <View style={styles.typingDots}>
-                <Text style={styles.typingText}>Reflecting on the wisdom of the Gita...</Text>
+                <Text style={styles.typingText}>{t('scholarReflecting', language)}</Text>
               </View>
             </View>
           )}
@@ -338,7 +334,7 @@ export default function ScholarScreen() {
             style={styles.textInput}
             value={inputText}
             onChangeText={setInputText}
-            placeholder="Ask about Dharma, Karma, life..."
+            placeholder={t('scholarInputPlaceholder', language)}
             placeholderTextColor="#555"
             multiline
             maxLength={500}

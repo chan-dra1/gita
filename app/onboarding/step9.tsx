@@ -10,7 +10,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInUp, Easing } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OnboardingBackground } from '../../src/components/OnboardingBackground';
 
@@ -119,7 +119,8 @@ export default function OnboardingStep9() {
     },
 
     bottomContent: {
-      paddingHorizontal: 28, paddingBottom: 20,
+      paddingHorizontal: 24, // Updated from 28
+      paddingBottom: 48, // Updated from 20
     },
     title: { fontSize: 28, fontWeight: '800', color: colors.text, marginBottom: 10, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
     subtitle: { fontSize: 15, color: colors.textSecondary, lineHeight: 23, marginBottom: 20 },
@@ -127,9 +128,22 @@ export default function OnboardingStep9() {
     bullet: { flexDirection: 'row', alignItems: 'center', gap: 12 },
     bulletText: { fontSize: 14, color: colors.text, flex: 1, lineHeight: 20 },
 
-    continueBtn: { borderRadius: 16, overflow: 'hidden' },
-    continueBtnGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, gap: 8 },
-    continueBtnText: { color: colors.background, fontSize: 16, fontWeight: '800' },
+    // Standardized button styles
+    button: {
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      paddingVertical: 18,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 12,
+    },
+    buttonText: {
+      color: colors.background,
+      fontSize: 18,
+      fontWeight: '700',
+      letterSpacing: 0.5,
+    },
   }), [colors, isDark]);
 
   function WidgetPreview() {
@@ -192,7 +206,10 @@ export default function OnboardingStep9() {
         </View>
 
         {/* Bottom content */}
-        <Animated.View entering={FadeInUp.delay(200).duration(600)} style={styles.bottomContent}>
+        <Animated.View 
+          entering={FadeInDown.duration(800).delay(1500).easing(Easing.out(Easing.back(1.2)))} 
+          style={styles.bottomContent}
+        >
           <Text style={styles.title}>Wisdom at a Glance</Text>
           <Text style={styles.subtitle}>
             Keep Krishna's teachings close. Add beautiful widgets to your Home and Lock screens for daily inspiration without even opening the app.
@@ -215,16 +232,17 @@ export default function OnboardingStep9() {
           </View>
 
           <TouchableOpacity
-            style={styles.continueBtn}
+            style={{ borderRadius: 8, overflow: 'hidden' }} // Added wrapper for LinearGradient
             onPress={handleContinue}
-            activeOpacity={0.85}
+            activeOpacity={0.88}
           >
             <LinearGradient
-              colors={['#D4A44C', '#B8912E']}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-              style={styles.continueBtnGradient}
+              colors={['#D4A44C', '#C2983B']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.button}
             >
-              <Text style={styles.continueBtnText}>Begin Journey</Text>
+              <Text style={styles.buttonText}>Begin Journey</Text>
               <Ionicons name="arrow-forward" size={18} color={colors.background} />
             </LinearGradient>
           </TouchableOpacity>

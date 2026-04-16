@@ -85,15 +85,21 @@ export default function OnboardingDharmaFocus() {
         },
         emergencyTitle: { fontSize: 14, fontWeight: '800', color: colors.text, marginBottom: 6 },
         emergencyBody: { fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
-        continueBtn: { borderRadius: 16, overflow: 'hidden' },
-        continueBtnGradient: {
+        button: {
+          backgroundColor: colors.primary,
+          borderRadius: 8,
+          paddingVertical: 18,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          paddingVertical: 16,
-          gap: 8,
+          gap: 12,
         },
-        continueBtnText: { color: colors.background, fontSize: 16, fontWeight: '800' },
+        buttonText: {
+          color: colors.background,
+          fontSize: 18,
+          fontWeight: '700',
+          letterSpacing: 0.5,
+        },
       }),
     [colors, isDark],
   );
@@ -149,14 +155,18 @@ export default function OnboardingDharmaFocus() {
             </Text>
           </Animated.View>
 
-          <TouchableOpacity style={styles.continueBtn} onPress={handleContinue} activeOpacity={0.85}>
+          <TouchableOpacity 
+            style={{ borderRadius: 8, overflow: 'hidden' }}
+            onPress={handleContinue} 
+            activeOpacity={0.88}
+          >
             <LinearGradient
-              colors={['#D4A44C', '#B8912E']}
+              colors={['#D4A44C', '#C2983B']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              style={styles.continueBtnGradient}
+              style={styles.button}
             >
-              <Text style={styles.continueBtnText}>Continue</Text>
+              <Text style={styles.buttonText}>Continue</Text>
               <Ionicons name="arrow-forward" size={18} color={colors.background} />
             </LinearGradient>
           </TouchableOpacity>

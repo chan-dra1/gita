@@ -86,20 +86,25 @@ export default function OnboardingStep2() {
     quoteText: { fontSize: 16, fontStyle: 'italic', color: colors.textSecondary, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', lineHeight: 24, textAlign: 'center', marginBottom: 8 },
     quoteRef: { fontSize: 10, color: colors.textSecondary, fontWeight: '700', letterSpacing: 1 },
 
-    ctaContainer: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
+    footer: {
       paddingHorizontal: 24,
-      paddingBottom: Platform.OS === 'ios' ? 34 : 24,
-      paddingTop: 16,
-      backgroundColor: colors.background,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
+      paddingBottom: 48,
     },
-    ctaButton: { backgroundColor: colors.primary, borderRadius: 8, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-    ctaText: { fontSize: 14, fontWeight: '800', color: colors.background, letterSpacing: 1 },
+    button: {
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      paddingVertical: 18,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 12,
+    },
+    buttonText: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: colors.background,
+      letterSpacing: 0.5,
+    },
   }), [colors, isDark]);
 
   const handleContinue = async () => {
@@ -184,14 +189,20 @@ export default function OnboardingStep2() {
 
         {/* Continue Button */}
         {selectedLevel && (
-          <Animated.View entering={FadeInDown.duration(400)} style={styles.ctaContainer}>
-            <TouchableOpacity
-              activeOpacity={0.9}
-              onPress={handleContinue}
-              style={styles.ctaButton}
-            >
-              <Text style={styles.ctaText}>CONTINUE</Text>
-              <Ionicons name="chevron-forward" size={18} color={colors.background} />
+          <Animated.View
+            entering={FadeInDown.duration(800).delay(1500).easing(Easing.out(Easing.back(1.2)))}
+            style={styles.footer}
+          >
+            <TouchableOpacity style={styles.button} onPress={handleContinue} activeOpacity={0.88}>
+              <LinearGradient
+                colors={['#D4A44C', '#C2983B']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, gap: 12, borderRadius: 8, overflow: 'hidden' }}
+              >
+                <Text style={styles.buttonText}>CONTINUE</Text>
+                <Ionicons name="arrow-forward" size={18} color={colors.background} />
+              </LinearGradient>
             </TouchableOpacity>
           </Animated.View>
         )}

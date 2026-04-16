@@ -112,21 +112,25 @@ export default function OnboardingStep1() {
         },
         footer: {
           paddingHorizontal: 24,
-          paddingTop: 12,
-          paddingBottom: 28,
-          borderTopWidth: StyleSheet.hairlineWidth,
-          borderTopColor: colors.border,
-          backgroundColor: colors.background,
+          paddingBottom: 48, // Updated from 28 to 48
         },
-        continueBtn: { borderRadius: 16, overflow: 'hidden' },
+        continueBtn: {
+          borderRadius: 8, // Updated from 16 to 8
+          overflow: 'hidden',
+        },
         continueGradient: {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          paddingVertical: 16,
-          gap: 8,
+          paddingVertical: 18, // Updated from 16 to 18
+          gap: 12, // Updated from 8 to 12
         },
-        continueText: { color: colors.background, fontSize: 16, fontWeight: '800' },
+        continueText: {
+          color: colors.background,
+          fontSize: 18, // Updated from 16 to 18
+          fontWeight: '700', // Updated from 800 to 700
+          letterSpacing: 0.5, // Added letterSpacing
+        },
       }),
     [colors, isDark],
   );
@@ -166,7 +170,10 @@ export default function OnboardingStep1() {
             <Animated.View entering={FadeInRight.duration(500).delay(200)}>
               <TouchableOpacity
                 activeOpacity={0.85}
-                onPress={() => setPreviewLang('en')}
+                onPress={() => {
+                  setPreviewLang('en');
+                  setLanguage('en');
+                }}
                 style={[styles.optionCard, previewLang === 'en' && styles.optionCardSelected]}
               >
                 <View style={styles.cardHeader}>
@@ -187,7 +194,10 @@ export default function OnboardingStep1() {
             <Animated.View entering={FadeInRight.duration(500).delay(300)}>
               <TouchableOpacity
                 activeOpacity={0.85}
-                onPress={() => setPreviewLang('hi')}
+                onPress={() => {
+                  setPreviewLang('hi');
+                  setLanguage('hi');
+                }}
                 style={[styles.optionCard, previewLang === 'hi' && styles.optionCardSelected]}
               >
                 <View style={styles.cardHeader}>
@@ -211,10 +221,13 @@ export default function OnboardingStep1() {
           </View>
         </ScrollView>
 
-        <View style={styles.footer}>
+        <Animated.View // Added Animated.View here
+          entering={FadeInDown.duration(800).delay(1500).easing(Easing.out(Easing.back(1.2)))}
+          style={styles.footer}
+        >
           <TouchableOpacity style={styles.continueBtn} onPress={handleContinue} activeOpacity={0.88}>
             <LinearGradient
-              colors={['#D4A44C', '#B8912E']}
+              colors={['#D4A44C', '#C2983B']} // Adjusted gradient colors
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.continueGradient}
@@ -223,7 +236,7 @@ export default function OnboardingStep1() {
               <Ionicons name="arrow-forward" size={18} color={colors.background} />
             </LinearGradient>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       </SafeAreaView>
     </View>
   );

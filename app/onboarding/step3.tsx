@@ -87,26 +87,25 @@ export default function OnboardingStep3() {
     listCardTitle: { fontSize: 16, fontWeight: '600', color: colors.text, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', marginBottom: 8 },
     listCardDesc: { fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
 
-    bottomSection: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
+    footer: {
       paddingHorizontal: 24,
-      paddingBottom: Platform.OS === 'ios' ? 34 : 24,
-      paddingTop: 16,
-      backgroundColor: colors.background,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
+      paddingBottom: 48,
     },
-    activateButton: {
+    button: {
       backgroundColor: colors.primary,
       borderRadius: 8,
-      paddingVertical: 16,
+      paddingVertical: 18,
+      flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 12,
+      justifyContent: 'center',
+      gap: 12,
     },
-    activateText: { fontSize: 14, fontWeight: '800', color: colors.background, letterSpacing: 1 },
+    buttonText: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: colors.background,
+      letterSpacing: 0.5,
+    },
     activateSubtext: { fontSize: 9, color: colors.textSecondary, fontWeight: '700', letterSpacing: 1, textAlign: 'center' },
   }), [colors, isDark]);
 
@@ -171,13 +170,21 @@ export default function OnboardingStep3() {
         </ScrollView>
 
         {/* Bottom CTA */}
-        <Animated.View entering={FadeInDown.duration(600).delay(800)} style={styles.bottomSection}>
+        <Animated.View entering={FadeInDown.duration(800).delay(1500).easing(Easing.out(Easing.back(1.2)))} style={styles.footer}>
           <TouchableOpacity 
-            style={styles.activateButton}
+            style={styles.button}
             onPress={handleContinue}
-            activeOpacity={0.9}
+            activeOpacity={0.88}
           >
-            <Text style={styles.activateText}>CONTINUE</Text>
+            <LinearGradient
+              colors={['#D4A44C', '#C2983B']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, gap: 12, borderRadius: 8, overflow: 'hidden' }}
+            >
+              <Text style={styles.buttonText}>CONTINUE</Text>
+              <Ionicons name="arrow-forward" size={18} color={colors.background} />
+            </LinearGradient>
           </TouchableOpacity>
           <Text style={styles.activateSubtext}>YOU CAN CONFIGURE DHARMA BLOCKER IN SETTINGS</Text>
         </Animated.View>

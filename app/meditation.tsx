@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, Dimensions, StatusBar,
   ScrollView, TextInput,
@@ -16,49 +16,55 @@ import { syncWidgetData } from '../src/utils/widgets';
 import { getLocalizedTranslation } from '../src/utils/sloka';
 import { useLanguage } from '../src/context/LanguageContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { t } from '../src/utils/i18n';
 
 const { width, height } = Dimensions.get('window');
 
 // ─── Listening Modes ─────────────────────────────────────────────
 type ListeningMode = 'chant_only' | 'chant_meaning' | 'full';
 
-const LISTENING_MODES = [
-  {
-    key: 'chant_only' as ListeningMode,
-    icon: 'musical-notes',
-    title: 'Chant Only',
-    subtitle: 'Sanskrit verse chanting',
-    color: '#E8B94A',
-  },
-  {
-    key: 'chant_meaning' as ListeningMode,
-    icon: 'book',
-    title: 'Chant + Meaning',
-    subtitle: 'Verse followed by translation',
-    color: '#6BB5E8',
-  },
-  {
-    key: 'full' as ListeningMode,
-    icon: 'school',
-    title: 'Deep Study',
-    subtitle: 'Chant + Extended Commentary',
-    color: '#A78BFA',
-  },
-];
-
-// ─── Sacred repeat counts ────────────────────────────────────────
-const SACRED_COUNTS = [
-  { value: 1, label: '1', desc: 'Single' },
-  { value: 3, label: '3', desc: 'Trinity' },
-  { value: 7, label: '7', desc: 'Sapta' },
-  { value: 11, label: '11', desc: 'Ekadasa' },
-  { value: 21, label: '21', desc: 'Sacred' },
-  { value: 108, label: 'ॐ', desc: 'Mala' },
-];
-
 export default function MeditationScreen() {
   const router = useRouter();
   const { language } = useLanguage();
+
+  const LISTENING_MODES = useMemo(
+    () => [
+      {
+        key: 'chant_only' as ListeningMode,
+        icon: 'musical-notes',
+        title: t('medModeChantOnly', language),
+        subtitle: t('medModeChantOnlySub', language),
+        color: '#E8B94A',
+      },
+      {
+        key: 'chant_meaning' as ListeningMode,
+        icon: 'book',
+        title: t('medModeChantMeaning', language),
+        subtitle: t('medModeChantMeaningSub', language),
+        color: '#6BB5E8',
+      },
+      {
+        key: 'full' as ListeningMode,
+        icon: 'school',
+        title: t('medModeDeep', language),
+        subtitle: t('medModeDeepSub', language),
+        color: '#A78BFA',
+      },
+    ],
+    [language],
+  );
+
+  const SACRED_COUNTS = useMemo(
+    () => [
+      { value: 1, label: '1', desc: t('medSacredSingle', language) },
+      { value: 3, label: '3', desc: t('medSacredTrinity', language) },
+      { value: 7, label: '7', desc: t('medSacredSapta', language) },
+      { value: 11, label: '11', desc: t('medSacredEkadasa', language) },
+      { value: 21, label: '21', desc: t('medSacredSacred', language) },
+      { value: 108, label: 'ॐ', desc: t('medSacredMala', language) },
+    ],
+    [language],
+  );
   const player = useMeditationPlayer();
   const [targetCount, setTargetCount] = useState(5);
   const [repeatCount, setRepeatCount] = useState(1);
@@ -162,7 +168,7 @@ export default function MeditationScreen() {
             <TouchableOpacity onPress={() => router.back()} style={s.backButton}>
               <Ionicons name="close" size={24} color="#FFF" />
             </TouchableOpacity>
-            <Text style={s.headerTitle}>Meditation</Text>
+            <Text style={s.headerTitle}>{t('meditationTitle', language)}</Text>
             <View style={{ width: 40 }} />
           </View>
 
@@ -171,15 +177,13 @@ export default function MeditationScreen() {
             <View style={s.setupIconBox}>
               <Ionicons name="headset" size={36} color="#D4A44C" />
             </View>
-            <Text style={s.setupTitle}>Begin Your Practice</Text>
-            <Text style={s.setupDesc}>
-              Put on headphones. Select your listening preference and let the sacred verses guide your meditation.
-            </Text>
+            <Text style={s.setupTitle}>{t('meditationBeginPractice', language)}</Text>
+            <Text style={s.setupDesc}>{t('meditationSetupDesc', language)}</Text>
           </View>
 
           {/* Listening Mode Selector */}
           <View style={s.sectionContainer}>
-            <Text style={s.sectionLabel}>Listening Mode</Text>
+            <Text style={s.sectionLabel}>{t('meditationListeningSection', language)}</Text>
             <View style={s.modeGrid}>
               {LISTENING_MODES.map((mode) => {
                 const isActive = listeningMode === mode.key;
@@ -208,7 +212,7 @@ export default function MeditationScreen() {
 
           {/* Verse Count */}
           <View style={s.sectionContainer}>
-            <Text style={s.sectionLabel}>Number of Verses</Text>
+            <Text style={s.sectionLabel}>{t('meditationNumVerses', language)}</Text>
             <View style={s.sliderCard}>
               <Text style={s.sliderValue}>{targetCount}</Text>
               <Slider
@@ -232,7 +236,7 @@ export default function MeditationScreen() {
 
           {/* Repeat Count (Sacred) */}
           <View style={s.sectionContainer}>
-            <Text style={s.sectionLabel}>Repeat Each Verse</Text>
+            <Text style={s.sectionLabel}>{t('meditationRepeatEach', language)}</Text>
             <View style={s.repeatCard}>
               <View style={s.repeatGrid}>
                 {SACRED_COUNTS.map((item) => {
@@ -257,7 +261,7 @@ export default function MeditationScreen() {
                   activeOpacity={0.7}
                 >
                   <Ionicons name="create-outline" size={18} color={showCustomInput ? "#0D0D0D" : "#888"} />
-                  <Text style={[s.sacredBtnDesc, showCustomInput && s.sacredBtnDescActive]}>Custom</Text>
+                  <Text style={[s.sacredBtnDesc, showCustomInput && s.sacredBtnDescActive]}>{t('medRepeatCustom', language)}</Text>
                 </TouchableOpacity>
               </View>
 
@@ -265,7 +269,7 @@ export default function MeditationScreen() {
                 <View style={s.customInputRow}>
                   <TextInput
                     style={s.customInput}
-                    placeholder="Enter count (1-1000)"
+                    placeholder={t('medRepeatPlaceholder', language)}
                     placeholderTextColor="#555"
                     keyboardType="number-pad"
                     value={customRepeat}
@@ -282,7 +286,7 @@ export default function MeditationScreen() {
 
               {repeatCount > 1 && (
                 <Text style={s.repeatNote}>
-                  Each verse will be chanted {repeatCount} time{repeatCount > 1 ? 's' : ''} before moving forward
+                  {t('medRepeatNote', language, { count: repeatCount })}
                 </Text>
               )}
             </View>
@@ -297,8 +301,8 @@ export default function MeditationScreen() {
             <View style={s.toggleLeft}>
               <Ionicons name="footsteps" size={20} color={startFromLast ? "#0D0D0D" : "#D4A44C"} />
               <View>
-                <Text style={[s.toggleTitle, startFromLast && s.toggleTitleActive]}>Continue from Last Read</Text>
-                <Text style={[s.toggleSubtitle, startFromLast && s.toggleSubtitleActive]}>Resume your journey where you left off</Text>
+                <Text style={[s.toggleTitle, startFromLast && s.toggleTitleActive]}>{t('medContinueLastTitle', language)}</Text>
+                <Text style={[s.toggleSubtitle, startFromLast && s.toggleSubtitleActive]}>{t('medContinueLastSub', language)}</Text>
               </View>
             </View>
             <View style={[s.toggleSwitch, startFromLast && s.toggleSwitchActive]}>
@@ -315,7 +319,7 @@ export default function MeditationScreen() {
               style={s.startBtnGradient}
             >
               <Ionicons name="play" size={24} color="#0D0D0D" />
-              <Text style={s.startBtnText}>Begin Meditation</Text>
+              <Text style={s.startBtnText}>{t('medBeginCta', language)}</Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -335,23 +339,23 @@ export default function MeditationScreen() {
               <Ionicons name="flower" size={64} color="#4ADE80" />
             </View>
           </Animated.View>
-          <Text style={s.completedTitle}>Meditation Complete</Text>
+          <Text style={s.completedTitle}>{t('medCompleteTitle', language)}</Text>
           <Text style={s.completedDesc}>
-            You have mindfully meditated upon {targetCount} verse{targetCount > 1 ? 's' : ''}.{'\n'}May this wisdom guide your day.
+            {t('medCompleteDesc', language, { count: targetCount })}
           </Text>
           <View style={s.completedStats}>
             <View style={s.completedStatItem}>
               <Text style={s.completedStatValue}>{targetCount}</Text>
-              <Text style={s.completedStatLabel}>Verses</Text>
+              <Text style={s.completedStatLabel}>{t('medStatVerses', language)}</Text>
             </View>
             <View style={s.completedStatDivider} />
             <View style={s.completedStatItem}>
               <Text style={s.completedStatValue}>{repeatCount}x</Text>
-              <Text style={s.completedStatLabel}>Repeats</Text>
+              <Text style={s.completedStatLabel}>{t('medStatRepeats', language)}</Text>
             </View>
           </View>
           <TouchableOpacity onPress={() => router.back()} style={s.doneBtn} activeOpacity={0.8}>
-            <Text style={s.doneBtnText}>Return Home</Text>
+            <Text style={s.doneBtnText}>{t('medReturnHome', language)}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -365,9 +369,9 @@ export default function MeditationScreen() {
   const isPlayingEnglish = player.status === 'playing_english';
 
   const getStatusLabel = () => {
-    if (isPlayingSanskrit) return 'Chanting...';
-    if (isPlayingMeaning) return 'Commentary...';
-    return 'Meaning...';
+    if (isPlayingSanskrit) return t('medStatusChanting', language);
+    if (isPlayingMeaning) return t('medStatusCommentary', language);
+    return t('medStatusMeaning', language);
   };
 
   const getStatusColor = () => {
@@ -401,7 +405,7 @@ export default function MeditationScreen() {
           {currentItem && (
             <Animated.View style={s.verseInfoBox} entering={FadeIn.duration(600)}>
               <Text style={s.verseChapterRef}>
-                Chapter {currentItem.chapter} · Verse {currentItem.verse}
+                {t('medChapterVerseShort', language, { chapter: currentItem.chapter, verse: currentItem.verse })}
               </Text>
               
               {isPlayingSanskrit ? (
@@ -438,7 +442,12 @@ export default function MeditationScreen() {
         {currentItem && (
           <View style={s.verseNavLabel}>
             <Text style={s.verseNavText}>
-              Ch. {currentItem.chapter} · Verse {currentItem.verse}  ·  {player.currentIndex + 1} of {player.queue.length}
+              {t('medVerseNavLabel', language, {
+                chapter: currentItem.chapter,
+                verse: currentItem.verse,
+                current: player.currentIndex + 1,
+                total: player.queue.length,
+              })}
             </Text>
           </View>
         )}

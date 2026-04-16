@@ -3,8 +3,9 @@ import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Plat
 import { useRouter } from 'expo-router';
 import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInRight, Easing } from 'react-native-reanimated'; // Added Easing
 import { saveOnboardingStep } from '../../src/utils/stats';
+import { LinearGradient } from 'expo-linear-gradient'; // Added LinearGradient
 
 export default function OnboardingStep4() {
   const router = useRouter();
@@ -141,17 +142,28 @@ export default function OnboardingStep4() {
       fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
     },
 
-    bottomSection: { paddingHorizontal: 24, paddingBottom: Platform.OS === 'ios' ? 0 : 24 },
-    activateButton: {
+    // Standardized footer and button styles
+    footer: {
+      paddingHorizontal: 24,
+      paddingBottom: 48,
+    },
+    button: {
       backgroundColor: colors.primary,
       borderRadius: 8,
-      paddingVertical: 16,
+      paddingVertical: 18,
+      flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 12,
+      justifyContent: 'center',
+      gap: 12,
     },
-    activateText: { fontSize: 13, fontWeight: '800', color: colors.background, letterSpacing: 1 },
-    activateSubtext: { fontSize: 10, color: colors.textSecondary, fontWeight: '700', letterSpacing: 1, textAlign: 'center', marginBottom: 24 },
-    
+    buttonText: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: colors.background,
+      letterSpacing: 0.5,
+    },
+    activateSubtext: { fontSize: 10, color: colors.textSecondary, fontWeight: '700', letterSpacing: 1, textAlign: 'center', marginBottom: 24 }, // Kept for the subtext
+
     footerNav: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -236,13 +248,25 @@ export default function OnboardingStep4() {
 
         </ScrollView>
 
-        <Animated.View entering={FadeInDown.duration(600).delay(500)} style={styles.bottomSection}>
+        {/* Bottom CTA */}
+        <Animated.View
+          entering={FadeInDown.duration(800).delay(1500).easing(Easing.out(Easing.back(1.2)))}
+          style={styles.footer}
+        >
           <TouchableOpacity 
-            style={styles.activateButton}
+            style={styles.button}
             onPress={handleContinue}
-            activeOpacity={0.9}
+            activeOpacity={0.88}
           >
-            <Text style={styles.activateText}>CONFIRM MY RESOLVE</Text>
+            <LinearGradient
+              colors={['#D4A44C', '#C2983B']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, gap: 12, borderRadius: 8, overflow: 'hidden' }}
+            >
+              <Text style={styles.buttonText}>CONTINUE</Text>
+              <Ionicons name="arrow-forward" size={18} color={colors.background} />
+            </LinearGradient>
           </TouchableOpacity>
           <Text style={styles.activateSubtext}>YOU CAN ADJUST THIS LATER IN SETTINGS</Text>
         </Animated.View>
