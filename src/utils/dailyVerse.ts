@@ -1,10 +1,17 @@
-/**
- * Calendar-day stable "verse of the day" for Home + widgets.
- * Persists chapter/verse until the local calendar date changes.
- */
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import type { Sloka } from '../types';
 import { getChapter, getRandomSloka, getSloka } from './sloka';
+
+// Optional import for native widgets
+let GitaWidgets: any = null;
+try {
+  if (Platform.OS !== 'web') {
+    GitaWidgets = require('gita-widgets').GitaWidgets;
+  }
+} catch (e) {
+  console.warn('GitaWidgets module not found, widgets will not update natively.');
+}
 
 const STORAGE_KEY = '@gita_daily_sloka_v1';
 
@@ -53,6 +60,21 @@ function buildSlokaWithChapter(chapter: number, verse: number): SlokaWithChapter
   };
 }
 
+function updateNativeWidget(verseInfo: SlokaWithChapter) {
+  if (GitaWidgets) {
+    try {
+      GitaWidgets.updateWidget(
+        verseInfo.chapter, 
+        verseInfo.verse, 
+        verseInfo.sanskrit, 
+        verseInfo.translation_english
+      );
+    } catch (e) {
+      console.warn('Failed to update native widget', e);
+    }
+  }
+}
+
 /**
  * Returns the same verse for the current local calendar day; rolls a new one when the date changes.
  */
@@ -61,11 +83,17 @@ export async function getOrCreateDailySloka(): Promise<SlokaWithChapter | null> 
   const stored = await readStored();
   if (stored && stored.date === today) {
     const built = buildSlokaWithChapter(stored.chapter, stored.verse);
-    if (built) return built;
+    if (built) {
+      updateNativeWidget(built);
+      return built;
+    }
   }
 
   const fresh = getRandomSloka();
   if (!fresh) return null;
   await writeStored(today, fresh.chapter, fresh.verse);
-  return fresh;
+  
+  const builtFresh = { ...fresh, chapterName: getChapter(fresh.chapter)?.name ?? `Chapter ${fresh.chapter}` };
+  updateNativeWidget(builtFresh);
+  return builtFresh;
 }

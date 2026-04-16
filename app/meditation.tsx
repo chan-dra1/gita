@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import Slider from '@react-native-community/slider';
 import { useMeditationPlayer } from '../src/hooks/useMeditationPlayer';
 import Animated, {
@@ -25,6 +25,7 @@ type ListeningMode = 'chant_only' | 'chant_meaning' | 'full';
 
 export default function MeditationScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const { language } = useLanguage();
 
   const LISTENING_MODES = useMemo(
@@ -100,6 +101,24 @@ export default function MeditationScreen() {
       glowOpacity.value = withTiming(0.08, { duration: 1000 });
     }
   }, [player.status]);
+
+  // Deep Link Auto-Play Trigger
+  useEffect(() => {
+    if (params.chapter && params.verse && player.status === 'idle') {
+      const ch = parseInt(params.chapter as string);
+      const v = parseInt(params.verse as string);
+      if (!isNaN(ch) && !isNaN(v)) {
+        setListeningMode('full');
+        setTargetCount(1);
+        setRepeatCount(1);
+        player.startSession(1, {
+          specificVerse: { chapter: ch, verse: v },
+          listeningMode: 'full',
+          repeatCount: 1,
+        });
+      }
+    }
+  }, [params.chapter, params.verse]);
 
   // Sync widget when the verse changes in meditation
   useEffect(() => {
