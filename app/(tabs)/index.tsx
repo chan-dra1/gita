@@ -46,6 +46,22 @@ const KRISHNA_IMAGES = [
   require('../../assets/images/home/krishna_18.webp'),
   require('../../assets/images/home/krishna_19.webp'),
   require('../../assets/images/home/krishna_20.webp'),
+  // Newly generated cute images
+  require('../../assets/images/home/cute_home_1.png'),
+  require('../../assets/images/home/cute_home_2.png'),
+  require('../../assets/images/home/cute_home_3.png'),
+  require('../../assets/images/home/cute_home_4.png'),
+  require('../../assets/images/home/cute_home_5.png'),
+  require('../../assets/images/home/cute_home_6.png'),
+  require('../../assets/images/home/cute_home_7.png'),
+  require('../../assets/images/home/cute_home_8.png'),
+  require('../../assets/images/home/cute_home_9.png'),
+  require('../../assets/images/home/cute_home_10.png'),
+  // Consolidated vibes
+  require('../../assets/images/home/home_teach_1.png'),
+  require('../../assets/images/home/home_bhakti_1.png'),
+  require('../../assets/images/home/home_sunrise_1.png'),
+  require('../../assets/images/home/home_dharma_1.png'),
 ];
 
 export default function HomeScreen() {
