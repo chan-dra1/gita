@@ -72,6 +72,7 @@ const FALLBACK_IMAGES = [
   require('../../assets/images/contextual/chapters/ch16_divine_demonic.png'),
   require('../../assets/images/contextual/chapters/ch17_faith.png'),
   require('../../assets/images/contextual/chapters/ch18_liberation.png'),
+  require('../../assets/images/contextual/peace.webp'),
 ];
 
 export const SLOKA_IMAGES: Record<string, any> = {
