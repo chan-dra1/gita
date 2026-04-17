@@ -38,8 +38,8 @@ const VOICE_NAME = 'Aoede';
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
 const OUTPUT_DIR = path.join(ROOT, 'public', 'audio');
 const LANGUAGES = ['sanskrit', 'english', 'hindi'];
-const RATE_LIMIT_MS = 7000; // 7s between calls (10 req/min quota)
-const RETRY_WAIT_MS = 35000; // 35s wait on rate limit errors
+const RATE_LIMIT_MS = 12500; // 12.5s between calls (Conservative but stable for Aoede voice)
+const RETRY_WAIT_MS = 65000; // 65s wait on rate limit errors
 
 // ─── Spiritual Prompts ─────────────────────────────────────────────
 const SYSTEM_PROMPTS = {
@@ -139,9 +139,10 @@ async function generateAudio(text, language, retries = 3) {
     } catch (err) {
       if (attempt === retries) throw err;
       console.log(` ⚠️ Attempt ${attempt} failed: ${err.message.substring(0, 80)}, retrying...`);
-      await sleep(10000);
+      await sleep(15000);
     }
   }
+  throw new Error('Maximum retries exceeded');
 }
 
 // ─── Deploy Chapter ────────────────────────────────────────────────
@@ -257,17 +258,20 @@ async function main() {
 
           const sizeMB = (fs.statSync(outPath).size / (1024 * 1024)).toFixed(2);
           console.log(` ✅ ${sizeMB}MB`);
+          
           totalGenerated++;
           chapterGenerated++;
           saveProgress(chNum, verse.verse, lang, 'done');
+          
+          // Steady pulse delay
+          await sleep(RATE_LIMIT_MS);
         } catch (err) {
-          console.log(` ❌ ${err.message.substring(0, 100)}`);
+          console.log(` ❌ Failed: ${err.message.substring(0, 50)}`);
           totalFailed++;
-          saveProgress(chNum, verse.verse, lang, 'failed');
+          saveProgress(chNum, verse.verse, lang, 'fail');
+          // Wait longer on error to clear quotas
+          await sleep(RETRY_WAIT_MS);
         }
-
-        // Rate limit
-        await sleep(RATE_LIMIT_MS);
       }
     }
 

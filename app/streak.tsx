@@ -89,10 +89,10 @@ export default function StreakPage() {
           {/* Streak Hero */}
           <View style={styles.heroSection}>
             <View style={styles.streakIconCircle}>
-              <Ionicons name="bulb" size={32} color="#D4A44C" />
+              <Ionicons name="flame" size={38} color="#D4A44C" />
             </View>
-            <Text style={styles.streakNumber}>{streak} Days</Text>
-            <Text style={styles.streakLabel}>SACRED DEVOTION STREAK</Text>
+            <Text style={styles.streakNumber}>{streak}</Text>
+            <Text style={styles.streakLabel}>DAYS OF SACRED DEVOTION</Text>
           </View>
 
           {/* Calendar */}

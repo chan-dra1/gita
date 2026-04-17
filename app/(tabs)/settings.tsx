@@ -4,6 +4,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withSequence, 
+  withTiming, 
+  withDelay,
+  Easing
+} from 'react-native-reanimated';
 import Purchases from 'react-native-purchases'; 
 import { Config } from '../../src/constants/config';
 
@@ -249,6 +257,19 @@ export default function SettingsScreen() {
 
   // Global Community
   const [globalSankalpa, setGlobalSankalpa] = useState(0);
+  const pulseValue = useSharedValue(1);
+
+  const pulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulseValue.value }],
+    opacity: withTiming(pulseValue.value > 1.05 ? 0.8 : 1),
+  }));
+
+  const triggerPulse = useCallback(() => {
+    pulseValue.value = withSequence(
+      withTiming(1.15, { duration: 200, easing: Easing.bezier(0.25, 1, 0.5, 1) }),
+      withTiming(1, { duration: 600, easing: Easing.bezier(0.25, 1, 0.5, 1) })
+    );
+  }, []);
 
   const { user, loading: authLoading, logout } = useAuth();
   const [accountBusy, setAccountBusy] = useState(false);
@@ -313,12 +334,14 @@ export default function SettingsScreen() {
 
     // Subscribe to Global Sankalpa
     const unsubscribe = subscribeToGlobalSankalpa((count) => {
+      if (globalSankalpa > 0 && count > globalSankalpa) {
+        triggerPulse();
+      }
       setGlobalSankalpa(count);
     });
 
-
     return () => unsubscribe();
-  }, [loadStats]);
+  }, [loadStats, globalSankalpa]);
 
   const handleThemeToggle = async () => {
     const modes: ThemeMode[] = ['dark', 'light', 'system'];
@@ -648,10 +671,17 @@ export default function SettingsScreen() {
             <Text style={styles.statLabel}>{t('statsVersesRead', language)}</Text>
           </View>
           <View style={styles.statDivider} />
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>{stats?.dayStreak || 0}</Text>
+          <TouchableOpacity 
+            style={styles.statBox} 
+            onPress={() => router.push('/streak' as any)}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.statNumber, { color: colors.primary }]}>{stats?.dayStreak || 0}</Text>
             <Text style={styles.statLabel}>{t('statsDayStreak', language)}</Text>
-          </View>
+            <View style={{ position: 'absolute', top: -10, right: 10 }}>
+              <Ionicons name="flash" size={12} color={colors.primary} />
+            </View>
+          </TouchableOpacity>
           <View style={styles.statDivider} />
           <View style={styles.statBox}>
             <Text style={styles.statNumber}>{stats?.saved || 0}</Text>
@@ -785,15 +815,28 @@ export default function SettingsScreen() {
         {/* AI & COMMUNITY */}
         <View style={styles.section}>
           <SectionHeader title={t('communityAndAi', language)} />
-          <View style={styles.sectionBody}>
-            <SettingRow 
-              icon="people" 
-              label={t('globalSankalpaTitle', language)} 
-              desc={t('globalSankalpaSubtitle', language)}
-              iconColor="#10B981"
-              value={globalSankalpa > 0 ? globalSankalpa.toLocaleString() : '...'}
-              isLast
-            />
+          <View style={[styles.sectionBody, { backgroundColor: isDark ? 'rgba(212, 164, 76, 0.04)' : '#FFFBF2', borderColor: isDark ? 'rgba(212, 164, 76, 0.15)' : 'rgba(181, 135, 42, 0.15)' }]}>
+            <View style={{ padding: 20 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#10B981', marginRight: 8 }} />
+                <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary, letterSpacing: 1.5 }}>COLLECTIVE DEVOTION</Text>
+              </View>
+              <Text style={{ fontSize: 13, color: colors.textSecondary, lineHeight: 20, marginBottom: 16 }}>
+                Join the global flow of wisdom. Every verse read by the community is woven into this sacred total.
+              </Text>
+              
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View>
+                  <Animated.Text style={[pulseStyle, { fontSize: 32, fontWeight: '800', color: colors.text, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' }]}>
+                    {globalSankalpa.toLocaleString()}
+                  </Animated.Text>
+                  <Text style={{ fontSize: 10, fontWeight: '700', color: colors.textSecondary, marginTop: 4, letterSpacing: 0.5 }}>VERSES CONTRIBUTED WORLDWIDE</Text>
+                </View>
+                <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: `${colors.primary}15`, alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name="planet-outline" size={26} color={colors.primary} />
+                </View>
+              </View>
+            </View>
           </View>
         </View>
 

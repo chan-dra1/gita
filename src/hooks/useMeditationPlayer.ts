@@ -80,7 +80,7 @@ export function useMeditationPlayer() {
    */
   const startSession = useCallback(async (
     count: number, 
-    options?: { startFromLastRead?: boolean; repeatCount?: number; listeningMode?: ListeningMode }
+    options?: { startFromLastRead?: boolean; repeatCount?: number; listeningMode?: ListeningMode, specificVerse?: { chapter: number; verse: number } }
   ) => {
     try {
       const repeatVal = options?.repeatCount || 1;
@@ -99,7 +99,9 @@ export function useMeditationPlayer() {
       
       let versesToPlay: {chapter: number; verse: number}[] = [];
 
-      if (options?.startFromLastRead) {
+      if (options?.specificVerse) {
+        versesToPlay.push(options.specificVerse);
+      } else if (options?.startFromLastRead) {
         const lastRead = await getLastReadSloka();
         if (lastRead) {
           const { getAllChapters } = require('../utils/sloka');
