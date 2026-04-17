@@ -13,9 +13,11 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useLanguage } from '../../src/context/LanguageContext';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import Animated, { Easing, FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { t, type Language } from '../../src/utils/i18n';
+import { OnboardingBackground } from '../../src/components/OnboardingBackground';
+import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
 
 export default function OnboardingStep1() {
   const router = useRouter();
@@ -112,10 +114,10 @@ export default function OnboardingStep1() {
         },
         footer: {
           paddingHorizontal: 24,
-          paddingBottom: 48, // Updated from 28 to 48
+          paddingBottom: 48,
         },
         continueBtn: {
-          borderRadius: 8, // Updated from 16 to 8
+          borderRadius: 8,
           overflow: 'hidden',
         },
         continueGradient: {
@@ -127,9 +129,9 @@ export default function OnboardingStep1() {
         },
         continueText: {
           color: colors.background,
-          fontSize: 18, // Updated from 16 to 18
-          fontWeight: '700', // Updated from 800 to 700
-          letterSpacing: 0.5, // Added letterSpacing
+          fontSize: 18,
+          fontWeight: '700',
+          letterSpacing: 0.5,
         },
       }),
     [colors, isDark],
@@ -141,7 +143,7 @@ export default function OnboardingStep1() {
   };
 
   return (
-    <View style={styles.container}>
+    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} translucent />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.progressContainer}>
@@ -221,7 +223,7 @@ export default function OnboardingStep1() {
           </View>
         </ScrollView>
 
-        <Animated.View // Added Animated.View here
+        <Animated.View
           entering={FadeInDown.duration(800).delay(1500).easing(Easing.out(Easing.back(1.2)))}
           style={styles.footer}
         >
@@ -238,6 +240,6 @@ export default function OnboardingStep1() {
           </TouchableOpacity>
         </Animated.View>
       </SafeAreaView>
-    </View>
+    </OnboardingBackground>
   );
 }

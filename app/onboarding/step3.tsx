@@ -3,7 +3,10 @@ import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Plat
 import { useRouter } from 'expo-router';
 import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInRight, Easing } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import { OnboardingBackground } from '../../src/components/OnboardingBackground';
+import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
 
 const FEATURES = [
   {
@@ -63,7 +66,7 @@ export default function OnboardingStep3() {
     subtitle: { fontSize: 14, color: colors.textSecondary, lineHeight: 22, textAlign: 'center', marginTop: 16 },
 
     howItWorksCard: {
-      backgroundColor: `${colors.primary}1A`,
+      backgroundColor: colors.card,
       borderRadius: 16,
       padding: 24,
       marginBottom: 24,
@@ -83,7 +86,7 @@ export default function OnboardingStep3() {
       borderWidth: 1, 
       borderColor: colors.border,
     },
-    iconBox: { width: 32, height: 32, borderRadius: 8, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+    iconBox: { width: 32, height: 32, borderRadius: 8, backgroundColor: `${colors.primary}1A`, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
     listCardTitle: { fontSize: 16, fontWeight: '600', color: colors.text, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', marginBottom: 8 },
     listCardDesc: { fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
 
@@ -114,7 +117,7 @@ export default function OnboardingStep3() {
   };
 
   return (
-    <View style={styles.container}>
+    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} translucent />
       <SafeAreaView style={styles.safeArea}>
         
@@ -190,84 +193,6 @@ export default function OnboardingStep3() {
         </Animated.View>
 
       </SafeAreaView>
-    </View>
+    </OnboardingBackground>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D0D' },
-  safeArea: { flex: 1 },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  progressContainer: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8,
-  },
-  dotsRow: { flexDirection: 'row', gap: 6 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.25)' },
-  dotActive: { width: 18, backgroundColor: '#D4A44C' },
-  
-  scrollView: { flex: 1 },
-  scrollContent: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 120 },
-  
-  titleSection: { alignItems: 'center', marginBottom: 32 },
-  eyebrowTitle: { fontSize: 11, color: '#D4A44C', fontWeight: '800', letterSpacing: 2, marginBottom: 16 },
-  mainTitle: { fontSize: 36, fontWeight: '800', color: '#FFFFFF', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', lineHeight: 44 },
-  italic: { fontStyle: 'italic', color: '#D4A44C' },
-  subtitle: { fontSize: 14, color: '#9CA3AF', lineHeight: 22, textAlign: 'center', marginTop: 16 },
-
-  howItWorksCard: {
-    backgroundColor: 'rgba(212, 164, 76, 0.06)',
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 164, 76, 0.15)',
-  },
-  howItWorksEyebrow: { fontSize: 10, color: '#D4A44C', fontWeight: '800', letterSpacing: 1.5, marginBottom: 8 },
-  howItWorksTitle: { fontSize: 20, fontWeight: '700', color: '#FFFFFF', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', marginBottom: 12 },
-  howItWorksDesc: { fontSize: 14, color: '#9CA3AF', lineHeight: 22 },
-  
-  cardsContainer: { gap: 12 },
-  
-  listCard: {
-    backgroundColor: '#141414',
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1, 
-    borderColor: 'rgba(255,255,255,0.05)',
-  },
-  iconBox: { width: 32, height: 32, borderRadius: 8, backgroundColor: 'rgba(212, 164, 76, 0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
-  listCardTitle: { fontSize: 16, fontWeight: '600', color: '#FFFFFF', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', marginBottom: 8 },
-  listCardDesc: { fontSize: 13, color: '#9CA3AF', lineHeight: 20 },
-
-  bottomSection: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 24,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 24,
-    paddingTop: 16,
-    backgroundColor: '#0D0D0D',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.05)',
-  },
-  activateButton: {
-    backgroundColor: '#D4A44C',
-    borderRadius: 8,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  activateText: { fontSize: 14, fontWeight: '800', color: '#0D0D0D', letterSpacing: 1 },
-  activateSubtext: { fontSize: 9, color: '#666', fontWeight: '700', letterSpacing: 1, textAlign: 'center' },
-});

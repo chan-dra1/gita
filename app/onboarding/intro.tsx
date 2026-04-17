@@ -6,14 +6,19 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, Easing, ZoomIn } from 'react-native-reanimated';
 import { useLanguage } from '../../src/context/LanguageContext';
 import { t } from '../../src/utils/i18n';
+import { LinearGradient } from 'expo-linear-gradient';
+import { OnboardingBackground } from '../../src/components/OnboardingBackground';
+import { useTheme } from '../../src/context/ThemeContext';
+import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
 
 export default function IntroScreen() {
   const router = useRouter();
   const { language } = useLanguage();
+  const { colors, isDark } = useTheme();
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0D0D0D" translucent />
+    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} translucent />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.centerContent}>
           <View style={styles.heroContent}>
@@ -41,19 +46,26 @@ export default function IntroScreen() {
             onPress={() => router.push('/onboarding/step1' as any)}
             activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>{t('introBeginJourney', language)}</Text>
-            <Ionicons name="arrow-forward" size={20} color="#0D0D0D" />
+            <LinearGradient // Wrapped button content with LinearGradient
+              colors={['#D4A44C', '#C2983B']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradient}
+            >
+              <Text style={styles.buttonText}>{t('introBeginJourney', language)}</Text>
+              <Ionicons name="arrow-forward" size={20} color="#0D0D0D" />
+            </LinearGradient>
           </TouchableOpacity>
         </Animated.View>
       </SafeAreaView>
-    </View>
+    </OnboardingBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
+    backgroundColor: '#0D0D0D', // This will be managed by OnboardingBackground
   },
   safeArea: {
     flex: 1,
@@ -100,12 +112,14 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
   },
   button: {
-    backgroundColor: '#D4A44C',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  gradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 18,
-    borderRadius: 8,
     gap: 12,
   },
   buttonText: {

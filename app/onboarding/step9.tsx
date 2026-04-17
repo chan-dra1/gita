@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp, Easing } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OnboardingBackground } from '../../src/components/OnboardingBackground';
+import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
 
 const { width } = Dimensions.get('window');
 
@@ -119,8 +120,8 @@ export default function OnboardingStep9() {
     },
 
     bottomContent: {
-      paddingHorizontal: 24, // Updated from 28
-      paddingBottom: 48, // Updated from 20
+      paddingHorizontal: 24,
+      paddingBottom: 48,
     },
     title: { fontSize: 28, fontWeight: '800', color: colors.text, marginBottom: 10, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
     subtitle: { fontSize: 15, color: colors.textSecondary, lineHeight: 23, marginBottom: 20 },
@@ -178,7 +179,7 @@ export default function OnboardingStep9() {
   };
 
   return (
-    <OnboardingBackground overlayOpacity={0.75}>
+    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor="transparent" translucent />
 
@@ -232,7 +233,7 @@ export default function OnboardingStep9() {
           </View>
 
           <TouchableOpacity
-            style={{ borderRadius: 8, overflow: 'hidden' }} // Added wrapper for LinearGradient
+            style={{ borderRadius: 8, overflow: 'hidden' }}
             onPress={handleContinue}
             activeOpacity={0.88}
           >

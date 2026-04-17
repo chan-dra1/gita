@@ -8,64 +8,14 @@ import {
   StatusBar, StyleSheet, Dimensions, Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
+import { useTheme } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeInUp, Easing } from 'react-native-reanimated'; // Added Easing
+import Animated, { FadeInDown, Easing } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OnboardingBackground } from '../../src/components/OnboardingBackground';
+import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
 
 const { width } = Dimensions.get('window');
-
-// Mock verse card preview component
-function VerseCardPreview() {
-  return (
-    <Animated.View entering={FadeInDown.delay(300).duration(700)} style={styles.cardPreview}>
-      <LinearGradient
-        colors={['#1A1200', '#2A1F00', '#1A1200']}
-        style={styles.cardGradient}
-      >
-        {/* Top accent */}
-        <View style={styles.cardAccentTop} />
-
-        {/* OM Symbol */}
-        <Text style={styles.cardOm}>ॐ</Text>
-
-        {/* Sanskrit */}
-        <Text style={styles.cardSanskrit}>
-          कर्मण्येवाधिकारस्ते{'\n'}मा फलेषु कदाचन
-        </Text>
-
-        {/* Divider */}
-        <View style={styles.cardDivider} />
-
-        {/* Translation */}
-        <Text style={styles.cardTranslation}>
-          "You have the right to work, but never to the fruit of work."
-        </Text>
-
-        {/* Chapter ref */}
-        <Text style={styles.cardRef}>Bhagavad Gita · Chapter 2, Verse 47</Text>
-
-        {/* Bottom accent */}
-        <View style={styles.cardAccentBottom} />
-
-        {/* Share icons row */}
-        <View style={styles.shareIconsRow}>
-          <View style={styles.shareIconBadge}>
-            <Ionicons name="logo-instagram" size={16} color="#E1306C" />
-          </View>
-          <View style={styles.shareIconBadge}>
-            <Ionicons name="logo-whatsapp" size={16} color="#25D366" />
-          </View>
-          <View style={styles.shareIconBadge}>
-            <Ionicons name="share-social" size={16} color="#D4A44C" />
-          </View>
-          <Text style={styles.shareIconsLabel}>Share anywhere</Text>
-        </View>
-      </LinearGradient>
-    </Animated.View>
-  );
-}
 
 export default function OnboardingStep6() {
   const router = useRouter();
@@ -124,8 +74,8 @@ export default function OnboardingStep6() {
     shareIconsLabel: { fontSize: 11, color: colors.textSecondary, marginLeft: 4 },
 
     bottomContent: {
-      paddingHorizontal: 24, // Updated from 28
-      paddingBottom: 48, // Updated from 20
+      paddingHorizontal: 24,
+      paddingBottom: 48,
     },
     title: { fontSize: 28, fontWeight: '800', color: colors.text, marginBottom: 10, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
     subtitle: { fontSize: 15, color: colors.textSecondary, lineHeight: 23, marginBottom: 20 },
@@ -151,11 +101,40 @@ export default function OnboardingStep6() {
     },
   }), [colors, isDark]);
 
+  function VerseCardPreview() {
+    return (
+      <Animated.View entering={FadeInDown.delay(300).duration(700)} style={styles.cardPreview}>
+        <LinearGradient colors={[colors.card, colors.background, colors.card]} style={styles.cardGradient}>
+          <View style={styles.cardAccentTop} />
+          <Text style={styles.cardOm}>ॐ</Text>
+          <Text style={styles.cardSanskrit}>
+            कर्मण्येवाधिकारस्ते{'\n'}मा फलेषु कदाचन
+          </Text>
+          <View style={styles.cardDivider} />
+          <Text style={styles.cardTranslation}>
+            "You have the right to work, but never to the fruit of work."
+          </Text>
+          <Text style={styles.cardRef}>Bhagavad Gita · Chapter 2, Verse 47</Text>
+          <View style={styles.cardAccentBottom} />
+          <View style={styles.shareIconsRow}>
+            <View style={styles.shareIconBadge}>
+              <Ionicons name="logo-instagram" size={16} color={colors.primary} />
+            </View>
+            <View style={styles.shareIconBadge}>
+              <Ionicons name="logo-whatsapp" size={16} color={colors.primary} />
+            </View>
+            <View style={styles.shareIconBadge}>
+              <Ionicons name="share-social" size={16} color={colors.primary} />
+            </View>
+            <Text style={styles.shareIconsLabel}>Share anywhere</Text>
+          </View>
+        </LinearGradient>
+      </Animated.View>
+    );
+  }
+
   return (
-    <OnboardingBackground
-      image={require('../../assets/images/onboarding_1.png')}
-      overlayOpacity={0.75}
-    >
+    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor="transparent" translucent />
 
@@ -212,7 +191,7 @@ export default function OnboardingStep6() {
           </View>
 
           <TouchableOpacity
-            style={{ borderRadius: 8, overflow: 'hidden' }} // Added wrapper for LinearGradient
+            style={{ borderRadius: 8, overflow: 'hidden' }}
             onPress={() => router.push('/onboarding/step7' as any)}
             activeOpacity={0.88} // Adjusted activeOpacity
           >

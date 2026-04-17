@@ -3,8 +3,11 @@ import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Plat
 import { useRouter } from 'expo-router';
 import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import Animated, { Easing, FadeInDown, FadeInRight } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { saveOnboardingStep } from '../../src/utils/stats';
+import { OnboardingBackground } from '../../src/components/OnboardingBackground';
+import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
 
 const LEVELS = [
   {
@@ -114,10 +117,10 @@ export default function OnboardingStep2() {
   };
 
   return (
-    <View style={styles.container}>
+    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} translucent />
       <SafeAreaView style={styles.safeArea}>
-        
+
         {/* Progress dots */}
         <View style={styles.progressContainer}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -131,7 +134,7 @@ export default function OnboardingStep2() {
           <View style={{ width: 38 }} />
         </View>
 
-        <ScrollView 
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -208,6 +211,6 @@ export default function OnboardingStep2() {
         )}
 
       </SafeAreaView>
-    </View>
+    </OnboardingBackground>
   );
 }

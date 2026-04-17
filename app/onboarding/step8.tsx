@@ -10,9 +10,10 @@ import {
 import { useRouter } from 'expo-router';
 import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Animated, { Easing, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OnboardingBackground } from '../../src/components/OnboardingBackground';
+import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
 
 const { width } = Dimensions.get('window');
 
@@ -133,10 +134,7 @@ export default function OnboardingStep8() {
   };
 
   return (
-    <OnboardingBackground
-      image={require('../../assets/images/onboarding_1.png')}
-      overlayOpacity={0.8}
-    >
+    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor="transparent" translucent />
 

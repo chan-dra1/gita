@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OnboardingBackground } from '../../src/components/OnboardingBackground';
+import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
 
 export default function OnboardingDharmaFocus() {
   const router = useRouter();
@@ -114,7 +115,7 @@ export default function OnboardingDharmaFocus() {
   };
 
   return (
-    <OnboardingBackground>
+    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
         <View style={styles.header}>

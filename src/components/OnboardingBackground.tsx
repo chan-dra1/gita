@@ -1,75 +1,81 @@
-import React, { useEffect, useRef } from 'react';
-import { StyleSheet, View, Animated, Dimensions, Platform } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, View, Dimensions, ImageSourcePropType } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated, {
+  useSharedValue,
+  withTiming,
+  withRepeat,
+  useAnimatedStyle,
+  Easing,
+} from 'react-native-reanimated';
+import { useTheme } from '../context/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
+const SPIRAL_MS = 220000;
+const BREATHE_MS = 36000;
+
 interface OnboardingBackgroundProps {
-  image?: any; // Deprecated, kept for API compatibility
-  quote?: string;
-  author?: string;
+  imageSource: ImageSourcePropType;
   overlayOpacity?: number;
   children?: React.ReactNode;
 }
 
-export const OnboardingBackground: React.FC<OnboardingBackgroundProps> = ({ 
-  overlayOpacity = 0.5,
-  children 
+export const OnboardingBackground: React.FC<OnboardingBackgroundProps> = ({
+  imageSource,
+  overlayOpacity: overlayOpacityProp,
+  children,
 }) => {
-  const driftAnim = useRef(new Animated.Value(0)).current;
+  const { isDark } = useTheme();
+
+  const scale = useSharedValue(1);
+  const rotate = useSharedValue(0);
 
   useEffect(() => {
-    // Subtle breathing animation for ambient feel
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(driftAnim, {
-          toValue: 1,
-          duration: 12000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(driftAnim, {
-          toValue: 0,
-          duration: 12000,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
+    scale.value = withRepeat(
+      withTiming(1.07, { duration: BREATHE_MS, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
+
+    rotate.value = withRepeat(
+      withTiming(360, { duration: SPIRAL_MS, easing: Easing.linear }),
+      -1,
+      false,
+    );
   }, []);
 
-  const translateY = driftAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -40], // Slow vertical float
-  });
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }, { rotate: `${rotate.value}deg` }],
+  }));
 
-  const opacity = driftAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.3, 0.5], // Gentle pulse
-  });
+  const veil =
+    overlayOpacityProp !== undefined
+      ? overlayOpacityProp
+      : isDark
+        ? 0.22
+        : 0.12;
+
+  const containerBg = isDark ? '#050a16' : '#060d1c';
+
+  const gradientColors = isDark
+    ? ['rgba(6, 14, 32, 0.55)', 'rgba(6, 14, 32, 0.2)', 'rgba(6, 14, 32, 0.45)']
+    : [
+        'rgba(255, 255, 255, 0.14)',
+        'rgba(255, 255, 255, 0.04)',
+        'rgba(253, 250, 245, 0.2)',
+      ];
+
+  const veilColor = isDark ? `rgba(5, 10, 22, ${veil})` : `rgba(255, 253, 248, ${veil})`;
 
   return (
-    <View style={styles.container}>
-      {/* Base Dark Background */}
-      <View style={styles.baseDark} />
-      
-      {/* Animated Subtle Ambient Glow */}
-      <Animated.View style={[
-        styles.glowWrapper,
-        {
-          transform: [{ translateY }],
-          opacity,
-        }
-      ]}>
-        <LinearGradient
-          colors={['rgba(212, 164, 76, 0.15)', 'transparent']}
-          style={styles.glowGradient}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-        />
-      </Animated.View>
-      
-      {/* Secondary Overlay (for contrast) */}
-      <View style={[styles.overlay, { backgroundColor: `rgba(13, 13, 13, ${overlayOpacity})` }]} />
-      
+    <View style={[styles.container, { backgroundColor: containerBg }]}>
+      <Animated.Image source={imageSource} style={[styles.backgroundImage, animatedStyle]} />
+
+      <LinearGradient colors={gradientColors} locations={[0, 0.45, 1]} style={styles.gradientOverlay} />
+
+      <View style={[styles.veil, { backgroundColor: veilColor }]} />
+
       {children}
     </View>
   );
@@ -78,23 +84,20 @@ export const OnboardingBackground: React.FC<OnboardingBackgroundProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D', // Pure deep dark background
+    overflow: 'hidden',
   },
-  baseDark: {
+  backgroundImage: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#0D0D0D',
+    width: width * 1.65,
+    height: height * 1.65,
+    resizeMode: 'cover',
+    left: -width * 0.325,
+    top: -height * 0.325,
   },
-  glowWrapper: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: height * 0.8,
+  gradientOverlay: {
+    ...StyleSheet.absoluteFillObject,
   },
-  glowGradient: {
-    flex: 1,
-  },
-  overlay: {
+  veil: {
     ...StyleSheet.absoluteFillObject,
   },
 });

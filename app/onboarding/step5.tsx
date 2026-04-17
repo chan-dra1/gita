@@ -9,8 +9,9 @@ import * as Notifications from 'expo-notifications';
 import { saveOnboardingStep, completeOnboarding, getOnboardingData } from '../../src/utils/stats';
 import { scheduleSmartNotifications } from '../../src/utils/notifications';
 import { OnboardingBackground } from '../../src/components/OnboardingBackground';
+import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
 import { Dimensions } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient'; // Import LinearGradient
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
@@ -171,7 +172,7 @@ export default function OnboardingStep5() {
     },
     footer: {
       paddingHorizontal: 24,
-      paddingBottom: 48, // Updated from 32
+      paddingBottom: 48,
     },
     button: {
       borderRadius: 8, // Updated from 16
@@ -183,10 +184,10 @@ export default function OnboardingStep5() {
       backgroundColor: colors.primary, // Keeping background color for gradient to overlay
     },
     buttonText: {
-      fontSize: 18, // Updated from 18
-      fontWeight: '700', // Updated from bold
+      fontSize: 18,
+      fontWeight: '700',
       color: colors.background,
-      letterSpacing: 0.5, // Added letterSpacing
+      letterSpacing: 0.5,
     },
     footerHint: {
       fontSize: 12,
@@ -238,12 +239,9 @@ export default function OnboardingStep5() {
   };
 
   return (
-    <OnboardingBackground
-      image={require('../../assets/images/onboarding_1.png')}
-      overlayOpacity={0.7}
-    >
+    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor="transparent" translucent />
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} translucent />
         
         {/* Progress dots */}
         <View style={styles.header}>

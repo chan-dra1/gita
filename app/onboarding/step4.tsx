@@ -3,9 +3,11 @@ import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Plat
 import { useRouter } from 'expo-router';
 import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeInRight, Easing } from 'react-native-reanimated'; // Added Easing
+import Animated, { FadeInDown, FadeInRight, Easing } from 'react-native-reanimated';
 import { saveOnboardingStep } from '../../src/utils/stats';
-import { LinearGradient } from 'expo-linear-gradient'; // Added LinearGradient
+import { LinearGradient } from 'expo-linear-gradient';
+import { OnboardingBackground } from '../../src/components/OnboardingBackground';
+import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
 
 export default function OnboardingStep4() {
   const router = useRouter();
@@ -34,7 +36,7 @@ export default function OnboardingStep4() {
   };
 
   const styles = useMemo(() => StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
+    container: { flex: 1, /* Removed backgroundColor */ },
     safeArea: { flex: 1 },
     backButton: {
       width: 40,
@@ -92,7 +94,6 @@ export default function OnboardingStep4() {
       alignItems: 'center',
       justifyContent: 'center',
       gap: 24,
-      marginBottom: 24,
     },
     iconButton: {
       width: 44,
@@ -184,7 +185,7 @@ export default function OnboardingStep4() {
   }), [colors, isDark]);
 
   return (
-    <View style={styles.container}>
+    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} translucent />
       <SafeAreaView style={styles.safeArea}>
         
@@ -264,7 +265,7 @@ export default function OnboardingStep4() {
               end={{ x: 1, y: 0 }}
               style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, gap: 12, borderRadius: 8, overflow: 'hidden' }}
             >
-              <Text style={styles.buttonText}>CONTINUE</Text>
+              <Text style={styles.buttonText}>CONFIRM MY RESOLVE</Text>
               <Ionicons name="arrow-forward" size={18} color={colors.background} />
             </LinearGradient>
           </TouchableOpacity>
@@ -272,6 +273,6 @@ export default function OnboardingStep4() {
         </Animated.View>
 
       </SafeAreaView>
-    </View>
+    </OnboardingBackground>
   );
 }
