@@ -1,9 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { getSloka } from '../utils/sloka';
-import { cacheAndPlayAudio, stopAudio } from '../utils/audio';
+import { cacheAndPlayAudio, stopAudio, preDownloadChapterAudio, smartCacheCleanup } from '../utils/audio';
 import { getNextUnreadVerses, addSlokaRead, getLastReadSloka } from '../utils/stats';
 import { incrementGlobalSankalpa } from '../utils/karma';
-import type { Sloka } from '../types';
+import type { Sloka, AudioLanguage } from '../types';
 
 export type ListeningMode = 'chant_only' | 'chant_meaning' | 'full';
 
@@ -31,6 +31,9 @@ export interface MeditationPlayerState {
 const DELAY_AFTER_CHANT = 2500;    // Pause after Sanskrit chant before meaning
 const DELAY_AFTER_MEANING = 3000;  // Pause after meaning before next verse/repeat
 const DELAY_AFTER_PURPORT = 3500;  // Longer pause after deep study commentary
+
+// Pre-fetch window size
+const PREFETCH_WINDOW = 3;
 
 export function useMeditationPlayer() {
   const [state, setState] = useState<MeditationPlayerState>({
@@ -61,6 +64,34 @@ export function useMeditationPlayer() {
     if (isUnmounted.current) return;
     setState(prev => ({ ...prev, ...updates }));
   };
+
+  /**
+   * Background pre-fetcher for the next verses in the queue.
+   */
+  const triggerBackgroundPreFetch = useCallback((index: number, queue: MeditationPlayerState['queue'], mode: ListeningMode) => {
+    if (index >= queue.length - 1) return;
+
+    // Determine target languages based on mode
+    const languages: AudioLanguage[] = ['sanskrit'];
+    if (mode === 'chant_meaning' || mode === 'full') languages.push('english');
+
+    // Get next N verses
+    const nextVerses = queue.slice(index + 1, index + 1 + PREFETCH_WINDOW);
+    
+    // Group by chapter (usually they are in the same chapter, but just in case)
+    const chapterMap: Record<number, number[]> = {};
+    nextVerses.forEach(item => {
+      if (!chapterMap[item.chapter]) chapterMap[item.chapter] = [];
+      chapterMap[item.chapter].push(item.verse);
+    });
+
+    // Fire and forget downloads
+    Object.entries(chapterMap).forEach(([chapStr, verses]) => {
+      preDownloadChapterAudio(Number(chapStr), verses, languages).catch(err => {
+        console.warn(`[MeditationPlayer] Pre-fetch failed for Chapter ${chapStr}:`, err);
+      });
+    });
+  }, []);
 
   /**
    * Loads the extended purport text for a verse.
@@ -142,6 +173,9 @@ export function useMeditationPlayer() {
         return;
       }
 
+      // Run cleanup if needed
+      smartCacheCleanup(queue[0].chapter).catch(() => {});
+
       updateState({ 
         queue, 
         currentIndex: 0, 
@@ -217,6 +251,11 @@ export function useMeditationPlayer() {
       listeningMode: mode,
     });
 
+    // Trigger pre-fetch for next items in the queue
+    if (stage === 'playing_sanskrit' && repeatIter === 1) {
+      triggerBackgroundPreFetch(index, queueList, mode);
+    }
+
     // Clean audio text
     const cleanSanskrit = currentItem.sloka.sanskrit.replace(/\|\|\d+-\d+\|\|/g, '').replace(/\|\|\d+\|\|/g, '').trim();
     const cleanEnglish = currentItem.sloka.translation_english.replace(/Chapter \d+, Verse \d+[.,]?\s*/gi, '').trim();
@@ -283,7 +322,7 @@ export function useMeditationPlayer() {
       console.error('Audio cache error:', e);
       updateState({ error: e.message || 'Audio playback error' });
     }
-  }, []);
+  }, [triggerBackgroundPreFetch]);
 
   const pause = useCallback(async () => {
     await stopAudio();
@@ -320,3 +359,4 @@ export function useMeditationPlayer() {
     skipTo,
   };
 }
+

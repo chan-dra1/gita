@@ -255,6 +255,11 @@ export default function SettingsScreen() {
   const [iosFamilySelection, setIosFamilySelection] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
 
+  // Audio Cache States
+  const [cacheSize, setCacheSize] = useState('0 MB');
+  const [prefLanguages, setPrefLanguages] = useState<string[]>(['sanskrit', 'english']);
+  const [autoCleanup, setAutoCleanup] = useState(true);
+
   // Global Community
   const [globalSankalpa, setGlobalSankalpa] = useState(0);
   const pulseValue = useSharedValue(1);
@@ -318,6 +323,17 @@ export default function SettingsScreen() {
         const isSelfManagedPremium = new Date() < new Date('2026-05-10');
         setIsPremium(isSelfManagedPremium);
       }
+
+      // Load Audio Library Settings
+      const { getCacheSize, formatCacheSize } = require('../../src/utils/audio');
+      const size = await getCacheSize();
+      setCacheSize(formatCacheSize(size));
+
+      const storedLangs = await AsyncStorage.getItem('gita_audio_langs');
+      if (storedLangs) setPrefLanguages(JSON.parse(storedLangs));
+
+      const storedCleanup = await AsyncStorage.getItem('gita_audio_auto_cleanup');
+      if (storedCleanup !== null) setAutoCleanup(storedCleanup === 'true');
 
       setRecentSlokas(slokasRead.slice(-3).reverse());
     } catch (error) {
@@ -1008,6 +1024,91 @@ export default function SettingsScreen() {
               }
               return null;
             })()}
+          </View>
+        </View>
+
+        {/* STORAGE & OFFLINE LIBRARY */}
+        <View style={styles.section}>
+          <SectionHeader title={t('storageAndOffline', language) || 'Storage & Offline Library'} />
+          <View style={styles.sectionBody}>
+            <SettingRow 
+              icon="stats-chart" 
+              label={t('cacheSize', language) || 'Local Cache Size'}
+              value={cacheSize}
+              iconColor="#10B981"
+            />
+            
+            <SettingRow 
+              icon="language" 
+              label={t('downloadLanguages', language) || 'Preferred Download Languages'}
+              desc={prefLanguages.map(l => l.toUpperCase()).join(', ')}
+              iconColor="#3B82F6"
+              onPress={() => {
+                const available = [
+                  { id: 'sanskrit', label: 'Sanskrit' },
+                  { id: 'english', label: 'English' },
+                  { id: 'hindi', label: 'Hindi' }
+                ];
+                Alert.alert(
+                  "Download Languages",
+                  "Which languages should be downloaded for offline use?",
+                  available.map(lang => ({
+                    text: `${prefLanguages.includes(lang.id) ? '✓ ' : ''}${lang.label}`,
+                    onPress: async () => {
+                      let next;
+                      if (prefLanguages.includes(lang.id)) {
+                        if (prefLanguages.length === 1) return;
+                        next = prefLanguages.filter(l => l !== lang.id);
+                      } else {
+                        next = [...prefLanguages, lang.id];
+                      }
+                      setPrefLanguages(next);
+                      await AsyncStorage.setItem('gita_audio_langs', JSON.stringify(next));
+                    }
+                  }))
+                );
+              }}
+            />
+
+            <SettingRow 
+              icon="refresh" 
+              label={t('autoStorageCleanup', language) || 'Self-Managing Storage'}
+              desc={t('autoStorageCleanupDesc', language) || 'Automatically deletes old chapters when cache gets large.'}
+              iconColor="#F97316"
+              rightContent={
+                <Switch 
+                  value={autoCleanup} 
+                  onValueChange={async (val) => {
+                    setAutoCleanup(val);
+                    await AsyncStorage.setItem('gita_audio_auto_cleanup', String(val));
+                  }} 
+                  trackColor={{ false: colors.border, true: colors.primary }}
+                  thumbColor={autoCleanup ? (isDark ? colors.background : colors.card) : (isDark ? '#F9FAFB' : '#D1D5DB')} 
+                />
+              }
+            />
+
+            <SettingRow 
+              icon="trash-outline" 
+              label={t('clearAudioCache', language) || 'Clear All Offline Audio'}
+              desc={t('clearAudioCacheDesc', language) || 'Frees up space by deleting all downloaded verses.'}
+              iconColor="#EF4444"
+              onPress={() => {
+                Alert.alert(
+                  t('clearCacheConfirmTitle', language) || "Clear Cache?",
+                  t('clearCacheConfirmMsg', language) || "This will delete all offline audio files. You'll need internet to play them again.",
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Clear', style: 'destructive', onPress: async () => {
+                      const { clearAudioCache } = require('../../src/utils/audio');
+                      await clearAudioCache();
+                      setCacheSize('0 MB');
+                    }}
+                  ]
+                );
+              }}
+              isLast
+            />
           </View>
         </View>
 

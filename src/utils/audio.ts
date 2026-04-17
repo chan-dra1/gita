@@ -168,6 +168,11 @@ export async function playDynamicAudio(
 
 // ─── Cache Management ──────────────────────────────────────────────────────
 
+const MAX_CACHE_SIZE = 500 * 1024 * 1024; // 500MB Limit
+
+/**
+ * Gets the total size of the audio cache.
+ */
 export async function getCacheSize(): Promise<number> {
   try {
     const dirInfo = await FileSystem.getInfoAsync(getLocalAudioDir());
@@ -176,10 +181,12 @@ export async function getCacheSize(): Promise<number> {
     const files = await FileSystem.readDirectoryAsync(getLocalAudioDir());
     let totalSize = 0;
     for (const file of files) {
-      const info = await FileSystem.getInfoAsync(`${getLocalAudioDir()}${file}`);
-      if (info.exists) {
-        totalSize += (info as any).size || 0;
-      }
+      try {
+        const info = await FileSystem.getInfoAsync(`${getLocalAudioDir()}${file}`);
+        if (info.exists) {
+          totalSize += (info as any).size || 0;
+        }
+      } catch {}
     }
     return totalSize;
   } catch {
@@ -187,10 +194,68 @@ export async function getCacheSize(): Promise<number> {
   }
 }
 
+/**
+ * Automatically cleans up the oldest files if the cache exceeds MAX_CACHE_SIZE.
+ * Also prioritizes keeping the 'current' chapter.
+ */
+export async function smartCacheCleanup(currentChapter: number): Promise<void> {
+  if (Platform.OS === 'web') return;
+
+  try {
+    const size = await getCacheSize();
+    if (size < MAX_CACHE_SIZE) return;
+
+    console.log(`[Audio] Cache size (${formatCacheSize(size)}) exceeds limit. Cleaning up...`);
+    
+    const files = await FileSystem.readDirectoryAsync(getLocalAudioDir());
+    const fileStats = [];
+
+    for (const file of files) {
+      try {
+        const path = `${getLocalAudioDir()}${file}`;
+        const info = await FileSystem.getInfoAsync(path);
+        if (info.exists) {
+          fileStats.push({
+            name: file,
+            path,
+            size: (info as any).size || 0,
+            mtime: (info as any).modificationTime || 0,
+            isCurrentChapter: file.includes(`${currentChapter}_`)
+          });
+        }
+      } catch {}
+    }
+
+    // Sort: Non-current chapters first, then by oldest modification time
+    fileStats.sort((a, b) => {
+      if (a.isCurrentChapter !== b.isCurrentChapter) {
+        return a.isCurrentChapter ? 1 : -1;
+      }
+      return a.mtime - b.mtime;
+    });
+
+    let currentSize = size;
+    for (const file of fileStats) {
+      if (currentSize <= MAX_CACHE_SIZE * 0.7) break; // Clear down to 70% of limit
+      
+      try {
+        await FileSystem.deleteAsync(file.path, { idempotent: true });
+        currentSize -= file.size;
+      } catch (e) {
+        console.warn(`[Audio] Failed to delete ${file.name}:`, e);
+      }
+    }
+    
+    console.log(`[Audio] Cleanup complete. New size: ${formatCacheSize(currentSize)}`);
+  } catch (err) {
+    console.error('[Audio] Smart cleanup failed:', err);
+  }
+}
+
 export function formatCacheSize(bytes: number): string {
   if (bytes === 0) return "0 MB";
   const mb = bytes / (1024 * 1024);
-  return `${mb.toFixed(1)} MB`;
+  return mb < 1 ? "<1 MB" : `${mb.toFixed(1)} MB`;
 }
 
 export async function clearAudioCache(): Promise<void> {
@@ -202,30 +267,38 @@ export async function clearAudioCache(): Promise<void> {
   }
 }
 
+/**
+ * Downloads a list of verses for offline use.
+ */
 export async function preDownloadChapterAudio(
   chapter: number,
-  verseTexts: Array<{ verse: number; text: string }>,
-  language: AudioLanguage = 'english',
-  onProgress?: (downloaded: number, total: number) => void
+  verseNumbers: number[],
+  languages: AudioLanguage[],
+  onProgress?: (index: number, total: number, fileName: string) => void
 ): Promise<void> {
   if (Platform.OS === 'web') return;
   
   await ensureDirExists();
-  const total = verseTexts.length;
+  const totalSteps = verseNumbers.length * languages.length;
+  let currentStep = 0;
   
-  for (let i = 0; i < total; i++) {
-    const { verse } = verseTexts[i];
-    const { remoteUri, localUri } = getAudioPaths(chapter, verse, language);
-    
-    const info = await FileSystem.getInfoAsync(localUri);
-    if (!info.exists) {
+  for (const verse of verseNumbers) {
+    for (const lang of languages) {
+      const { remoteUri, localUri } = getAudioPaths(chapter, verse, lang);
+      const fileName = `${lang}_${chapter}_${verse}.mp3`;
+      
       try {
-        await FileSystem.downloadAsync(remoteUri, localUri);
+        const info = await FileSystem.getInfoAsync(localUri);
+        if (!info.exists) {
+          await FileSystem.downloadAsync(remoteUri, localUri);
+        }
       } catch (e) {
-        console.warn(`Background download failed for verse ${verse}:`, e);
+        console.warn(`[Audio] Pre-download failed for ${fileName}:`, e);
       }
+      
+      currentStep++;
+      onProgress?.(currentStep, totalSteps, fileName);
     }
-    onProgress?.(i + 1, total);
   }
 }
 
@@ -250,3 +323,4 @@ export async function hasCachedAudio(
     return false;
   }
 }
+

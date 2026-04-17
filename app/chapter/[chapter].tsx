@@ -156,37 +156,43 @@ export default function ChapterDetailScreen() {
     loadData();
   }, [loadData]);
 
+  const [downloading, setDownloading] = useState(false);
+
+  const startDownload = async () => {
+    if (!chapterData || downloading) return;
+    setDownloading(true);
+    
+    // Default to Sanskrit and user's current language (or English)
+    const languages: AudioLanguage[] = ['sanskrit', 'english'];
+    if (lang === 'hi') languages.push('hindi');
+
+    const verseNumbers = chapterData.verses.map(v => v.verse);
+    setAudioProgress({ done: 0, total: verseNumbers.length * languages.length });
+
+    try {
+      await preDownloadChapterAudio(
+        chapterId,
+        verseNumbers,
+        languages,
+        (done, total) => setAudioProgress({ done, total })
+      );
+    } catch (e) {
+      console.error('Download failed', e);
+    } finally {
+      // Keep showing progress for a moment then clear
+      setTimeout(() => {
+        setDownloading(false);
+        setAudioProgress(null);
+      }, 2000);
+    }
+  };
+
   useEffect(() => {
-    if (!chapterData || preDownloadStarted.current) return;
-    preDownloadStarted.current = true;
-
-    const apiKey = Config.TTS_API_KEY;
-    if (!apiKey || apiKey === 'YOUR_TTS_API_KEY') return;
-
-    const verseTexts = chapterData.verses.map((v) => {
-      const sloka = getSloka(chapterId, v.verse);
-      const clean = (sloka?.translation_english || '')
-        .replace(/;/g, ',')
-        .replace(/\s{2,}/g, ' ')
-        .trim();
-      return { verse: v.verse, text: clean };
-    }).filter(v => v.text.length > 0);
-
-    setAudioProgress({ done: 0, total: verseTexts.length });
-
-    preDownloadChapterAudio(
-      chapterId,
-      verseTexts,
-      'english',
-      (done: number, total: number) => setAudioProgress({ done, total })
-    ).then(() => {
-      setAudioProgress(prev => prev ? { ...prev, done: prev.total } : null);
-    }).catch(() => {});
-
-    return () => {
-      cancelPreDownload(chapterId);
-    };
-  }, [chapterData, chapterId]);
+    // Check if everything is already cached
+    if (chapterData) {
+      // Optional: Check local cache status
+    }
+  }, [chapterData]);
 
   if (!chapterData) {
     return (
@@ -211,7 +217,16 @@ export default function ChapterDetailScreen() {
             <Ionicons name="arrow-back" size={20} color={colors.text} />
           </TouchableOpacity>
           <View style={{ flex: 1 }} />
-          {/* Audio progress badge removed per user request */}
+          
+          {!downloading ? (
+            <TouchableOpacity onPress={startDownload} style={styles.backBtn}>
+              <Ionicons name="cloud-download-outline" size={20} color={colors.primary} />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.backBtn}>
+              <ActivityIndicator size="small" color={colors.primary} />
+            </View>
+          )}
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -232,6 +247,20 @@ export default function ChapterDetailScreen() {
                   <Text style={styles.progressPercent}>{percentComplete}%</Text>
                 </View>
               </View>
+
+              {audioProgress && (
+                <View style={[styles.progressRow, { marginTop: 20 }]}>
+                  <Text style={[styles.chapterBadge, { color: colors.textSecondary }]}>
+                    OFFLINE AUDIO {audioProgress.done === audioProgress.total ? 'READY' : 'DOWNLOADING...'}
+                  </Text>
+                  <View style={styles.progressBg}>
+                    <View style={[styles.progressFill, { 
+                      width: `${(audioProgress.done / audioProgress.total) * 100}%`,
+                      backgroundColor: audioProgress.done === audioProgress.total ? '#4ADE80' : colors.primary 
+                    }]} />
+                  </View>
+                </View>
+              )}
             </View>
           </Animated.View>
 
