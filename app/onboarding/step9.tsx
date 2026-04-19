@@ -5,7 +5,7 @@
 import React, { useMemo } from 'react';
 import {
   View, Text, TouchableOpacity, SafeAreaView,
-  StatusBar, StyleSheet, Dimensions, Platform,
+  StatusBar, StyleSheet, Platform, useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
@@ -13,13 +13,11 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp, Easing } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OnboardingBackground } from '../../src/components/OnboardingBackground';
-import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
-
-const { width } = Dimensions.get('window');
 
 export default function OnboardingStep9() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
+  const { width } = useWindowDimensions();
 
   const styles = useMemo(() => StyleSheet.create({
     safeArea: { flex: 1 },
@@ -145,7 +143,7 @@ export default function OnboardingStep9() {
       fontWeight: '700',
       letterSpacing: 0.5,
     },
-  }), [colors, isDark]);
+  }), [colors, isDark, width]);
 
   function WidgetPreview() {
     return (
@@ -179,7 +177,7 @@ export default function OnboardingStep9() {
   };
 
   return (
-    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
+    <OnboardingBackground>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor="transparent" translucent />
 

@@ -5,7 +5,7 @@
 import React, { useMemo } from 'react';
 import {
   View, Text, TouchableOpacity, SafeAreaView,
-  StatusBar, StyleSheet, Dimensions, Platform,
+  StatusBar, StyleSheet, Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
@@ -13,9 +13,6 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { Easing, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OnboardingBackground } from '../../src/components/OnboardingBackground';
-import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
-
-const { width } = Dimensions.get('window');
 
 const SAMPLE_SAVED = [
   { chapter: 2, verse: 47, text: 'You have the right to work, but never to the fruit of work.' },
@@ -134,7 +131,7 @@ export default function OnboardingStep8() {
   };
 
   return (
-    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
+    <OnboardingBackground>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor="transparent" translucent />
 

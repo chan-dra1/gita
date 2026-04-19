@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView, Modal, Alert, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, ScrollView, Modal, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,8 +12,6 @@ import { t } from '../../src/utils/i18n';
 import { useLanguage } from '../../src/context/LanguageContext';
 import { PaywallPopup } from '../../src/components/PaywallPopup';
 import { OnboardingBackground } from '../../src/components/OnboardingBackground';
-import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
-
 const TRIAL_DESCRIPTION = 'Includes 14-day free trial';
 
 const FALLBACK_TIERS = [
@@ -233,7 +231,7 @@ export default function PaywallScreen() {
   }), [colors, isDark]);
 
   return (
-    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
+    <OnboardingBackground>
       <View style={styles.container}>
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
         <SafeAreaView style={styles.safeArea}>

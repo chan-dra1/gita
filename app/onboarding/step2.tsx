@@ -7,8 +7,6 @@ import Animated, { Easing, FadeInDown, FadeInRight } from 'react-native-reanimat
 import { LinearGradient } from 'expo-linear-gradient';
 import { saveOnboardingStep } from '../../src/utils/stats';
 import { OnboardingBackground } from '../../src/components/OnboardingBackground';
-import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
-
 const LEVELS = [
   {
     id: 'beginner',
@@ -117,7 +115,7 @@ export default function OnboardingStep2() {
   };
 
   return (
-    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
+    <OnboardingBackground>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} translucent />
       <SafeAreaView style={styles.safeArea}>
 

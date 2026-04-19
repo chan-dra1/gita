@@ -18,8 +18,8 @@ export const Config = {
     // ElevenLabs-specific (only if TTS_PROVIDER === 'elevenlabs')
     ELEVENLABS_VOICE_ID: process.env.EXPO_PUBLIC_ELEVENLABS_VOICE_ID || '',
 
-    // ─── Audio CDN (pre-generated static assets) ──────────────
-    AUDIO_CDN_URL: 'https://gita-rouge-tau.vercel.app/audio',
+    // ─── Audio CDN (hosted on Firebase Storage) ──────────────
+    AUDIO_CDN_URL: 'https://storage.googleapis.com/gita-app-390d7.firebasestorage.app/audio',
 
     // ─── Audio Cache ───────────────────────────────────────────
     AUDIO_CACHE_DIR: 'gita_audio/',
@@ -31,4 +31,10 @@ export const Config = {
     // ─── Notification Defaults ────────────────────────────────
     DEFAULT_NOTIFICATION_HOUR: 6,
     DEFAULT_NOTIFICATION_MINUTE: 30,
+
+    // ─── Store links (share card + onboarding taps) ──────────
+    /** Shown on share art + used when App / Play URLs are unset. */
+    STORE_WEB_LANDING_URL: 'https://gita-rouge-tau.vercel.app/download',
+    APP_STORE_URL: process.env.EXPO_PUBLIC_APP_STORE_URL || '',
+    PLAY_STORE_URL: process.env.EXPO_PUBLIC_PLAY_STORE_URL || '',
 };

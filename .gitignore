@@ -67,3 +67,19 @@ app-example
 /.npm-cache/
 buildlogs*.json
 *.log
+
+# Firebase Service Account Keys (SENSITIVE — never commit)
+firebase-service-account.json
+gita-app-*.json
+
+# Audio files — now hosted on Firebase Cloud Storage
+public/audio/
+
+# Audio generation progress tracker
+scripts/.audio-gen-progress.json
+
+# Build artifacts
+modules/*/android/build/
+
+# Test files
+public/audio_test.html

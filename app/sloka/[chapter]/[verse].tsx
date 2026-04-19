@@ -27,6 +27,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_INNER_WIDTH = SCREEN_WIDTH - 40 - 56;
 import * as Sharing from 'expo-sharing';
 import { VerseCard } from '../../../src/components/VerseCard';
+import { pickVerseShareDesign } from '../../../src/constants/verseShareDesigns';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme, ThemeColors } from '../../../src/context/ThemeContext';
 // Dynamic import for AI to avoid web crash on top-level Anthropic-SDK load

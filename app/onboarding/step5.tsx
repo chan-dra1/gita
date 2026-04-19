@@ -1,19 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, Platform, Switch, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
+import { useTheme } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import Animated, { FadeInDown, FadeIn, Layout, Easing } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeIn, Easing } from 'react-native-reanimated';
 import * as Notifications from 'expo-notifications';
 import { saveOnboardingStep, completeOnboarding, getOnboardingData } from '../../src/utils/stats';
 import { scheduleSmartNotifications } from '../../src/utils/notifications';
 import { OnboardingBackground } from '../../src/components/OnboardingBackground';
-import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
-import { Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-
-const { width } = Dimensions.get('window');
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -26,12 +22,17 @@ Notifications.setNotificationHandler({
   }),
 });
 
+function formatReminderDisplay(d: Date): string {
+  return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
 export default function OnboardingStep5() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
   const [remindersEnabled, setRemindersEnabled] = useState(true);
   const [time, setTime] = useState(new Date(new Date().setHours(8, 0, 0, 0))); // Default 8 AM
   const [isLoading, setIsLoading] = useState(false);
+  const [androidPickerVisible, setAndroidPickerVisible] = useState(false);
 
   const styles = useMemo(() => StyleSheet.create({
     safeArea: {
@@ -59,41 +60,8 @@ export default function OnboardingStep5() {
     dotsRow: { flexDirection: 'row', gap: 6 },
     topDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.border },
     topDotActive: { width: 18, backgroundColor: colors.primary },
-    progressContainer: {
-      marginTop: 8,
-    },
-    progressTextRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 12,
-    },
-    progressStepLabel: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: colors.textSecondary,
-    },
-    progressStep: {
-      fontSize: 14,
-      fontWeight: 'bold',
-      color: colors.primary,
-      letterSpacing: 1,
-    },
-    progressBarBg: {
-      height: 6,
-      backgroundColor: colors.border,
-      borderRadius: 999,
-      flexDirection: 'row',
-      overflow: 'hidden',
-    },
-    progressBarFill: {
-      height: '100%',
-      backgroundColor: colors.primary,
-      width: '100%',
-      borderRadius: 999,
-    },
     titleContainer: {
-      marginTop: 24,
+      marginTop: 8,
       marginBottom: 24,
     },
     mainTitle: {
@@ -145,30 +113,112 @@ export default function OnboardingStep5() {
       fontSize: 13,
       color: colors.textSecondary,
     },
-    timePickerContainer: {
+    timeCardOuter: {
+      marginBottom: 24,
+      borderRadius: 20,
+      overflow: 'hidden',
+      ...Platform.select({
+        ios: {
+          shadowColor: '#D4A44C',
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: isDark ? 0.2 : 0.12,
+          shadowRadius: 20,
+        },
+        android: { elevation: 6 },
+        default: {},
+      }),
+    },
+    timeCardGradient: {
+      borderRadius: 20,
+      padding: 1,
+    },
+    timeCardInner: {
+      borderRadius: 19,
+      backgroundColor: isDark ? 'rgba(14, 14, 18, 0.98)' : colors.card,
+      paddingHorizontal: 20,
+      paddingTop: 18,
+      paddingBottom: 20,
+      borderWidth: 1,
+      borderColor: 'rgba(212, 164, 76, 0.18)',
+    },
+    timeEyebrow: {
+      fontSize: 10,
+      fontWeight: '800',
+      letterSpacing: 2,
+      color: colors.primary,
+      opacity: 0.95,
+      textAlign: 'center',
+      marginBottom: 6,
+    },
+    timeTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: colors.text,
+      textAlign: 'center',
+      marginBottom: 4,
+    },
+    timeSubtitle: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 18,
+      marginBottom: 18,
+    },
+    timeTapArea: {
+      position: 'relative' as const,
+      width: '100%',
+      borderRadius: 14,
+      overflow: 'hidden',
+    },
+    timeTapGradient: {
+      borderRadius: 14,
+      paddingVertical: 16,
+      paddingHorizontal: 14,
+      borderWidth: 1,
+      borderColor: 'rgba(212, 164, 76, 0.2)',
+    },
+    timeTapRow: {
+      flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 20,
-      backgroundColor: colors.card,
-      borderRadius: 16,
+      gap: 12,
+    },
+    timeIconCircle: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: `${colors.primary}18`,
+      alignItems: 'center',
+      justifyContent: 'center',
       borderWidth: 1,
-      borderColor: colors.border,
-      marginBottom: 24,
+      borderColor: 'rgba(212, 164, 76, 0.25)',
     },
-    timePickerLabel: {
-      fontSize: 15,
-      fontWeight: '600',
+    timeLarge: {
+      fontSize: Platform.OS === 'web' ? 26 : 24,
+      fontWeight: '700',
       color: colors.text,
-      marginBottom: 16,
+      letterSpacing: 0.5,
     },
-    timePickerWrapper: {
+    timeHint: {
+      fontSize: 11,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginTop: 12,
+      opacity: 0.85,
+    },
+    iosPickerShell: {
       alignItems: 'center',
       justifyContent: 'center',
       width: '100%',
+      minHeight: 180,
+      backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.04)',
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: colors.border,
     },
-    timePicker: {
-      width: 200,
-      height: 150,
+    timePickerIOS: {
+      width: '100%',
+      height: 178,
     },
     footer: {
       paddingHorizontal: 24,
@@ -238,8 +288,15 @@ export default function OnboardingStep5() {
     }
   };
 
+  const onAndroidTimeChange = (_event: any, selectedDate?: Date) => {
+    setAndroidPickerVisible(false);
+    if (selectedDate) {
+      setTime(selectedDate);
+    }
+  };
+
   return (
-    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
+    <OnboardingBackground>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} translucent />
         
@@ -262,25 +319,14 @@ export default function OnboardingStep5() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Progress */}
-          <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.progressContainer}>
-            <View style={styles.progressTextRow}>
-              <Text style={styles.progressStepLabel}>Final Step</Text>
-              <Text style={styles.progressStep}>5 OF 5</Text>
-            </View>
-            <View style={styles.progressBarBg}>
-              <Animated.View layout={Layout.springify().damping(15)} style={styles.progressBarFill} />
-            </View>
-          </Animated.View>
-
           {/* Title */}
-          <Animated.View entering={FadeInDown.duration(600).delay(200)} style={styles.titleContainer}>
+          <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.titleContainer}>
             <Text style={styles.mainTitle}>Set your daily reminder</Text>
             <Text style={styles.subtitle}>Consistency is key to a peaceful mind.</Text>
           </Animated.View>
 
           {/* Reminders Toggle */}
-          <Animated.View entering={FadeInDown.duration(500).delay(300)} style={styles.remindersContainer}>
+          <Animated.View entering={FadeInDown.duration(500).delay(200)} style={styles.remindersContainer}>
             <View style={styles.remindersContent}>
               <Text style={styles.remindersTitle}>Daily Reminders</Text>
               <Text style={styles.remindersDescription}>Remind me to stay on path</Text>
@@ -294,48 +340,113 @@ export default function OnboardingStep5() {
             />
           </Animated.View>
 
-          {/* Time Picker */}
+          {/* Time picker — gold-accent card; tappable row on web & Android */}
           {remindersEnabled && (
-            <Animated.View entering={FadeIn.duration(400).delay(400)} style={styles.timePickerContainer}>
-              <Text style={styles.timePickerLabel}>Choose a time</Text>
-              <View style={styles.timePickerWrapper}>
-                {Platform.OS === 'web' ? (
-                  <View style={[styles.timePickerWrapper, { padding: 10 }]}>
-                    {React.createElement('input', {
-                      type: 'time',
-                      value: `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`,
-                      onChange: (e: any) => {
-                        if (e.target && e.target.value) {
-                          const [h, m] = e.target.value.split(':');
-                          const newTime = new Date(time);
-                          newTime.setHours(parseInt(h, 10), parseInt(m, 10));
-                          setTime(newTime);
-                        }
-                      },
-                      style: {
-                        padding: '12px 16px',
-                        fontSize: '20px',
-                        borderRadius: '12px',
-                        border: `1px solid ${colors.border}`,
-                        backgroundColor: colors.card,
-                        color: colors.text,
-                        outline: 'none',
-                        cursor: 'pointer',
-                        fontFamily: 'inherit'
-                      }
-                    })}
-                  </View>
-                ) : (
-                  <DateTimePicker
-                    value={time}
-                    mode="time"
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    onChange={onTimeChange}
-                    style={styles.timePicker}
-                    textColor={colors.text}
-                  />
-                )}
-              </View>
+            <Animated.View entering={FadeIn.duration(400).delay(300)} style={styles.timeCardOuter}>
+              <LinearGradient
+                colors={['rgba(212, 164, 76, 0.45)', 'rgba(212, 164, 76, 0.08)', 'rgba(20, 20, 24, 0.4)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.timeCardGradient}
+              >
+                <View style={styles.timeCardInner}>
+                  <Text style={styles.timeEyebrow}>REMINDER TIME</Text>
+                  <Text style={styles.timeTitle}>Choose a time</Text>
+                  <Text style={styles.timeSubtitle}>We’ll send one gentle nudge each day at this hour.</Text>
+
+                  {Platform.OS === 'web' ? (
+                    <View style={styles.timeTapArea}>
+                      <LinearGradient
+                        colors={['rgba(212, 164, 76, 0.14)', 'rgba(212, 164, 76, 0.04)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.timeTapGradient}
+                      >
+                        <View style={styles.timeTapRow}>
+                          <View style={styles.timeIconCircle}>
+                            <Ionicons name="time-outline" size={22} color={colors.primary} />
+                          </View>
+                          <Text style={styles.timeLarge}>{formatReminderDisplay(time)}</Text>
+                          <Ionicons name="chevron-down" size={20} color={colors.primary} />
+                        </View>
+                      </LinearGradient>
+                      {React.createElement('input', {
+                        type: 'time',
+                        value: `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`,
+                        onChange: (e: any) => {
+                          if (e.target && e.target.value) {
+                            const [h, m] = e.target.value.split(':');
+                            const newTime = new Date(time);
+                            newTime.setHours(parseInt(h, 10), parseInt(m, 10));
+                            setTime(newTime);
+                          }
+                        },
+                        'aria-label': 'Choose reminder time',
+                        style: {
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          width: '100%',
+                          height: '100%',
+                          opacity: 0,
+                          cursor: 'pointer',
+                          zIndex: 2,
+                        },
+                      })}
+                    </View>
+                  ) : Platform.OS === 'android' ? (
+                    <>
+                      <TouchableOpacity
+                        activeOpacity={0.88}
+                        onPress={() => setAndroidPickerVisible(true)}
+                        style={styles.timeTapArea}
+                      >
+                        <LinearGradient
+                          colors={['rgba(212, 164, 76, 0.14)', 'rgba(212, 164, 76, 0.04)']}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          style={styles.timeTapGradient}
+                        >
+                          <View style={styles.timeTapRow}>
+                            <View style={styles.timeIconCircle}>
+                              <Ionicons name="time-outline" size={22} color={colors.primary} />
+                            </View>
+                            <Text style={styles.timeLarge}>{formatReminderDisplay(time)}</Text>
+                            <Ionicons name="chevron-down" size={20} color={colors.primary} />
+                          </View>
+                        </LinearGradient>
+                      </TouchableOpacity>
+                      {androidPickerVisible ? (
+                        <DateTimePicker
+                          value={time}
+                          mode="time"
+                          display="default"
+                          onChange={onAndroidTimeChange}
+                        />
+                      ) : null}
+                    </>
+                  ) : (
+                    <View style={styles.iosPickerShell}>
+                      <DateTimePicker
+                        value={time}
+                        mode="time"
+                        display="spinner"
+                        onChange={onTimeChange}
+                        style={styles.timePickerIOS}
+                        textColor={colors.text}
+                      />
+                    </View>
+                  )}
+
+                  <Text style={styles.timeHint}>
+                    {Platform.OS === 'ios'
+                      ? 'Scroll to set the time · you can change this anytime in Settings'
+                      : 'Tap the time to change · adjustable anytime in Settings'}
+                  </Text>
+                </View>
+              </LinearGradient>
             </Animated.View>
           )}
         </ScrollView>

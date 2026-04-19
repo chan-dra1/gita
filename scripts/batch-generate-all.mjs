@@ -15,10 +15,28 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
+import admin from 'firebase-admin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
+
+// ─── Firebase Admin Setup ──────────────────────────────────────────
+// Expects service account key at the root of the project
+const SERVICE_ACCOUNT_PATH = path.join(ROOT, 'firebase-service-account.json');
+const STORAGE_BUCKET = 'gita-app-390d7.firebasestorage.app';
+
+if (fs.existsSync(SERVICE_ACCOUNT_PATH)) {
+  const serviceAccount = JSON.parse(fs.readFileSync(SERVICE_ACCOUNT_PATH, 'utf8'));
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    storageBucket: STORAGE_BUCKET,
+  });
+} else {
+  console.warn('⚠️ No firebase-service-account.json found. Firebase uploads will be skipped.');
+}
+
+const bucket = fs.existsSync(SERVICE_ACCOUNT_PATH) ? admin.storage().bucket() : null;
 
 // ─── Config ────────────────────────────────────────────────────────
 const API_KEY = (() => {
@@ -38,8 +56,11 @@ const VOICE_NAME = 'Aoede';
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
 const OUTPUT_DIR = path.join(ROOT, 'public', 'audio');
 const LANGUAGES = ['sanskrit', 'english', 'hindi'];
-const RATE_LIMIT_MS = 12500; // 12.5s between calls (Conservative but stable for Aoede voice)
-const RETRY_WAIT_MS = 65000; // 65s wait on rate limit errors
+const RATE_LIMIT_MS_PAID = 12500;   // 12.5s between calls (Paid Tier)
+const RATE_LIMIT_MS_FREE = 60000;   // 60s between calls (Free Tier Fallback)
+const RETRY_WAIT_MS = 65000;        // 65s wait on rate limit errors
+
+let currentRateLimit = RATE_LIMIT_MS_PAID;
 
 // ─── Spiritual Prompts ─────────────────────────────────────────────
 const SYSTEM_PROMPTS = {
@@ -98,16 +119,19 @@ function createWavHeader(dataLength, sampleRate = 24000, bitsPerSample = 16, cha
 }
 
 // ─── Generate Single Audio ─────────────────────────────────────────
-async function generateAudio(text, language, retries = 3) {
+async function generateAudio(text, language, retries = 3, forceStandard = false) {
   const systemPrompt = SYSTEM_PROMPTS[language] || SYSTEM_PROMPTS.english;
   
+  // Use Aoede for Premium (Paid), Charon for Standard (Free/Fallback)
+  const voice = forceStandard ? 'Charon' : VOICE_NAME;
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const body = {
         contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n---\n\n${text}` }] }],
         generationConfig: {
           responseModalities: ['AUDIO'],
-          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: VOICE_NAME } } },
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } },
         },
       };
 
@@ -121,6 +145,13 @@ async function generateAudio(text, language, retries = 3) {
         console.log(` ⏳ Rate limited (attempt ${attempt}/${retries}), waiting ${RETRY_WAIT_MS/1000}s...`);
         await sleep(RETRY_WAIT_MS);
         continue;
+      }
+
+      if (res.status === 402) {
+        // PER USER REQUEST: Don't switch voice, just slow down
+        console.log(` 💸 Credits exhausted! Entering 'Deep Meditation' mode (Slower pacing, same premium voice)...`);
+        currentRateLimit = RATE_LIMIT_MS_FREE;
+        return generateAudio(text, language, retries, false);
       }
 
       if (!res.ok) {
@@ -145,18 +176,18 @@ async function generateAudio(text, language, retries = 3) {
   throw new Error('Maximum retries exceeded');
 }
 
-// ─── Deploy Chapter ────────────────────────────────────────────────
-function deployChapter(chapter) {
+// ─── Cloud Upload ──────────────────────────────────────────────────
+async function uploadToFirebase(localPath, remotePath) {
+  if (!bucket) return false;
   try {
-    execSync(`git add public/audio/ && git commit -m "audio: Chapter ${chapter} spiritual audio (Devi वाणी)" && git push`, {
-      cwd: ROOT,
-      stdio: 'pipe',
-      timeout: 60000,
+    await bucket.upload(localPath, {
+      destination: remotePath,
+      public: true, // Make public for streaming
+      metadata: { cacheControl: 'public, max-age=31536000' },
     });
-    console.log(`  🚀 Chapter ${chapter} deployed to GitHub → Vercel!`);
     return true;
   } catch (err) {
-    console.log(`  ⚠️ Deploy failed (will retry next chapter): ${err.message.substring(0, 80)}`);
+    console.warn(`  ⚠️ Firebase upload failed: ${err.message}`);
     return false;
   }
 }
@@ -222,10 +253,26 @@ async function main() {
         const outFile = `${chNum}_${verse.verse}.mp3`;
         const outPath = path.join(OUTPUT_DIR, lang, outFile);
 
-        // FAILSAFE: Skip if already exists
+        // FAILSAFE: Skip generation if already exists, but STILL sync to Firebase
         if (fs.existsSync(outPath) && fs.statSync(outPath).size > 1000) {
-          totalSkipped++;
-          continue;
+          const firebasePath = `audio/${lang}/${outFile}`;
+          // Sync existing file to Cloud if bucket is available
+          if (bucket) {
+            const file = bucket.file(firebasePath);
+            const [exists] = await file.exists();
+            if (!exists) {
+              process.stdout.write(`  📦 Syncing ${lang}/${outFile} to Cloud...`);
+              const uploaded = await uploadToFirebase(outPath, firebasePath);
+              if (uploaded) process.stdout.write(` ✅\n`);
+              else process.stdout.write(` ❌\n`);
+            } else {
+              totalSkipped++;
+              continue;
+            }
+          } else {
+            totalSkipped++;
+            continue;
+          }
         }
 
         // Get text
@@ -246,25 +293,33 @@ async function main() {
         try {
           const wavData = await generateAudio(text, lang);
 
-          // Try ffmpeg conversion, fallback to WAV-as-mp3
+          // Try ffmpeg conversion to High-Compression Mono (32kbps)
           const wavPath = outPath.replace('.mp3', '.wav');
           fs.writeFileSync(wavPath, wavData);
           try {
-            execSync(`ffmpeg -y -i "${wavPath}" -codec:a libmp3lame -qscale:a 2 "${outPath}" 2>/dev/null`, { timeout: 30000 });
+            // EXTREME COMPRESSION: Mono, 32kbps, optimized for voice
+            execSync(`ffmpeg -y -i "${wavPath}" -ac 1 -b:a 32k "${outPath}" 2>/dev/null`, { timeout: 30000 });
             fs.unlinkSync(wavPath);
           } catch {
             fs.renameSync(wavPath, outPath);
           }
 
           const sizeMB = (fs.statSync(outPath).size / (1024 * 1024)).toFixed(2);
-          console.log(` ✅ ${sizeMB}MB`);
+          process.stdout.write(` ✅ ${sizeMB}MB`);
+          
+          // Upload to Firebase
+          const firebasePath = `audio/${lang}/${outFile}`;
+          const uploaded = await uploadToFirebase(outPath, firebasePath);
+          if (uploaded) process.stdout.write(` ☁️ Uploaded`);
+
+          console.log('');
           
           totalGenerated++;
           chapterGenerated++;
           saveProgress(chNum, verse.verse, lang, 'done');
           
           // Steady pulse delay
-          await sleep(RATE_LIMIT_MS);
+          await sleep(currentRateLimit);
         } catch (err) {
           console.log(` ❌ Failed: ${err.message.substring(0, 50)}`);
           totalFailed++;
@@ -275,12 +330,11 @@ async function main() {
       }
     }
 
-    // Deploy after each chapter
+    // Summary after each chapter
     if (chapterGenerated > 0) {
-      console.log(`\n  📦 Chapter ${chNum} complete: ${chapterGenerated} new files`);
-      deployChapter(chNum);
+      console.log(`\n  📦 Chapter ${chNum} complete: ${chapterGenerated} new files synced to Cloud`);
     } else {
-      console.log(`  ✅ Chapter ${chNum}: All files already exist, nothing to generate`);
+      console.log(`  ✅ Chapter ${chNum}: All files already exist`);
     }
   }
 

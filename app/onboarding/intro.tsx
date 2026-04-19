@@ -9,7 +9,6 @@ import { t } from '../../src/utils/i18n';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OnboardingBackground } from '../../src/components/OnboardingBackground';
 import { useTheme } from '../../src/context/ThemeContext';
-import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
 
 export default function IntroScreen() {
   const router = useRouter();
@@ -17,7 +16,7 @@ export default function IntroScreen() {
   const { colors, isDark } = useTheme();
 
   return (
-    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
+    <OnboardingBackground>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} translucent />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.centerContent}>

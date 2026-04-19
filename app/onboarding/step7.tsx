@@ -2,33 +2,32 @@
  * Onboarding Step 7 — Meditation Mode Showcase
  * Shows users the listening modes and the sacred repeat counts.
  */
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   View, Text, TouchableOpacity, SafeAreaView,
-  StatusBar, StyleSheet, Dimensions, Platform,
+  StatusBar, StyleSheet, Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useTheme, ThemeColors } from '../../src/context/ThemeContext';
+import { useTheme } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { Easing, FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OnboardingBackground } from '../../src/components/OnboardingBackground';
-import { ONBOARDING_BACKGROUND_IMAGE } from '../../src/constants/onboardingAssets';
-
-const { width } = Dimensions.get('window');
 
 const MODES = [
   { icon: 'musical-notes', title: 'Chant Only', desc: 'Sanskrit verse chanting', color: '#E8B94A' },
-  { icon: 'book', title: 'Chant + Meaning', desc: 'Verse + translation', color: '#6BB5E8', active: true },
+  { icon: 'book', title: 'Chant + Meaning', desc: 'Verse + translation', color: '#6BB5E8' },
   { icon: 'school', title: 'Deep Study', desc: 'Chant + full commentary', color: '#A78BFA' },
 ];
 
 const SACRED = ['1', '3', '7', '11', '21', 'ॐ'];
 
+/** Showcase only: fixed selection (same UX as non-tappable Sacred Repeat row). */
+const LOCKED_MODE_INDEX = 2;
+
 export default function OnboardingStep7() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
-  const [selectedMode, setSelectedMode] = useState(1);
 
   const styles = useMemo(() => StyleSheet.create({
     safeArea: { flex: 1 },
@@ -106,7 +105,7 @@ export default function OnboardingStep7() {
   }), [colors, isDark]);
 
   return (
-    <OnboardingBackground imageSource={ONBOARDING_BACKGROUND_IMAGE}>
+    <OnboardingBackground>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
 
@@ -132,26 +131,28 @@ export default function OnboardingStep7() {
         <Animated.View entering={FadeInDown.delay(200).duration(700)} style={styles.previewArea}>
           {/* Mode selector preview */}
           <View style={styles.modePreview}>
-            {MODES.map((m, i) => (
-              <TouchableOpacity
-                key={i}
-                onPress={() => setSelectedMode(i)}
-                style={[styles.modeCard, selectedMode === i && { borderColor: MODES[i].color, backgroundColor: `${MODES[i].color}12` }]}
-              >
-                <View style={[styles.modeIcon, { backgroundColor: selectedMode === i ? `${MODES[i].color}25` : colors.card }]}>
-                  <Ionicons name={m.icon as any} size={20} color={selectedMode === i ? MODES[i].color : colors.textSecondary} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.modeTitle, selectedMode === i && { color: MODES[i].color }]}>{m.title}</Text>
-                  <Text style={styles.modeDesc}>{m.desc}</Text>
-                </View>
-                {selectedMode === i && (
-                  <View style={[styles.modeTick, { backgroundColor: MODES[i].color }]}>
-                    <Ionicons name="checkmark" size={12} color={colors.background} />
+            {MODES.map((m, i) => {
+              const selected = i === LOCKED_MODE_INDEX;
+              return (
+                <View
+                  key={i}
+                  style={[styles.modeCard, selected && { borderColor: MODES[i].color, backgroundColor: `${MODES[i].color}12` }]}
+                >
+                  <View style={[styles.modeIcon, { backgroundColor: selected ? `${MODES[i].color}25` : colors.card }]}>
+                    <Ionicons name={m.icon as any} size={20} color={selected ? MODES[i].color : colors.textSecondary} />
                   </View>
-                )}
-              </TouchableOpacity>
-            ))}
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.modeTitle, selected && { color: MODES[i].color }]}>{m.title}</Text>
+                    <Text style={styles.modeDesc}>{m.desc}</Text>
+                  </View>
+                  {selected ? (
+                    <View style={[styles.modeTick, { backgroundColor: MODES[i].color }]}>
+                      <Ionicons name="checkmark" size={12} color={colors.background} />
+                    </View>
+                  ) : null}
+                </View>
+              );
+            })}
           </View>
 
           {/* Sacred counts */}

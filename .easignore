@@ -1,15 +1,42 @@
-# Keep EAS upload small; exclude generated native trees and local caches.
-modules/dharma-blocker/android/build/
-modules/dharma-blocker/android/.gradle/
-**/android/build/
-**/.gradle/
+# EAS upload archive — keep small so "Compressing project files" finishes quickly.
+
+# Dependencies & caches (reinstalled on the builder)
+node_modules/
+.expo/
+
+# Local Gradle home used by some scripts (can exceed 1GB; never needed on EAS)
+.gradle-user-home/
+
+# Android — local Gradle / NDK outputs (regenerated on EAS; often gigabytes locally)
 android/app/build/
+android/app/.cxx/
 android/build/
 android/.gradle/
+**/.cxx/
+**/android/build/
+**/.gradle/
+
+# iOS local
 ios/Pods/
 ios/build/
-*.xcworkspace/xcuserdata/
+
+# Web / deploy artifacts
 dist/
 web-build/
-.expo/
-node_modules/
+.vercel/
+
+# IDE & OS
+.idea/
+**/.idea/
+.DS_Store
+**/.DS_Store
+
+# Tests & reports (not needed for release APK/AAB)
+test-results/
+playwright-report/
+coverage/
+
+# Misc generated / accidental listings
+project_files_list.txt
+*.log
+buildlogs*.json

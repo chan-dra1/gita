@@ -1,21 +1,55 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, ImageBackground, StyleSheet, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import {
+  VERSE_SHARE_PALETTES,
+  VERSE_SHARE_DESIGN_COUNT,
+  pickVerseShareDesign,
+  type VerseSharePalette,
+} from '../constants/verseShareDesigns';
+import { ShareStoreMarketingStrip } from './ShareStoreMarketing';
 
 interface VerseCardProps {
   sanskrit: string;
   translation: string;
   chapter: number;
   verse: number;
+  /** 0 … VERSE_SHARE_DESIGN_COUNT-1. If omitted, derived from chapter:verse. */
+  designIndex?: number;
 }
 
 /**
- * VerseCard Component
- * This is designed specifically for high-fidelity social sharing.
- * It is meant to be rendered off-screen (or hidden) and captured as an image.
+ * High-resolution square card for native `captureRef` → share as PNG.
+ * Theme names (e.g. “Lotus dawn”) are intentionally omitted — they stay in onboarding previews only.
+ * Multiple spiritual palettes; same verse always maps to the same look via `pickVerseShareDesign`.
  */
-export const VerseCard: React.FC<VerseCardProps> = ({ sanskrit, translation, chapter, verse }) => {
+export const VerseCard: React.FC<VerseCardProps> = ({
+  sanskrit,
+  translation,
+  chapter,
+  verse,
+  designIndex: designIndexProp,
+}) => {
+  const idx = Math.min(
+    designIndexProp ?? pickVerseShareDesign(chapter, verse),
+    VERSE_SHARE_DESIGN_COUNT - 1
+  );
+  const palette: VerseSharePalette = VERSE_SHARE_PALETTES[idx];
+
+  const { sanskritSize, translationSize, lineHeightSk, lineHeightTr } = useMemo(() => {
+    const len = sanskrit.length;
+    if (len > 140) {
+      return { sanskritSize: 30, translationSize: 22, lineHeightSk: 50, lineHeightTr: 34 };
+    }
+    if (len > 90) {
+      return { sanskritSize: 34, translationSize: 24, lineHeightSk: 56, lineHeightTr: 36 };
+    }
+    if (len > 55) {
+      return { sanskritSize: 38, translationSize: 26, lineHeightSk: 62, lineHeightTr: 38 };
+    }
+    return { sanskritSize: 42, translationSize: 28, lineHeightSk: 68, lineHeightTr: 42 };
+  }, [sanskrit.length]);
+
   return (
     <View style={s.container}>
       <ImageBackground
@@ -23,49 +57,68 @@ export const VerseCard: React.FC<VerseCardProps> = ({ sanskrit, translation, cha
         style={s.background}
         resizeMode="cover"
       >
-        <LinearGradient
-          colors={['rgba(13,13,13,0.7)', 'rgba(13,13,13,0.92)']}
-          style={s.overlay}
-        />
-        
-        <View style={s.content}>
-          {/* Header Accent */}
-          <View style={s.accentLabelContainer}>
-             <View style={s.accentLine} />
-             <Text style={s.accentLabel}>BHAGAVAD GITA</Text>
-             <View style={s.accentLine} />
+        <LinearGradient colors={palette.overlay} locations={[0, 0.45, 1]} style={s.overlay} />
+
+        {/* Thin ornamental frame */}
+        <View style={[s.innerFrame, { borderColor: palette.frameColor }]} pointerEvents="none" />
+
+        <View style={s.mainColumn} pointerEvents="none">
+          <View style={s.content}>
+            <Text style={[s.om, { color: palette.accent }]}>ॐ</Text>
+
+            <View style={s.accentLabelContainer}>
+              <View style={[s.accentLine, { backgroundColor: palette.accent }]} />
+              <Text style={[s.accentLabel, { color: palette.accent }]}>BHAGAVAD GITA</Text>
+              <View style={[s.accentLine, { backgroundColor: palette.accent }]} />
+            </View>
+
+            <View style={s.verseContainer}>
+              <Text
+                style={[
+                  s.sanskritText,
+                  {
+                    color: palette.sanskritColor,
+                    fontSize: sanskritSize,
+                    lineHeight: lineHeightSk,
+                  },
+                ]}
+              >
+                {sanskrit}
+              </Text>
+            </View>
+
+            <View style={[s.divider, { backgroundColor: palette.accent }]} />
+
+            <View style={s.translationContainer}>
+              <Text
+                style={[
+                  s.translationText,
+                  {
+                    color: palette.translationColor,
+                    fontSize: translationSize,
+                    lineHeight: lineHeightTr,
+                  },
+                ]}
+              >
+                {`"${translation}"`}
+              </Text>
+            </View>
+
+            <View style={s.footer}>
+              <Text style={[s.chapterInfo, { color: palette.accent }]}>
+                CHAPTER {chapter} · VERSE {verse}
+              </Text>
+            </View>
           </View>
 
-          {/* Sanskrit Verse */}
-          <View style={s.verseContainer}>
-            <Text style={s.sanskritText}>{sanskrit}</Text>
-          </View>
-
-          <View style={s.divider} />
-
-          {/* English Translation */}
-          <View style={s.translationContainer}>
-            <Text style={s.translationText}>"{translation}"</Text>
-          </View>
-
-          {/* Attribution Footer */}
-          <View style={s.footer}>
-            <Text style={s.chapterInfo}>CHAPTER {chapter} · VERSE {verse}</Text>
+          <View style={s.bottomMarketing}>
+            <ShareStoreMarketingStrip variant="icons" accent={palette.accent} interactive={false} scale={1} />
+            <View style={s.signatureRow}>
+              <View style={[s.signatureDot, { backgroundColor: palette.accent }]} />
+              <Text style={[s.signatureLabel, { color: palette.accent }]}>THY GITA</Text>
+            </View>
           </View>
         </View>
-
-        {/* Digital Signature Branding (Subtle) */}
-        <View style={s.signatureContainer}>
-          <View style={s.storeBadges}>
-            <Ionicons name="logo-apple" size={16} color="#FFFFFF" opacity={0.7} />
-            <Ionicons name="logo-google-playstore" size={16} color="#FFFFFF" opacity={0.7} />
-          </View>
-          <View style={s.signatureDot} />
-          <Text style={s.signatureLabel}>THY GITA</Text>
-          <View style={s.signatureDot} />
-          <Text style={s.signatureApp}>THE GITA APP</Text>
-        </View>
-
       </ImageBackground>
     </View>
   );
@@ -73,7 +126,7 @@ export const VerseCard: React.FC<VerseCardProps> = ({ sanskrit, translation, cha
 
 const s = StyleSheet.create({
   container: {
-    width: 1080, // High-res Instagram Square
+    width: 1080,
     height: 1080,
     backgroundColor: '#0D0D0D',
     overflow: 'hidden',
@@ -86,101 +139,107 @@ const s = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
   },
+  innerFrame: {
+    position: 'absolute',
+    top: 56,
+    left: 56,
+    right: 56,
+    bottom: 56,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    opacity: 0.85,
+  },
+  mainColumn: {
+    width: '100%',
+    height: '100%',
+    paddingHorizontal: 72,
+    paddingVertical: 72,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   content: {
-    width: '85%',
+    width: '88%',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 40,
+    paddingVertical: 48,
+    paddingHorizontal: 36,
+    flex: 1,
+    minHeight: 0,
+  },
+  om: {
+    fontSize: 44,
+    marginBottom: 16,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    opacity: 0.95,
   },
   accentLabelContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 60,
-    gap: 15,
+    marginBottom: 36,
+    gap: 14,
   },
   accentLine: {
-    width: 40,
+    width: 36,
     height: 1.5,
-    backgroundColor: '#D4A44C',
-    opacity: 0.5,
+    opacity: 0.65,
   },
   accentLabel: {
-    color: '#D4A44C',
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 6,
-    opacity: 0.9,
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: 5,
+    opacity: 0.92,
   },
   verseContainer: {
-    marginBottom: 50,
+    marginBottom: 28,
+    maxWidth: '100%',
   },
   sanskritText: {
-    color: '#D4A44C',
-    fontSize: 42,
-    lineHeight: 70,
     textAlign: 'center',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
     fontWeight: '600',
   },
   divider: {
-    width: 100,
+    width: 88,
     height: 1,
-    backgroundColor: 'rgba(212, 164, 76, 0.4)',
-    marginVertical: 40,
+    opacity: 0.45,
+    marginVertical: 28,
   },
   translationContainer: {
-    marginBottom: 80,
+    marginBottom: 36,
+    maxWidth: '100%',
   },
   translationText: {
-    color: '#FFFFFF',
-    fontSize: 28,
-    lineHeight: 46,
     textAlign: 'center',
     fontStyle: 'italic',
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    paddingHorizontal: 40,
-    opacity: 0.9,
+    paddingHorizontal: 28,
+    opacity: 0.95,
   },
   footer: {
-    marginTop: 20,
+    marginTop: 8,
   },
   chapterInfo: {
-    color: '#D4A44C',
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '800',
-    letterSpacing: 4,
-    opacity: 0.7,
+    letterSpacing: 3,
+    opacity: 0.82,
   },
-  signatureContainer: {
-    position: 'absolute',
-    bottom: 50,
-    right: 50,
+  bottomMarketing: { width: '100%', alignItems: 'center', paddingBottom: 8 },
+  signatureRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    opacity: 0.5,
+    marginTop: 14,
+    opacity: 0.55,
     gap: 8,
   },
-  storeBadges: {
-    flexDirection: 'row',
-    gap: 6,
-    marginRight: 4,
-  },
   signatureLabel: {
-    color: '#D4A44C',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '900',
-    letterSpacing: 1,
+    letterSpacing: 2,
   },
   signatureDot: {
     width: 3,
     height: 3,
     borderRadius: 1.5,
-    backgroundColor: '#D4A44C',
-  },
-  signatureApp: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '600',
-    letterSpacing: 2,
   },
 });
