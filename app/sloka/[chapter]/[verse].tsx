@@ -40,9 +40,8 @@ import { addSlokaRead, isSlokaSaved, saveSloka, unsaveSloka, getOnboardingData, 
 import { incrementGlobalSankalpa } from '../../../src/utils/karma';
 import { getSlokaImage } from '../../../src/utils/slokaImages';
 import { useLanguage } from '../../../src/context/LanguageContext';
-import purportsData from '../../../src/data/purports.json';
-import purportsHiData from '../../../src/data/purports_hi.json';
 import scholarAnswersData from '../../../src/data/scholar_answers.json';
+import deepStudyData from '../../../src/data/commentaries.json';
 
 // Safe import for DharmaBlocker
 let DharmaBlocker: any = null;
@@ -133,14 +132,22 @@ export default function SlokaScreen() {
   const [isAudioCached, setIsAudioCached] = useState(false);
   const [isExplanationCached, setIsExplanationCached] = useState(false);
 
-  // Handle JSON structure variance across bundlers (Native vs Web)
-  const purportDbRaw: any = language === 'hi' ? purportsHiData : purportsData;
-  const purportDb = purportDbRaw?.default || purportDbRaw;
-  
   const scholarAnswersRaw: any = scholarAnswersData;
   const scholarAnswers = scholarAnswersRaw?.default || scholarAnswersRaw;
 
-  let rawPurport = sloka ? (purportDb as Record<string, string>)[`${chapter}:${verse}`] : null;
+  // Use the new Space-Safe Deep Study Data Bank
+  const deepStudyRaw: any = deepStudyData;
+  const deepStudyArr: any[] = Array.isArray(deepStudyRaw) ? deepStudyRaw : (deepStudyRaw?.default || []);
+  
+  // Choose author: 2 for Hindi (Chinmayananda), 16 for English (Sivananda)
+  const targetAuthor = language === 'hi' ? 2 : 16;
+  let rawPurport = sloka ? deepStudyArr.find((c: any) => c.ch === chapter && c.vs === verse && c.aid === targetAuthor)?.text || null : null;
+  
+  // Fallback to Sivananda if Chinmayananda is missing for this specific verse
+  if (!rawPurport && language === 'hi' && sloka) {
+    rawPurport = deepStudyArr.find((c: any) => c.ch === chapter && c.vs === verse && c.aid === 16)?.text || null;
+  }
+
   const purport = rawPurport ? stripAttribution(rawPurport) : null;
   const precomputedQuestions = sloka ? (scholarAnswers as Record<string, any[]>)[`${chapter}:${verse}`] || [] : [];
 

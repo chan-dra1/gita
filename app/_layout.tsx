@@ -55,14 +55,24 @@ function RootLayoutContent() {
       Notifications.requestPermissionsAsync().catch(() => {});
     }
 
-    if (Platform.OS === 'android' && Config.REVENUECAT_API_KEY_ANDROID && !Config.REVENUECAT_API_KEY_ANDROID.startsWith('test_')) {
+    const configurePurchases = () => {
       try {
-        Purchases.configure({ apiKey: Config.REVENUECAT_API_KEY_ANDROID });
+        if (Platform.OS === 'ios') {
+          const key = Config.REVENUECAT_API_KEY_IOS;
+          if (key && !key.startsWith('test_')) {
+            Purchases.configure({ apiKey: key });
+          }
+        } else if (Platform.OS === 'android') {
+          const key = Config.REVENUECAT_API_KEY_ANDROID;
+          if (key && !key.startsWith('test_')) {
+            Purchases.configure({ apiKey: key });
+          }
+        }
       } catch (e) {
         console.warn('Failed to configure RevenueCat:', e);
       }
-    }
-    // Note: iOS key can be added in Config when ready
+    };
+    configurePurchases();
 
     // Schedule smart streak reminder (will be cancelled if they read today)
     import('../src/utils/notifications').then(({ scheduleStreakReminder, cancelRetentionNotifications, scheduleRetentionNotifications }) => {

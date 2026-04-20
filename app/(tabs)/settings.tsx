@@ -313,11 +313,16 @@ export default function SettingsScreen() {
         setIosFamilySelection(false);
       }
 
-      // Check RevenueCat status
+      // Check RevenueCat status (native only — SDK not configured on web)
       try {
-        const customerInfo = await Purchases.getCustomerInfo();
-        const isSelfManagedPremium = new Date() < new Date('2026-05-10');
-        setIsPremium(!!customerInfo.entitlements.active[Config.ENTITLEMENT_ID] || isSelfManagedPremium);
+        if (Platform.OS !== 'web') {
+          const customerInfo = await Purchases.getCustomerInfo();
+          const isSelfManagedPremium = new Date() < new Date('2026-05-10');
+          setIsPremium(!!customerInfo.entitlements.active[Config.ENTITLEMENT_ID] || isSelfManagedPremium);
+        } else {
+          const isSelfManagedPremium = new Date() < new Date('2026-05-10');
+          setIsPremium(isSelfManagedPremium);
+        }
       } catch (e) {
         // Fallback to promo logic if SDK fails or offline
         const isSelfManagedPremium = new Date() < new Date('2026-05-10');
@@ -595,9 +600,16 @@ export default function SettingsScreen() {
   }, [user, language, logout, router]);
 
   const handleRestorePurchases = async () => {
+    if (Platform.OS === 'web') {
+      Alert.alert(
+        t('restorePurchases', language),
+        'Subscriptions and restore run in the iPhone or Android app. Open Daily Bhagavad Gita on your device and use Restore purchases there.'
+      );
+      return;
+    }
     try {
       setLoading(true);
-      const customerInfo = await Purchases.getCustomerInfo();
+      const customerInfo = await Purchases.restorePurchases();
       const active = !!customerInfo.entitlements.active[Config.ENTITLEMENT_ID];
       setIsPremium(active || new Date() < new Date('2026-05-10'));
       Alert.alert(

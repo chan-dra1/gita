@@ -26,6 +26,8 @@ export const Config = {
 
     // ─── RevenueCat ──────────────────────────────────────────
     REVENUECAT_API_KEY_ANDROID: process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID || '',
+    /** Public SDK key from RevenueCat → Project → API keys → Apple. */
+    REVENUECAT_API_KEY_IOS: process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_IOS || '',
     ENTITLEMENT_ID: 'Gita Pro',
 
     // ─── Notification Defaults ────────────────────────────────
@@ -37,4 +39,6 @@ export const Config = {
     STORE_WEB_LANDING_URL: 'https://gita-rouge-tau.vercel.app/download',
     APP_STORE_URL: process.env.EXPO_PUBLIC_APP_STORE_URL || '',
     PLAY_STORE_URL: process.env.EXPO_PUBLIC_PLAY_STORE_URL || '',
+    /** Must match app.json → expo.android.package (Play listing URL fallback). */
+    ANDROID_PACKAGE_ID: 'com.alphawolf.gita',
 };
