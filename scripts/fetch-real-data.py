@@ -22,6 +22,8 @@ def main():
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     b_gita_path = os.path.join(project_root, 'src', 'data', 'bhagavad-gita.json')
     purports_path = os.path.join(project_root, 'src', 'data', 'purports.json')
+    # NOTE (strict-launch): this repo no longer bundles purports_hi.json by default.
+    # Keep the variable only for optional future pipelines.
     purports_hi_path = os.path.join(project_root, 'src', 'data', 'purports_hi.json')
     
     # 2. Load existing localized gita json (for structure)
@@ -91,9 +93,11 @@ def main():
     with open(purports_path, 'w', encoding='utf-8') as f:
         json.dump(purports_en_map, f, indent=2, ensure_ascii=False)
 
-    print(f"Saving purports_hi.json ({len(purports_hi_map)} Hindi purports generated)...")
-    with open(purports_hi_path, 'w', encoding='utf-8') as f:
-        json.dump(purports_hi_map, f, indent=2, ensure_ascii=False)
+    # Strict-launch: do not emit Hindi purports bundle automatically.
+    # If you re-enable this, ensure you have redistribution clearance for the selected author(s).
+    # print(f"Saving purports_hi.json ({len(purports_hi_map)} Hindi purports generated)...")
+    # with open(purports_hi_path, 'w', encoding='utf-8') as f:
+    #     json.dump(purports_hi_map, f, indent=2, ensure_ascii=False)
 
     print("Successfully ingested 700 verses of real data!")
 

@@ -103,7 +103,8 @@ const translations = {
     wordMeaningsBanner: "",
     navPrevious: "Previous",
     navNextVerse: "Next verse",
-    attributionDataset: "Hindi verses: Swami Ramsukhdas. Chapter summaries & titles: The Gita Initiative (github.com/gita/gita, The Unlicense).",
+    attributionDataset:
+      "Hindi verses (where sourced from the open pack): Swami Ramsukhdas line — The Gita Initiative (github.com/gita/gita, The Unlicense). English verse translation, word glosses, and extended English purports ship in separate JSON fields; they are not automatically under that Unlicense — verify rights or replace with a documented public-domain edition before commercial launch.",
     versesReadProgress: "{read} / {total} verses read",
     audioTabSanskrit: "🙏 Sanskrit",
     audioTabExplanation: "📖 Explanation",
@@ -325,7 +326,8 @@ const translations = {
       "नीचे दिए शब्दों के अर्थ डेटा में अंग्रेज़ी में हैं; प्रति-शब्द हिंदी टिप्पणी अभी इस संस्करण में शामिल नहीं है।",
     navPrevious: "पिछला",
     navNextVerse: "अगला श्लोक",
-    attributionDataset: "हिंदी श्लोक: स्वामी रामसुखदास। अध्याय सार व नाम: The Gita Initiative (github.com/gita/gita, The Unlicense).",
+    attributionDataset:
+      "हिंदी श्लोक (जहाँ खुला पैक उपयोग में हो): स्वामी रामसुखदास परंपरा — The Gita Initiative (github.com/gita/gita, The Unlicense)। अंग्रेज़ी अनुवाद, शब्दार्थ व लंबी अंग्रेज़ी टिप्पणी अलग JSON में हैं; वे स्वतः उसी Unlicense के अंतर्गत नहीं माने जा सकते — व्यावसायिक लॉन्च से पहले अधिकार सुनिश्चित करें या सिद्ध सार्वजनिक-डोमेन संस्करण लगाएँ।",
     versesReadProgress: "{read} / {total} श्लोक पढ़े",
     audioTabSanskrit: "🙏 संस्कृत",
     audioTabExplanation: "📖 व्याख्या",

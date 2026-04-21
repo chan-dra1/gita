@@ -97,13 +97,11 @@ export function useMeditationPlayer() {
    * Loads the extended purport text for a verse.
    */
   const getPurportText = (chapter: number, verse: number): string => {
-    try {
-      const purports = require('../data/purports.json');
-      const key = `${chapter}:${verse}`;
-      return purports[key] || '';
-    } catch {
-      return '';
-    }
+    // Strict-launch mode: do not ship extended purports unless each block is cleared and sourced.
+    // See src/data/SOURCE_AUDIT.md.
+    void chapter;
+    void verse;
+    return '';
   };
 
   /**

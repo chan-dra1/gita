@@ -41,7 +41,6 @@ import { incrementGlobalSankalpa } from '../../../src/utils/karma';
 import { getSlokaImage } from '../../../src/utils/slokaImages';
 import { useLanguage } from '../../../src/context/LanguageContext';
 import scholarAnswersData from '../../../src/data/scholar_answers.json';
-import deepStudyData from '../../../src/data/commentaries.json';
 
 // Safe import for DharmaBlocker
 let DharmaBlocker: any = null;
@@ -49,16 +48,6 @@ try {
   DharmaBlocker = require('../../../modules/dharma-blocker').default;
 } catch (e) {
   // Not available in Expo Go or web
-}
-
-// Helper: strip author attribution from purport text
-function stripAttribution(text: string): string {
-  return text
-    .replace(/^(English|Hindi)\s+Commentary\s+By\s+Swami\s+\w+\.?\s*/i, '')
-    .replace(/Swami Sivananda/gi, '')
-    .replace(/Swami Ramsukhdas/gi, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
 }
 
 // Helper: parse word meanings into pairs
@@ -135,20 +124,7 @@ export default function SlokaScreen() {
   const scholarAnswersRaw: any = scholarAnswersData;
   const scholarAnswers = scholarAnswersRaw?.default || scholarAnswersRaw;
 
-  // Use the new Space-Safe Deep Study Data Bank
-  const deepStudyRaw: any = deepStudyData;
-  const deepStudyArr: any[] = Array.isArray(deepStudyRaw) ? deepStudyRaw : (deepStudyRaw?.default || []);
-  
-  // Choose author: 2 for Hindi (Chinmayananda), 16 for English (Sivananda)
-  const targetAuthor = language === 'hi' ? 2 : 16;
-  let rawPurport = sloka ? deepStudyArr.find((c: any) => c.ch === chapter && c.vs === verse && c.aid === targetAuthor)?.text || null : null;
-  
-  // Fallback to Sivananda if Chinmayananda is missing for this specific verse
-  if (!rawPurport && language === 'hi' && sloka) {
-    rawPurport = deepStudyArr.find((c: any) => c.ch === chapter && c.vs === verse && c.aid === 16)?.text || null;
-  }
-
-  const purport = rawPurport ? stripAttribution(rawPurport) : null;
+  const purport = null;
   const precomputedQuestions = sloka ? (scholarAnswers as Record<string, any[]>)[`${chapter}:${verse}`] || [] : [];
 
   // Track sloka view on mount and load saved status

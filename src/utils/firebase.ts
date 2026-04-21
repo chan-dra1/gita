@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || 'AIzaSyCsakY2mcvLhOvDlyUsJEloNPbr5BZ_4m0',
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || 'AIzaSyCXP1UnVLohSzqODDTK3e28fzdA7n6hZKo',
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || 'gita-app-390d7.firebaseapp.com',
   projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || 'gita-app-390d7',
   storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || 'gita-app-390d7.firebasestorage.app',

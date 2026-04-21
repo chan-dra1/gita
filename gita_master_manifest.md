@@ -13,11 +13,11 @@ This document serves as the **Master Prompt** and single source of truth for the
 The app operates on a **Hard Paywall** model with a 15-day complimentary trial for early adopters.
 
 1.  **Dharma Blocker (The USP)**: A powerful spiritual productivity tool. When a reminder is set, the app automatically restricts access to "distracting" background apps at the scheduled time. It prompts the user via mobile notifications to return to the app and complete their daily sloka goals. Background apps remain locked until the user finishes reading their selected verses, ensuring dedicated focus on the Gita.
-2.  **The Scholarly Stack**:
-    *   **700+ Verified Slokas**: Offline-first JSON data.
-    *   **Word-by-Word Breakdown**: Authentic Sanskrit-to-English/Hindi meanings for every verse.
-    *   **Dual-Language Purports**: High-quality commentaries in English and Hindi, sourced from classical scholarly works.
-    *   **Scholar QA**: A cost-optimized AI interface that answers verse-specific context based on scholarly texts.
+2.  **The Study Stack** (ship copy must match `src/data/SOURCE_AUDIT.md` after counsel review):
+    *   **700+ Slokas**: Offline-first JSON data (Sanskrit + transliteration + bundled gloss/translation layers).
+    *   **Word-by-Word Breakdown**: Per-verse glosses as bundled in `bhagavad-gita.json` — rights follow that file’s documented edition, not marketing language alone.
+    *   **Dual-Language Purports**: English (`purports.json`) and Hindi (`purports_hi.json`) commentary fields — **only** describe as “classical” or “verified” once each block is traced to a redistributable source or original writing.
+    *   **Scholar QA**: AI interface; training/context policy must not imply proprietary commentary is bundled without permission.
 3.  **Divine Audio Engine**: Offline-optimized recite-and-repeat audio for Sanskrit transliterations using high-quality voices (en-IN fallback).
 4.  **Spiritual Reminders**: Non-intrusive, timed notifications to bring users back to their daily sloka goals.
 5.  **Duo-Language Support**: Seamless global toggle between English and Hindi for both UI and scripture content.
@@ -45,7 +45,7 @@ The app operates on a **Hard Paywall** model with a 15-day complimentary trial f
 *   **Styling**: Vanilla `StyleSheet` for performance and absolute control.
 *   **Data Strategy**: 100% Offline-First. 
     *   `src/data/bhagavad-gita.json`: Verses and word-meanings.
-    *   `src/data/purports.json` & `src/data/purports_hi.json`: Extensive multi-language commentaries.
+    *   `src/data/purports.json` & `src/data/purports_hi.json`: Extensive commentary strings — **see `src/data/SOURCE_AUDIT.md`** for clearance checklist before store launch.
 *   **Monetization**: Integrated with **RevenueCat** for hard-locked subscription management.
 *   **Deployment**: Vercel (Web Preview) and prepared for Expo Application Services (EAS) for Android/iOS.
 
@@ -58,7 +58,7 @@ The app operates on a **Hard Paywall** model with a 15-day complimentary trial f
 ---
 
 ## 📈 6. Current Status & Readiness
-- [x] **Data Ingestion**: 700 verses, word-meanings, and dual-purports complete.
+- [ ] **Data clearance**: 700 verses + purports present in JSON; **legal sign-off** on English layer + purports required for “launch-safe” (see `src/data/SOURCE_AUDIT.md`).
 - [x] **Hard Paywall**: Mandatory gateway implemented.
 - [x] **UI Polish**: Settings merged, Tabs removed for Vertical Scroll.
 - [x] **Web Deployment**: LIVE.
