@@ -15,7 +15,7 @@
  *     if (!res.ok) throw new AppError('RATE_LIMITED', res.message, { retryable: true });
  */
 
-import { env } from './env';
+import { getEnv } from './env';
 import { AppError } from './errors';
 import { logger } from './logger';
 
@@ -61,6 +61,7 @@ function memoryLimit(input: LimitInput): LimitResult {
 
 // ── Upstash Redis backend ────────────────────────────────────────────────
 async function upstashLimit(input: LimitInput): Promise<LimitResult> {
+  const env = getEnv();
   if (!env.UPSTASH_REDIS_URL || !env.UPSTASH_REDIS_TOKEN) {
     return memoryLimit(input); // graceful fallback
   }

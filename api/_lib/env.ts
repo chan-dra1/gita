@@ -1,9 +1,9 @@
 /**
  * Server env validation.
  *
- * Runs at module import (cold start). If a REQUIRED key is missing we throw
- * immediately — Vercel will mark the function as failed and return a safe
- * 500 JSON error to the client instead of silently running with undefined.
+ * Lazily reads `process.env` on first `getEnv()` call (per route handler), not at
+ * module import. That avoids breaking Vercel’s build/bundling if something
+ * transitively imports this file before env is guaranteed to exist.
  *
  * Never log the actual values; only log which keys are missing.
  */
@@ -69,4 +69,10 @@ function readEnv(): ServerEnv {
   return env;
 }
 
-export const env: ServerEnv = readEnv();
+let cached: ServerEnv | null = null;
+
+/** Validated server env; throws if any required key is missing. */
+export function getEnv(): ServerEnv {
+  if (!cached) cached = readEnv();
+  return cached;
+}

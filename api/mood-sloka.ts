@@ -10,7 +10,7 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { env } from './_lib/env';
+import { getEnv } from './_lib/env';
 import { AppError, assertMethod } from './_lib/errors';
 import { withHandler } from './_lib/cors';
 import { requireUser } from './_lib/auth';
@@ -75,7 +75,7 @@ async function handler(req: VercelRequest, res: VercelResponse, ctx: { requestId
 
   const url =
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent` +
-    `?key=${encodeURIComponent(env.GEMINI_API_KEY)}`;
+    `?key=${encodeURIComponent(getEnv().GEMINI_API_KEY)}`;
 
   let upstream: Response;
   try {

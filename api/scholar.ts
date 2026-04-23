@@ -15,7 +15,7 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { env } from './_lib/env';
+import { getEnv } from './_lib/env';
 import { AppError, assertMethod } from './_lib/errors';
 import { withHandler } from './_lib/cors';
 import { requireUser } from './_lib/auth';
@@ -93,7 +93,7 @@ async function handler(req: VercelRequest, res: VercelResponse, ctx: { requestId
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': env.CLAUDE_API_KEY,
+        'x-api-key': getEnv().CLAUDE_API_KEY,
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({

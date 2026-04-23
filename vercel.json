@@ -3,7 +3,19 @@
   "buildCommand": "NODE_OPTIONS=\"--max-old-space-size=4096\" npx expo export --platform web",
   "outputDirectory": "dist",
   "functions": {
-    "api/**/*.ts": {
+    "api/health.ts": {
+      "runtime": "@vercel/node@5.0.0",
+      "maxDuration": 30
+    },
+    "api/scholar.ts": {
+      "runtime": "@vercel/node@5.0.0",
+      "maxDuration": 30
+    },
+    "api/mood-sloka.ts": {
+      "runtime": "@vercel/node@5.0.0",
+      "maxDuration": 30
+    },
+    "api/tts.ts": {
       "runtime": "@vercel/node@5.0.0",
       "maxDuration": 30
     }
