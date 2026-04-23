@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect, Redirect } from 'expo-router';
 import { useState, useCallback, useEffect } from 'react';
 import {
   Image,
@@ -64,10 +64,13 @@ const KRISHNA_IMAGES = [
   require('../../assets/images/home/home_dharma_1.png'),
 ];
 
+type OnboardingGate = 'unknown' | 'needs_intro' | 'ready';
+
 export default function HomeScreen() {
   const router = useRouter();
   const { language } = useLanguage();
   const { colors, isDark } = useTheme();
+  const [onboardingGate, setOnboardingGate] = useState<OnboardingGate>('unknown');
   const [dailySloka, setDailySloka] = useState<any | null>(null);
   const [isChecking, setIsChecking] = useState(true);
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
@@ -113,26 +116,45 @@ export default function HomeScreen() {
   }, [language]);
 
   useEffect(() => {
-    async function checkOnboarding() {
-      const complete = await isOnboardingComplete();
-      if (!complete) {
-        router.replace('/onboarding/intro' as any);
-      } else {
-        loadData();
+    let cancelled = false;
+    (async () => {
+      try {
+        const complete = await isOnboardingComplete();
+        if (cancelled) return;
+        if (!complete) {
+          setOnboardingGate('needs_intro');
+          setIsChecking(false);
+          return;
+        }
+        setOnboardingGate('ready');
+        await loadData();
+      } catch (e) {
+        console.error('[Home] onboarding gate failed', e);
+        if (!cancelled) {
+          setOnboardingGate('ready');
+          await loadData();
+        }
       }
-    }
-    checkOnboarding();
-  }, []);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [loadData]);
 
   useFocusEffect(
     useCallback(() => {
       // Pick a new random image every time the screen becomes active
       const randomIndex = Math.floor(Math.random() * KRISHNA_IMAGES.length);
       setRandomKrishnaImage(KRISHNA_IMAGES[randomIndex]);
-      loadData(); // Refresh data when screen is focused
-
-    }, [loadData])
+      if (onboardingGate === 'ready') {
+        loadData();
+      }
+    }, [loadData, onboardingGate])
   );
+
+  if (onboardingGate === 'needs_intro') {
+    return <Redirect href="/onboarding/intro" />;
+  }
 
   if (isChecking) {
     return (

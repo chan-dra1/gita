@@ -40,3 +40,6 @@ coverage/
 project_files_list.txt
 *.log
 buildlogs*.json
+
+# Vercel serverless functions — never shipped in mobile binaries
+api/

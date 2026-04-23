@@ -10,6 +10,10 @@ import { ThemeProvider, useTheme, ThemeMode } from '../src/context/ThemeContext'
 import { Appearance } from 'react-native';
 
 import { Config } from '../src/constants/config';
+import { ErrorBoundary } from '../src/components/ErrorBoundary';
+// Importing env for its side effect: validates EXPO_PUBLIC_* at startup.
+import '../src/utils/env';
+import { log } from '../src/utils/logger';
 
 // Configure notification handler so notifications show when app is in foreground
 if (Platform.OS !== 'web') {
@@ -25,10 +29,15 @@ if (Platform.OS !== 'web') {
 }
 
 export default function RootLayout() {
+  useEffect(() => {
+    log.action('app.mount', { platform: Platform.OS });
+  }, []);
   return (
-    <ThemeProvider>
-      <RootLayoutContent />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <RootLayoutContent />
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

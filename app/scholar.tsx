@@ -170,18 +170,10 @@ export default function ScholarScreen() {
       setMessages(prev => [...prev, assistantMsg]);
       streamResponse(precomputed, msgTimestamp);
     } else {
-      // Fall back to Gemini API for truly novel questions
+      // Novel question: route through /api/scholar via getDeepDiveResponse.
+      // That function handles its own offline fallback on network error, so
+      // we no longer need a client-side API-key gate.
       try {
-        const apiKey = Config.GEMINI_API_KEY;
-        if (!apiKey) {
-          const fallbackText = "I appreciate your question, dear seeker. This is a profound inquiry that requires deep contemplation. The Bhagavad Gita teaches us in Chapter 2, Verse 47 that we should focus on our actions without attachment to results. May I suggest exploring specific verses that relate to your question? Try asking about specific topics like dharma, karma, meditation, or the nature of the soul.";
-          const msgTimestamp = Date.now();
-          const assistantMsg: Message = { role: 'assistant', content: '', timestamp: msgTimestamp, isStreaming: true };
-          setMessages(prev => [...prev, assistantMsg]);
-          streamResponse(fallbackText, msgTimestamp);
-          return;
-        }
-        
         const history = updated.slice(-8).map(m => ({ role: m.role, content: m.content }));
         const response = await getDeepDiveResponse(SCHOLAR_CONTEXT, trimmed, history);
         const msgTimestamp = Date.now();

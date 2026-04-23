@@ -3,19 +3,27 @@ import { TTSProviderName } from '../types';
 /**
  * App configuration.
  *
- * ⚠️  Replace API keys with your own before building.
- *     For production, use expo-constants or env variables.
+ * Secret keys (Gemini, Claude, Google TTS) now live ONLY on the server and
+ * are accessed via `src/utils/apiClient.ts` → `/api/*`.
+ *
+ * The `GEMINI_API_KEY` / `TTS_API_KEY` fields below are kept as *presence
+ * flags* so legacy feature gates (e.g. "show premium-audio button") keep
+ * compiling. They are intentionally non-secret placeholders — do NOT put a
+ * real key here again. If you are adding a new upstream, put the key in
+ * Vercel env vars and add a route under `api/`.
  */
 export const Config = {
-    // ─── Gemini AI ─────────────────────────────────────────────
-    GEMINI_API_KEY: process.env.EXPO_PUBLIC_GEMINI_API_KEY || '',
-    GEMINI_MODEL: 'gemini-2.0-flash', // fast + cheap
+    // ─── Gemini AI (server-side only) ─────────────────────────
+    /** Legacy presence flag. Real key is in Vercel `GEMINI_API_KEY`. */
+    GEMINI_API_KEY: '__server_managed__',
+    GEMINI_MODEL: 'gemini-2.0-flash',
 
-    // ─── TTS Provider ─────────────────────────────────────────
+    // ─── TTS Provider — server-managed ────────────────────────
     TTS_PROVIDER: 'google' as TTSProviderName,
-    TTS_API_KEY: process.env.EXPO_PUBLIC_TTS_API_KEY || '',
+    /** Legacy presence flag. Real key is in Vercel `TTS_API_KEY`. */
+    TTS_API_KEY: '__server_managed__',
 
-    // ElevenLabs-specific (only if TTS_PROVIDER === 'elevenlabs')
+    /** Non-secret: the specific voice we request. */
     ELEVENLABS_VOICE_ID: process.env.EXPO_PUBLIC_ELEVENLABS_VOICE_ID || '',
 
     // ─── Audio CDN (hosted on Firebase Storage) ──────────────
