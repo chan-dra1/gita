@@ -13,7 +13,9 @@
     "eas:ios": "eas build --platform ios --profile preview-ios-device",
     "lint": "expo lint",
     "build": "NODE_OPTIONS=\"--max-old-space-size=4096\" npx expo export --platform web && cp vercel.static.json dist/vercel.json",
-    "vercel-build": "NODE_OPTIONS=\"--max-old-space-size=4096\" npx expo export --platform web && cp vercel.static.json dist/vercel.json"
+    "vercel-build": "NODE_OPTIONS=\"--max-old-space-size=4096\" npx expo export --platform web && cp vercel.static.json dist/vercel.json",
+    "enrich-commentary": "node scripts/enrich-commentary.mjs",
+    "enrich-commentary:preview": "node scripts/enrich-commentary.mjs --preview"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

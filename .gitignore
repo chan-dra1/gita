@@ -83,3 +83,15 @@ modules/*/android/build/
 
 # Test files
 public/audio_test.html
+
+# IDE caches (JetBrains, Cursor, VS Code)
+.idea/
+.cursor/
+.vscode/settings.json
+
+# Enrichment progress tracker (local only)
+scripts/.enrich-progress.json
+
+# Data file backups
+src/data/*.backup
+src/data/*.bak
