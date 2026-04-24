@@ -128,7 +128,7 @@ Required — auto-reject without it. Declare:
   - `android.permission.INTERNET` — always.
   - `android.permission.POST_NOTIFICATIONS` — for daily reminders.
   - `android.permission.WRITE_EXTERNAL_STORAGE` / `READ_MEDIA_IMAGES` — share-card save.
-  - The **dharma-blocker** module may request `**PACKAGE_USAGE_STATS`** and `**SYSTEM_ALERT_WINDOW**`. These require a "Permission declaration" form in Play Console justifying the use, plus screen recording showing the flow.
+  - The **dharma-blocker** module may request `**PACKAGE_USAGE_STATS`** and `**SYSTEM_ALERT_WINDOW`**. These require a "Permission declaration" form in Play Console justifying the use, plus screen recording showing the flow.
 
 ### 2.4 Assets
 
